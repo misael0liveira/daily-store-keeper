@@ -58,9 +58,15 @@ export function registerPWA() {
     return;
   }
 
-  window.addEventListener("load", () => {
+  const doRegister = () => {
     void navigator.serviceWorker.register(SW_URL, { scope: "/" }).catch(() => {
       // registration failed — app still works online
     });
-  });
+  };
+  // If hydration finishes after the load event, the listener would never fire.
+  if (document.readyState === "complete") {
+    doRegister();
+  } else {
+    window.addEventListener("load", doRegister, { once: true });
+  }
 }
