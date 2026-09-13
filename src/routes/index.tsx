@@ -161,7 +161,7 @@ function DashboardPage() {
           </Button>
           <Button
             variant={cashOpen ? "outline" : "default"}
-            className="h-14 rounded-2xl bg-card"
+            className={cashOpen ? "h-14 rounded-2xl bg-card" : "h-14 rounded-2xl"}
             onClick={toggleCash}
           >
             <Power className="size-5" /> {cashOpen ? "Fechar caixa" : "Abrir caixa"}

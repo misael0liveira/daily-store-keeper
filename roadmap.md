@@ -11,8 +11,8 @@
 
 Pendente do seu lado: gerar o APK/AAB no Android Studio (não é possível compilar aqui).
 
-## Dashboard operacional — em andamento
-- [ ] Início com métricas, gráfico, alertas, últimas vendas e resumo de caixa
-- [ ] PDV preservado em Vender e navegação com quatro destinos
-- [ ] Visual verde operacional, Inter e dark mode
-- [ ] Verificação mobile/desktop e fluxo de venda
+## Dashboard operacional — concluído
+- [x] Início com métricas, gráfico, alertas, últimas vendas e resumo de caixa
+- [x] PDV preservado em Vender e navegação com quatro destinos
+- [x] Visual verde operacional, Inter e dark mode
+- [x] Verificação mobile/desktop e fluxo de venda
