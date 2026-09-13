@@ -40,8 +40,9 @@ function CaixaPage() {
     useStore();
   const [scannerOpen, setScannerOpen] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
+  const [query, setQuery] = useState("");
 
-  const handleScan = (code: string) => {
+  const addProduct = (code: string) => {
     const product = products[code];
     if (product) {
       addToCart(code);
@@ -56,6 +57,33 @@ function CaixaPage() {
       toast.error("Produto não cadastrado", {
         description: `Código: ${code}`,
       });
+    }
+  };
+
+  const handleScan = (code: string) => {
+    addProduct(code);
+  };
+
+  const suggestions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    return Object.entries(products)
+      .filter(
+        ([code, p]) =>
+          code.toLowerCase().includes(q) || p.name.toLowerCase().includes(q),
+      )
+      .slice(0, 6);
+  }, [query, products]);
+
+  const submitQuery = () => {
+    const q = query.trim();
+    if (!q) return;
+    if (products[q]) {
+      addProduct(q);
+      setQuery("");
+    } else if (suggestions.length > 0) {
+      addProduct(suggestions[0][0]);
+      setQuery("");
     }
   };
 
