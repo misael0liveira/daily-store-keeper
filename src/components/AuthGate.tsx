@@ -21,12 +21,15 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!session) return;
-    const run = async () => {
+    const sync = async () => {
       const state = useStore.getState();
       const result = await syncPendingSales(state.sales, state.products);
       if (result.status === "done" && result.synced.length) useStore.getState().markSalesSynced(result.synced);
     };
-    void run();
+    void sync();
+    const onOnline = () => void sync();
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
   }, [session?.user?.id]);
 
   async function submit(event: FormEvent) {
