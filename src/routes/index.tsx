@@ -32,6 +32,10 @@ function CaixaPage() {
   const { products, cart, addToCart, changeQty, removeFromCart, checkout } =
     useStore();
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [paidRaw, setPaidRaw] = useState("");
+
+  const paidValue = Number(paidRaw.replace(",", "."));
+  const paid = paidRaw.trim() === "" || Number.isNaN(paidValue) ? null : paidValue;
 
   const handleScan = (code: string) => {
     const product = products[code];
