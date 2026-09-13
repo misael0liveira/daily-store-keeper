@@ -54,6 +54,7 @@ export default defineConfig({
         filename: "sw.js",
         manifestFilename: "manifest.webmanifest",
         manifest: {
+          id: "/",
           name: "Mini Mercado PDV",
           short_name: "Mercado PDV",
           description:
@@ -65,6 +66,23 @@ export default defineConfig({
           theme_color: "#3b82f6",
           background_color: "#fafbfc",
           lang: "pt-BR",
+          prefer_related_applications: false,
+          screenshots: [
+            {
+              src: "/screenshots/caixa.png",
+              sizes: "780x1688",
+              type: "image/png",
+              form_factor: "narrow",
+              label: "Caixa: leia códigos e finalize a venda",
+            },
+            {
+              src: "/screenshots/estoque.png",
+              sizes: "780x1688",
+              type: "image/png",
+              form_factor: "narrow",
+              label: "Estoque: cadastre e busque produtos",
+            },
+          ],
           icons: [
             {
               src: "/icons/icon-192.png",
