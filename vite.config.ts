@@ -130,6 +130,7 @@ export default defineConfig({
           // service worker is generated, so it cannot be precached. The pages
           // are warmed into the "pages" cache from the client instead
           // (src/lib/pwa-register.ts), keeping navigations network-first.
+          navigateFallback: null,
           cleanupOutdatedCaches: true,
           clientsClaim: true,
           skipWaiting: true,
