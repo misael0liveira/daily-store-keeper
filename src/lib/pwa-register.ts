@@ -1,11 +1,11 @@
 import { isNativeApp } from "@/lib/platform";
 
-const SW_URL = "/sw.js";
+const BASE_PATH = import.meta.env.BASE_URL.replace(/\/$/, "");
+const SW_URL = `${BASE_PATH}/sw.js`;
 
 function isBlockedContext(): boolean {
   if (typeof window === "undefined") return true;
   if (!import.meta.env.PROD) return true;
-  // Inside the Android app the files are already local; no service worker.
   if (isNativeApp()) return true;
 
   try {
@@ -44,7 +44,7 @@ async function unregisterAppWorkers() {
             r.waiting?.scriptURL ??
             r.installing?.scriptURL ??
             "";
-          return url.endsWith(SW_URL);
+          return url.endsWith("/sw.js");
         })
         .map((r) => r.unregister())
     );
@@ -53,11 +53,6 @@ async function unregisterAppWorkers() {
   }
 }
 
-/**
- * Screens that must open with no internet. The generated service worker keeps
- * navigations network-first, so we pre-fill its "pages" cache while online.
- * Nothing is ever deleted here — only refreshed with the newest HTML.
- */
 const OFFLINE_PAGES = [
   "/",
   "/vender",
@@ -74,11 +69,12 @@ async function warmPagesCache() {
     const cache = await caches.open("pages");
     await Promise.allSettled(
       OFFLINE_PAGES.map(async (path) => {
-        const response = await fetch(path, {
+        const url = `${BASE_PATH}${path}`;
+        const response = await fetch(url, {
           cache: "reload",
           credentials: "same-origin",
         });
-        if (response.ok) await cache.put(path, response.clone());
+        if (response.ok) await cache.put(url, response.clone());
       })
     );
   } catch {
@@ -97,9 +93,8 @@ export function registerPWA() {
 
   const doRegister = () => {
     void navigator.serviceWorker
-      .register(SW_URL, { scope: "/" })
+      .register(SW_URL, { scope: `${BASE_PATH}/` })
       .then((registration) => {
-        // Never leave the app stuck on an old version.
         void registration.update();
         void warmPagesCache();
         window.addEventListener("online", () => void warmPagesCache());
@@ -108,7 +103,6 @@ export function registerPWA() {
         // registration failed — app still works online
       });
   };
-  // If hydration finishes after the load event, the listener would never fire.
   if (document.readyState === "complete") {
     doRegister();
   } else {
