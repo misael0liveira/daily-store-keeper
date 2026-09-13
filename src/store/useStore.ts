@@ -13,26 +13,76 @@ export type CartItem = {
   qty: number;
 };
 
+export type PaymentMethod = "dinheiro" | "debito" | "credito" | "pix";
+
+export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
+  dinheiro: "Dinheiro",
+  debito: "Cartão de débito",
+  credito: "Cartão de crédito",
+  pix: "Pix",
+};
+
+export type SaleItem = {
+  barcode: string;
+  name: string;
+  price: number;
+  qty: number;
+};
+
+export type Sale = {
+  id: string;
+  timestamp: number;
+  items: SaleItem[];
+  total: number;
+  method: PaymentMethod;
+  paidAmount?: number;
+  change?: number;
+};
+
+export type Settings = {
+  storeName: string;
+  pixKey: string;
+  merchantName: string;
+  city: string;
+};
+
 type Theme = "light" | "dark";
 
 type StoreState = {
   products: Record<string, Product>;
   cart: CartItem[];
+  sales: Sale[];
+  settings: Settings;
   theme: Theme;
   upsertProduct: (product: Product) => void;
   deleteProduct: (barcode: string) => void;
   addToCart: (barcode: string) => void;
   changeQty: (barcode: string, delta: number) => void;
   removeFromCart: (barcode: string) => void;
-  checkout: () => void;
+  checkout: (payload: {
+    method: PaymentMethod;
+    paidAmount?: number;
+    change?: number;
+  }) => Sale | null;
+  deleteSale: (id: string) => void;
+  setSettings: (settings: Partial<Settings>) => void;
   setTheme: (theme: Theme) => void;
+};
+
+const defaultSettings: Settings = {
+  storeName: "Mini Mercado",
+  pixKey: "",
+  merchantName: "",
+  city: "",
 };
 
 export const useStore = create<StoreState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       products: {},
       cart: [],
+      sales: [],
+      settings: defaultSettings,
       theme: "light",
 
       upsertProduct: (product) =>
@@ -75,24 +125,70 @@ export const useStore = create<StoreState>()(
       removeFromCart: (barcode) =>
         set((s) => ({ cart: s.cart.filter((i) => i.barcode !== barcode) })),
 
-      checkout: () =>
-        set((s) => {
-          const products = { ...s.products };
-          for (const item of s.cart) {
-            const p = products[item.barcode];
-            if (p) {
-              products[item.barcode] = {
-                ...p,
-                stock: Math.max(0, p.stock - item.qty),
-              };
-            }
+      checkout: ({ method, paidAmount, change }) => {
+        const state = get();
+        if (state.cart.length === 0) return null;
+
+        const items: SaleItem[] = state.cart.flatMap((item) => {
+          const p = state.products[item.barcode];
+          if (!p) return [];
+          return [
+            {
+              barcode: p.barcode,
+              name: p.name,
+              price: p.price,
+              qty: item.qty,
+            },
+          ];
+        });
+        const total = items.reduce((sum, i) => sum + i.price * i.qty, 0);
+
+        const sale: Sale = {
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          timestamp: Date.now(),
+          items,
+          total,
+          method,
+          ...(method === "dinheiro" && paidAmount != null
+            ? { paidAmount, change: change ?? 0 }
+            : {}),
+        };
+
+        const products = { ...state.products };
+        for (const item of state.cart) {
+          const p = products[item.barcode];
+          if (p) {
+            products[item.barcode] = {
+              ...p,
+              stock: Math.max(0, p.stock - item.qty),
+            };
           }
-          return { products, cart: [] };
-        }),
+        }
+
+        set({ products, cart: [], sales: [sale, ...state.sales] });
+        return sale;
+      },
+
+      deleteSale: (id) =>
+        set((s) => ({ sales: s.sales.filter((sale) => sale.id !== id) })),
+
+      setSettings: (settings) =>
+        set((s) => ({ settings: { ...s.settings, ...settings } })),
 
       setTheme: (theme) => set({ theme }),
     }),
-    { name: "pdv-mercado" }
+    {
+      name: "pdv-mercado",
+      version: 2,
+      migrate: (persisted) => {
+        const state = (persisted ?? {}) as Partial<StoreState>;
+        return {
+          ...state,
+          sales: state.sales ?? [],
+          settings: { ...defaultSettings, ...(state.settings ?? {}) },
+        } as StoreState;
+      },
+    }
   )
 );
 
