@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Barcode, Minus, Plus, ScanBarcode, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { Barcode, Minus, Plus, ScanBarcode, Search, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { PaymentSheet } from "@/components/PaymentSheet";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { beep, unlockAudio, vibrate } from "@/lib/feedback";
 import {
   PAYMENT_LABELS,
@@ -39,8 +40,9 @@ function CaixaPage() {
     useStore();
   const [scannerOpen, setScannerOpen] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
+  const [query, setQuery] = useState("");
 
-  const handleScan = (code: string) => {
+  const addProduct = (code: string) => {
     const product = products[code];
     if (product) {
       addToCart(code);
@@ -55,6 +57,36 @@ function CaixaPage() {
       toast.error("Produto não cadastrado", {
         description: `Código: ${code}`,
       });
+    }
+  };
+
+  const handleScan = (code: string) => {
+    addProduct(code);
+  };
+
+  const suggestions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    return Object.entries(products)
+      .filter(
+        ([code, p]) =>
+          code.toLowerCase().includes(q) || p.name.toLowerCase().includes(q),
+      )
+      .slice(0, 6);
+  }, [query, products]);
+
+  const submitQuery = () => {
+    const q = query.trim();
+    if (!q) return;
+    if (products[q]) {
+      addProduct(q);
+      setQuery("");
+    } else {
+      const first = suggestions.at(0);
+      if (first) {
+        addProduct(first[0]);
+        setQuery("");
+      }
     }
   };
 
@@ -102,6 +134,59 @@ function CaixaPage() {
           </Button>
         )}
 
+        <form
+          className="relative"
+          onSubmit={(e) => {
+            e.preventDefault();
+            submitQuery();
+          }}
+        >
+          <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Digitar código ou nome do produto"
+            className="h-13 rounded-2xl pl-12 text-base"
+            inputMode="search"
+            aria-label="Digitar código ou nome do produto"
+          />
+        </form>
+
+        {query.trim() !== "" && (
+          <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+            {suggestions.length === 0 ? (
+              <p className="px-4 py-3 text-sm text-muted-foreground">
+                Nenhum produto encontrado.
+              </p>
+            ) : (
+              <ul className="divide-y">
+                {suggestions.map(([code, p]) => (
+                  <li key={code}>
+                    <button
+                      type="button"
+                      className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left active:bg-muted"
+                      onClick={() => {
+                        addProduct(code);
+                        setQuery("");
+                      }}
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{p.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Cód. {code}
+                        </p>
+                      </div>
+                      <span className="shrink-0 text-sm font-semibold text-primary">
+                        {formatBRL(p.price)}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
         {cart.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-16 text-center">
             <Barcode className="size-12 text-muted-foreground" />
@@ -109,7 +194,7 @@ function CaixaPage() {
               Carrinho vazio
             </p>
             <p className="max-w-56 text-sm text-muted-foreground">
-              Abra o leitor e escaneie um produto para começar a venda.
+              Escaneie um produto ou digite o código/nome no campo acima.
             </p>
           </div>
         ) : (
