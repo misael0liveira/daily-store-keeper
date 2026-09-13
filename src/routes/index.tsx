@@ -3,9 +3,15 @@ import { Barcode, Minus, Plus, ScanBarcode, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
+import { PaymentSheet } from "@/components/PaymentSheet";
 import { Button } from "@/components/ui/button";
 import { beep, vibrate } from "@/lib/feedback";
-import { formatBRL, useStore } from "@/store/useStore";
+import {
+  PAYMENT_LABELS,
+  formatBRL,
+  useStore,
+  type PaymentMethod,
+} from "@/store/useStore";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -167,47 +173,21 @@ function CaixaPage() {
             {formatBRL(total)}
           </span>
         </div>
-        <div className="mb-2 flex items-center gap-3">
-          <label
-            htmlFor="paid"
-            className="shrink-0 text-sm font-medium text-muted-foreground"
-          >
-            Valor pago
-          </label>
-          <input
-            id="paid"
-            type="text"
-            inputMode="decimal"
-            placeholder="R$ 0,00"
-            value={paidRaw}
-            onChange={(e) => setPaidRaw(e.target.value.replace(/[^\d.,]/g, ""))}
-            className="h-12 w-full rounded-xl border bg-background px-4 text-right text-lg font-semibold outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-        {paid !== null && (
-          <div className="mb-2 flex items-baseline justify-between">
-            <span className="text-sm font-medium text-muted-foreground">
-              Troco
-            </span>
-            <span
-              className={`font-display text-2xl tracking-wide ${
-                insufficient ? "text-destructive" : "text-primary"
-              }`}
-            >
-              {insufficient
-                ? `Faltam ${formatBRL(-change!)}`
-                : formatBRL(change!)}
-            </span>
-          </div>
-        )}
         <Button
           className="h-14 w-full text-lg"
-          disabled={cart.length === 0 || insufficient}
-          onClick={finish}
+          disabled={cart.length === 0}
+          onClick={() => setPayOpen(true)}
         >
           Finalizar Compra
         </Button>
       </div>
+
+      <PaymentSheet
+        open={payOpen}
+        onOpenChange={setPayOpen}
+        total={total}
+        onConfirm={confirmPayment}
+      />
     </div>
   );
 }

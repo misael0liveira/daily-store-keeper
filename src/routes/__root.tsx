@@ -7,7 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { Moon, Package, ShoppingCart, Store, Sun } from "lucide-react";
+import { Moon, Package, Receipt, ShoppingCart, Store, Sun } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
@@ -198,6 +198,15 @@ function BottomNav() {
       >
         <Package className="size-6" />
         Estoque
+      </Link>
+      <Link
+        to="/vendas"
+        className={linkClass}
+        activeProps={{ className: `${linkClass} text-primary` }}
+        inactiveProps={{ className: `${linkClass} text-muted-foreground` }}
+      >
+        <Receipt className="size-6" />
+        Vendas
       </Link>
     </nav>
   );
