@@ -264,6 +264,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeApplier />
       <Header />
+      <ConnectionStatus />
       <main className="mx-auto max-w-lg">
         <Outlet />
       </main>
