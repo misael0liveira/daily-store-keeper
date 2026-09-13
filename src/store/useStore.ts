@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { getDeviceId } from "@/lib/sync";
 
 export type Product = {
   barcode: string;
@@ -29,6 +30,12 @@ export type SaleItem = {
   qty: number;
 };
 
+/**
+ * "pending" = saved on this device only (there is no server yet).
+ * "synced" = already confirmed by a server, once one exists.
+ */
+export type SyncState = "pending" | "synced";
+
 export type Sale = {
   id: string;
   timestamp: number;
@@ -37,6 +44,11 @@ export type Sale = {
   method: PaymentMethod;
   paidAmount?: number;
   change?: number;
+  syncState?: SyncState;
+  /** Device that registered the sale — helps future multi-device sync. */
+  deviceId?: string;
+  /** Whether the sale was completed with no internet connection. */
+  offline?: boolean;
 };
 
 export type Settings = {
@@ -66,6 +78,7 @@ type StoreState = {
     change?: number;
   }) => Sale | null;
   deleteSale: (id: string) => void;
+  markSalesSynced: (ids: string[]) => void;
   setSettings: (settings: Partial<Settings>) => void;
   setTheme: (theme: Theme) => void;
   toggleCash: () => void;
@@ -146,12 +159,33 @@ export const useStore = create<StoreState>()(
         });
         const total = items.reduce((sum, i) => sum + i.price * i.qty, 0);
 
+        // Guard against double registration (double tap, retry, reconnect):
+        // an identical sale registered seconds ago is treated as the same one.
+        const fingerprint = `${method}|${total}|${items
+          .map((i) => `${i.barcode}x${i.qty}`)
+          .join(",")}`;
+        const last = state.sales.at(0);
+        if (
+          last &&
+          Date.now() - last.timestamp < 5000 &&
+          `${last.method}|${last.total}|${last.items
+            .map((i) => `${i.barcode}x${i.qty}`)
+            .join(",")}` === fingerprint
+        ) {
+          set({ cart: [] });
+          return last;
+        }
+
         const sale: Sale = {
-          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
           timestamp: Date.now(),
           items,
           total,
           method,
+          syncState: "pending",
+          deviceId: getDeviceId(),
+          offline:
+            typeof navigator !== "undefined" && navigator.onLine === false,
           ...(method === "dinheiro" && paidAmount != null
             ? { paidAmount, change: change ?? 0 }
             : {}),
@@ -175,6 +209,14 @@ export const useStore = create<StoreState>()(
       deleteSale: (id) =>
         set((s) => ({ sales: s.sales.filter((sale) => sale.id !== id) })),
 
+      markSalesSynced: (ids) =>
+        set((s) => ({
+          sales: s.sales.map((sale) =>
+            ids.includes(sale.id) ? { ...sale, syncState: "synced" } : sale
+          ),
+        })),
+
+
       setSettings: (settings) =>
         set((s) => ({ settings: { ...s.settings, ...settings } })),
 
@@ -183,12 +225,18 @@ export const useStore = create<StoreState>()(
     }),
     {
       name: "pdv-mercado",
-      version: 3,
+      version: 4,
+      // Non-destructive: only fills in missing fields, never drops data.
       migrate: (persisted) => {
         const state = (persisted ?? {}) as Partial<StoreState>;
         return {
           ...state,
-          sales: state.sales ?? [],
+          products: state.products ?? {},
+          cart: state.cart ?? [],
+          sales: (state.sales ?? []).map((sale) => ({
+            ...sale,
+            syncState: sale.syncState ?? "pending",
+          })),
           settings: { ...defaultSettings, ...(state.settings ?? {}) },
           cashOpen: state.cashOpen ?? true,
         } as StoreState;

@@ -53,6 +53,39 @@ async function unregisterAppWorkers() {
   }
 }
 
+/**
+ * Screens that must open with no internet. The generated service worker keeps
+ * navigations network-first, so we pre-fill its "pages" cache while online.
+ * Nothing is ever deleted here — only refreshed with the newest HTML.
+ */
+const OFFLINE_PAGES = [
+  "/",
+  "/vender",
+  "/estoque",
+  "/mais",
+  "/vendas",
+  "/vendas/configuracoes",
+];
+
+async function warmPagesCache() {
+  if (!("caches" in window)) return;
+  if (navigator.onLine === false) return;
+  try {
+    const cache = await caches.open("pages");
+    await Promise.allSettled(
+      OFFLINE_PAGES.map(async (path) => {
+        const response = await fetch(path, {
+          cache: "reload",
+          credentials: "same-origin",
+        });
+        if (response.ok) await cache.put(path, response.clone());
+      })
+    );
+  } catch {
+    // offline or storage full — the app still works with what is cached
+  }
+}
+
 export function registerPWA() {
   if (typeof window === "undefined") return;
   if (!("serviceWorker" in navigator)) return;
@@ -63,9 +96,17 @@ export function registerPWA() {
   }
 
   const doRegister = () => {
-    void navigator.serviceWorker.register(SW_URL, { scope: "/" }).catch(() => {
-      // registration failed — app still works online
-    });
+    void navigator.serviceWorker
+      .register(SW_URL, { scope: "/" })
+      .then((registration) => {
+        // Never leave the app stuck on an old version.
+        void registration.update();
+        void warmPagesCache();
+        window.addEventListener("online", () => void warmPagesCache());
+      })
+      .catch(() => {
+        // registration failed — app still works online
+      });
   };
   // If hydration finishes after the load event, the listener would never fire.
   if (document.readyState === "complete") {

@@ -116,11 +116,21 @@ export default defineConfig({
           ],
         },
         workbox: {
-          // The SSR build outDir nests the client build under client/, so a
-          // broad glob produces wrong precache URLs and the SW install fails.
-          // Precache only the small static files; the app shell is cached at
-          // runtime by the NetworkFirst/CacheFirst handlers below.
-          globPatterns: ["manifest.webmanifest", "favicon.png", "icons/*.png"],
+          // The SSR build outDir nests the client build under client/, so the
+          // precache manifest must be globbed from the client folder to get
+          // correct URLs. This precaches the whole app shell (HTML, JS, CSS,
+          // icons) so the app opens offline after the first visit.
+          globDirectory: "dist/client",
+          globPatterns: [
+            "**/*.{html,js,css,png,svg,ico,webmanifest,woff,woff2}",
+          ],
+          globIgnores: ["**/_server/**", "**/screenshots/**"],
+          maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
+          // No navigateFallback: the prerendered HTML is written after this
+          // service worker is generated, so it cannot be precached. The pages
+          // are warmed into the "pages" cache from the client instead
+          // (src/lib/pwa-register.ts), keeping navigations network-first.
+          navigateFallback: null,
           cleanupOutdatedCaches: true,
           clientsClaim: true,
           skipWaiting: true,
@@ -130,7 +140,7 @@ export default defineConfig({
               handler: "NetworkFirst",
               options: {
                 cacheName: "pages",
-                networkTimeoutSeconds: 5,
+                networkTimeoutSeconds: 4,
                 expiration: { maxEntries: 50 },
               },
             },
