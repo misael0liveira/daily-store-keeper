@@ -194,7 +194,7 @@ function CaixaPage() {
               Carrinho vazio
             </p>
             <p className="max-w-56 text-sm text-muted-foreground">
-              Abra o leitor e escaneie um produto para começar a venda.
+              Escaneie um produto ou digite o código/nome no campo acima.
             </p>
           </div>
         ) : (
