@@ -126,10 +126,10 @@ export default defineConfig({
           ],
           globIgnores: ["**/_server/**", "**/screenshots/**"],
           maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
-          // Offline navigations fall back to the precached shell; the client
-          // router then renders the requested screen from local data.
-          navigateFallback: "/index.html",
-          navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
+          // No navigateFallback: the prerendered HTML is written after this
+          // service worker is generated, so it cannot be precached. The pages
+          // are warmed into the "pages" cache from the client instead
+          // (src/lib/pwa-register.ts), keeping navigations network-first.
           cleanupOutdatedCaches: true,
           clientsClaim: true,
           skipWaiting: true,
