@@ -1,0 +1,85 @@
+name: Deploy PWA to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build static PWA
+        run: bun run build -- --base=/daily-store-keeper/
+
+      - name: Prepare GitHub Pages SPA/PWA files
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync, existsSync, copyFileSync } from 'node:fs';
+          import { join } from 'node:path';
+
+          const root = 'dist/client';
+          const manifestPath = join(root, 'manifest.webmanifest');
+          if (existsSync(manifestPath)) {
+            const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+            manifest.id = '/daily-store-keeper/';
+            manifest.start_url = '/daily-store-keeper/';
+            manifest.scope = '/daily-store-keeper/';
+            if (Array.isArray(manifest.icons)) {
+              manifest.icons = manifest.icons.map((icon) => ({
+                ...icon,
+                src: icon.src.startsWith('/') ? `/daily-store-keeper${icon.src}` : icon.src,
+              }));
+            }
+            if (Array.isArray(manifest.screenshots)) {
+              manifest.screenshots = manifest.screenshots.map((shot) => ({
+                ...shot,
+                src: shot.src.startsWith('/') ? `/daily-store-keeper${shot.src}` : shot.src,
+              }));
+            }
+            writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+          }
+
+          const index = join(root, 'index.html');
+          const fallback = join(root, '404.html');
+          if (existsSync(index)) copyFileSync(index, fallback);
+          NODE
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/client
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
