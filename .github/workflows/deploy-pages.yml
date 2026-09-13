@@ -32,13 +32,34 @@ jobs:
       - name: Build static PWA
         run: bun run build -- --base=/daily-store-keeper/
 
-      - name: Prepare GitHub Pages SPA/PWA files
+      - name: Prepare GitHub Pages static output
         run: |
           set -e
-          ROOT="dist"
-          if [ -d "dist/client" ]; then
+          echo "=== Build output ==="
+          for dir in .output/public dist/client dist; do
+            if [ -d "$dir" ]; then
+              echo "--- $dir ---"
+              find "$dir" -maxdepth 2 -type f | sort | head -80
+            fi
+          done
+
+          ROOT=""
+          if [ -f ".output/public/index.html" ]; then
+            ROOT=".output/public"
+          elif [ -f "dist/client/index.html" ]; then
             ROOT="dist/client"
+          elif [ -f "dist/index.html" ]; then
+            ROOT="dist"
           fi
+
+          if [ -z "$ROOT" ]; then
+            echo "ERROR: no static index.html was generated."
+            echo "=== Full output directories ==="
+            find . -maxdepth 4 -type f \( -name 'index.html' -o -name '*.html' \) -print | sort
+            exit 1
+          fi
+
+          echo "Publishing static root: $ROOT"
           rm -rf dist-pages
           mkdir -p dist-pages
           cp -R "$ROOT"/. dist-pages/
