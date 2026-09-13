@@ -54,6 +54,7 @@ export default defineConfig({
         filename: "sw.js",
         manifestFilename: "manifest.webmanifest",
         manifest: {
+          id: "/",
           name: "Mini Mercado PDV",
           short_name: "Mercado PDV",
           description:
@@ -65,6 +66,23 @@ export default defineConfig({
           theme_color: "#3b82f6",
           background_color: "#fafbfc",
           lang: "pt-BR",
+          prefer_related_applications: false,
+          screenshots: [
+            {
+              src: "/screenshots/caixa.png",
+              sizes: "780x1688",
+              type: "image/png",
+              form_factor: "narrow",
+              label: "Caixa: leia códigos e finalize a venda",
+            },
+            {
+              src: "/screenshots/estoque.png",
+              sizes: "780x1688",
+              type: "image/png",
+              form_factor: "narrow",
+              label: "Estoque: cadastre e busque produtos",
+            },
+          ],
           icons: [
             {
               src: "/icons/icon-192.png",
@@ -87,9 +105,11 @@ export default defineConfig({
           ],
         },
         workbox: {
-          globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest,woff2}"],
-          navigateFallback: "/",
-          navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
+          // The SSR build outDir nests the client build under client/, so a
+          // broad glob produces wrong precache URLs and the SW install fails.
+          // Precache only the small static files; the app shell is cached at
+          // runtime by the NetworkFirst/CacheFirst handlers below.
+          globPatterns: ["manifest.webmanifest", "favicon.png", "icons/*.png"],
           cleanupOutdatedCaches: true,
           clientsClaim: true,
           skipWaiting: true,
