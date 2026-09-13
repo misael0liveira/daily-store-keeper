@@ -81,9 +81,12 @@ function CaixaPage() {
     if (products[q]) {
       addProduct(q);
       setQuery("");
-    } else if (suggestions.length > 0) {
-      addProduct(suggestions[0][0]);
-      setQuery("");
+    } else {
+      const first = suggestions.at(0);
+      if (first) {
+        addProduct(first[0]);
+        setQuery("");
+      }
     }
   };
 
