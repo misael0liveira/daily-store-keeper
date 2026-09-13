@@ -43,6 +43,15 @@ export default defineConfig({
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
     server: { entry: "server" },
+    // Prerender every screen to static HTML so the Capacitor Android build can
+    // open them straight from the device, with no server involved.
+    prerender: { enabled: true, crawlLinks: false },
+    pages: [
+      { path: "/", prerender: { enabled: true } },
+      { path: "/estoque", prerender: { enabled: true } },
+      { path: "/vendas", prerender: { enabled: true } },
+      { path: "/vendas/configuracoes", prerender: { enabled: true } },
+    ],
   },
   vite: {
     plugins: [

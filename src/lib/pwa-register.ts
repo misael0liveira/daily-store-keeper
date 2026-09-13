@@ -1,8 +1,12 @@
+import { isNativeApp } from "@/lib/platform";
+
 const SW_URL = "/sw.js";
 
 function isBlockedContext(): boolean {
   if (typeof window === "undefined") return true;
   if (!import.meta.env.PROD) return true;
+  // Inside the Android app the files are already local; no service worker.
+  if (isNativeApp()) return true;
 
   try {
     if (window.self !== window.top) return true;
