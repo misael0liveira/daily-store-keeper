@@ -54,6 +54,7 @@ type StoreState = {
   sales: Sale[];
   settings: Settings;
   theme: Theme;
+  cashOpen: boolean;
   upsertProduct: (product: Product) => void;
   deleteProduct: (barcode: string) => void;
   addToCart: (barcode: string) => void;
@@ -67,6 +68,7 @@ type StoreState = {
   deleteSale: (id: string) => void;
   setSettings: (settings: Partial<Settings>) => void;
   setTheme: (theme: Theme) => void;
+  toggleCash: () => void;
 };
 
 const defaultSettings: Settings = {
@@ -84,6 +86,7 @@ export const useStore = create<StoreState>()(
       sales: [],
       settings: defaultSettings,
       theme: "light",
+      cashOpen: true,
 
       upsertProduct: (product) =>
         set((s) => ({
@@ -176,16 +179,18 @@ export const useStore = create<StoreState>()(
         set((s) => ({ settings: { ...s.settings, ...settings } })),
 
       setTheme: (theme) => set({ theme }),
+      toggleCash: () => set((s) => ({ cashOpen: !s.cashOpen })),
     }),
     {
       name: "pdv-mercado",
-      version: 2,
+      version: 3,
       migrate: (persisted) => {
         const state = (persisted ?? {}) as Partial<StoreState>;
         return {
           ...state,
           sales: state.sales ?? [],
           settings: { ...defaultSettings, ...(state.settings ?? {}) },
+          cashOpen: state.cashOpen ?? true,
         } as StoreState;
       },
     }

@@ -17,13 +17,13 @@ import {
 export const Route = createFileRoute("/vender")({
   head: () => ({
     meta: [
-      { title: "Caixa — Mini Mercado PDV" },
+      { title: "Vender — Mini Market POS" },
       {
         name: "description",
         content:
           "Frente de caixa do mini mercado: leia códigos de barras e finalize vendas rápido.",
       },
-      { property: "og:title", content: "Caixa — Mini Mercado PDV" },
+      { property: "og:title", content: "Vender — Mini Market POS" },
       {
         property: "og:description",
         content: "Frente de caixa mobile com leitura de código de barras.",
