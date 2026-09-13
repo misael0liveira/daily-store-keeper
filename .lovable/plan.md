@@ -39,7 +39,9 @@ Barra fixa embaixo com duas abas: **Caixa** (carrinho) e **Estoque** (caixa/list
 
 ## Visual
 
-- Estilo limpo e moderno, tema próprio (verde/mercado) com claro e escuro, ícones Lucide, botões com área de toque grande, valores sempre em R$.
+- Paleta escolhida: **Cloud White** — fundo branco claro (#fafbfc), cinzas suaves (#e8ecf1, #94a3b8) e azul de destaque (#3b82f6) para total, botões principais e foco.
+- Tipografia escolhida: **Bebas Neue** para títulos e totais (títulos grandes e impactantes) e **Barlow** para textos e botões; fontes carregadas via `<link>` no head do root.
+- Claro e escuro com toggle, ícones Lucide, botões com área de toque grande, cantos generosos, valores sempre em R$.
 
 ## Instalação na tela inicial
 
