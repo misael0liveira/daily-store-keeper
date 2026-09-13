@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Barcode, Minus, Plus, ScanBarcode, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { Barcode, Minus, Plus, ScanBarcode, Search, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { PaymentSheet } from "@/components/PaymentSheet";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { beep, unlockAudio, vibrate } from "@/lib/feedback";
 import {
   PAYMENT_LABELS,
