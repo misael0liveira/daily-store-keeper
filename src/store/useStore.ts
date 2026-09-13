@@ -158,12 +158,33 @@ export const useStore = create<StoreState>()(
         });
         const total = items.reduce((sum, i) => sum + i.price * i.qty, 0);
 
+        // Guard against double registration (double tap, retry, reconnect):
+        // an identical sale registered seconds ago is treated as the same one.
+        const fingerprint = `${method}|${total}|${items
+          .map((i) => `${i.barcode}x${i.qty}`)
+          .join(",")}`;
+        const last = state.sales.at(0);
+        if (
+          last &&
+          Date.now() - last.timestamp < 5000 &&
+          `${last.method}|${last.total}|${last.items
+            .map((i) => `${i.barcode}x${i.qty}`)
+            .join(",")}` === fingerprint
+        ) {
+          set({ cart: [] });
+          return last;
+        }
+
         const sale: Sale = {
-          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
           timestamp: Date.now(),
           items,
           total,
           method,
+          syncState: "pending",
+          deviceId: getDeviceId(),
+          offline:
+            typeof navigator !== "undefined" && navigator.onLine === false,
           ...(method === "dinheiro" && paidAmount != null
             ? { paidAmount, change: change ?? 0 }
             : {}),
