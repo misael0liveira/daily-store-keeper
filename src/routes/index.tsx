@@ -32,6 +32,10 @@ function CaixaPage() {
   const { products, cart, addToCart, changeQty, removeFromCart, checkout } =
     useStore();
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [paidRaw, setPaidRaw] = useState("");
+
+  const paidValue = Number(paidRaw.replace(",", "."));
+  const paid = paidRaw.trim() === "" || Number.isNaN(paidValue) ? null : paidValue;
 
   const handleScan = (code: string) => {
     const product = products[code];
@@ -56,19 +60,32 @@ function CaixaPage() {
     return sum + (p ? p.price * item.qty : 0);
   }, 0);
 
+  const change = paid !== null ? paid - total : null;
+  const insufficient = change !== null && change < 0;
+
   const finish = () => {
     if (cart.length === 0) return;
+    if (insufficient) {
+      toast.error("Valor pago insuficiente", {
+        description: `Faltam ${formatBRL(-change!)}`,
+      });
+      return;
+    }
     checkout();
     beep(true);
     vibrate(120);
     toast.success("Compra finalizada!", {
-      description: `Total: ${formatBRL(total)}`,
+      description:
+        change !== null && change > 0
+          ? `Troco: ${formatBRL(change)}`
+          : `Total: ${formatBRL(total)}`,
     });
+    setPaidRaw("");
   };
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <div className="flex-1 space-y-4 px-4 pb-48 pt-4">
+      <div className="flex-1 space-y-4 px-4 pb-72 pt-4">
         {scannerOpen ? (
           <BarcodeScanner
             onScan={handleScan}
@@ -158,9 +175,42 @@ function CaixaPage() {
             {formatBRL(total)}
           </span>
         </div>
+        <div className="mb-2 flex items-center gap-3">
+          <label
+            htmlFor="paid"
+            className="shrink-0 text-sm font-medium text-muted-foreground"
+          >
+            Valor pago
+          </label>
+          <input
+            id="paid"
+            type="text"
+            inputMode="decimal"
+            placeholder="R$ 0,00"
+            value={paidRaw}
+            onChange={(e) => setPaidRaw(e.target.value.replace(/[^\d.,]/g, ""))}
+            className="h-12 w-full rounded-xl border bg-background px-4 text-right text-lg font-semibold outline-none focus:ring-2 focus:ring-ring"
+          />
+        </div>
+        {paid !== null && (
+          <div className="mb-2 flex items-baseline justify-between">
+            <span className="text-sm font-medium text-muted-foreground">
+              Troco
+            </span>
+            <span
+              className={`font-display text-2xl tracking-wide ${
+                insufficient ? "text-destructive" : "text-primary"
+              }`}
+            >
+              {insufficient
+                ? `Faltam ${formatBRL(-change!)}`
+                : formatBRL(change!)}
+            </span>
+          </div>
+        )}
         <Button
           className="h-14 w-full text-lg"
-          disabled={cart.length === 0}
+          disabled={cart.length === 0 || insufficient}
           onClick={finish}
         >
           Finalizar Compra
