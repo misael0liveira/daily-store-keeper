@@ -29,6 +29,12 @@ export type SaleItem = {
   qty: number;
 };
 
+/**
+ * "pending" = saved on this device only (there is no server yet).
+ * "synced" = already confirmed by a server, once one exists.
+ */
+export type SyncState = "pending" | "synced";
+
 export type Sale = {
   id: string;
   timestamp: number;
@@ -37,6 +43,11 @@ export type Sale = {
   method: PaymentMethod;
   paidAmount?: number;
   change?: number;
+  syncState?: SyncState;
+  /** Device that registered the sale — helps future multi-device sync. */
+  deviceId?: string;
+  /** Whether the sale was completed with no internet connection. */
+  offline?: boolean;
 };
 
 export type Settings = {
