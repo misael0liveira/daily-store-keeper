@@ -57,27 +57,22 @@ function CaixaPage() {
     return sum + (p ? p.price * item.qty : 0);
   }, 0);
 
-  const change = paid !== null ? paid - total : null;
-  const insufficient = change !== null && change < 0;
-
-  const finish = () => {
-    if (cart.length === 0) return;
-    if (insufficient) {
-      toast.error("Valor pago insuficiente", {
-        description: `Faltam ${formatBRL(-change!)}`,
-      });
-      return;
-    }
-    checkout();
+  const confirmPayment = (payload: {
+    method: PaymentMethod;
+    paidAmount?: number;
+    change?: number;
+  }) => {
+    const sale = checkout(payload);
+    if (!sale) return;
+    setPayOpen(false);
     beep(true);
     vibrate(120);
-    toast.success("Compra finalizada!", {
+    toast.success("Venda registrada!", {
       description:
-        change !== null && change > 0
-          ? `Troco: ${formatBRL(change)}`
-          : `Total: ${formatBRL(total)}`,
+        sale.change && sale.change > 0
+          ? `${PAYMENT_LABELS[sale.method]} · Troco ${formatBRL(sale.change)}`
+          : `${PAYMENT_LABELS[sale.method]} · ${formatBRL(sale.total)}`,
     });
-    setPaidRaw("");
   };
 
   return (
