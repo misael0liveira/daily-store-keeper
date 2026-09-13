@@ -16,3 +16,13 @@ Pendente do seu lado: gerar o APK/AAB no Android Studio (não é possível compi
 - [x] PDV preservado em Vender e navegação com quatro destinos
 - [x] Visual verde operacional, Inter e dark mode
 - [x] Verificação mobile/desktop e fluxo de venda
+
+## Modo offline-first — concluído
+- [x] Cache do app (telas, scripts, estilos, ícones) para abrir sem internet
+- [x] Atualização automática e segura, sem travar em versão antiga
+- [x] Aviso discreto de Offline/Online com contagem de vendas locais
+- [x] Vendas offline com identificador único, data/hora, itens, total e forma de pagamento
+- [x] Estoque e dashboard funcionando com os dados do aparelho
+- [x] Camada de sincronização isolada (sem servidor: nada é enviado, nada é apagado)
+- [x] Cartão "Dados neste aparelho" em Mais
+- [x] Teste offline: recarregar, navegar, vender e voltar online sem perder dados
