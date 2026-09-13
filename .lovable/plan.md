@@ -1,33 +1,36 @@
-# Mini Market POS como app Android (Capacitor)
+# Dashboard operacional do Mini Market POS
 
-Preparar o projeto para gerar um app Android instalável (APK/AAB), sem mexer em nada do que já funciona no site/PWA.
+Redesenhar o início como uma visão operacional mobile-first, mantendo o PDV, scanner, estoque, vendas, Pix, PDF e dados já salvos.
 
-## O que muda para você
+## Estrutura
 
-- O app continua igual na web: Caixa, Estoque, Vendas, Pix, PDF, tema claro/escuro e instalação pelo navegador seguem intactos.
-- Passa a existir uma pasta do projeto Android que você abre no Android Studio para gerar o APK (teste) ou o AAB (Play Store).
-- Nome do app: **Mini Market POS**. Identificador: **app.minimarket.pos**. Ícone e cor de tema iguais aos do app atual (loja azul, fundo claro).
-- No Android, o leitor de código de barras passa a usar a câmera nativa do celular: leitura mais rápida e confiável que dentro do navegador, com pedido de permissão de câmera do próprio Android. Se a pessoa negar, continua funcionando a digitação do código ou nome, como hoje.
-- Os dados continuam salvos no próprio aparelho.
+- A rota inicial vira **Início**, com cabeçalho compacto, situação do caixa, configurações e os principais números de hoje.
+- O caixa atual passa integralmente para **Vender**, sem mudanças na lógica de leitura, carrinho ou pagamento.
+- A barra inferior terá **Início, Vender, Estoque e Mais**, com Vender visualmente dominante.
+- **Mais** reunirá os acessos já existentes a vendas, relatórios e configurações.
 
-## O que eu não consigo fazer aqui
+## Conteúdo do início
 
-Não é possível compilar o APK/AAB dentro do Lovable (isso exige Android Studio/SDK na sua máquina). Eu preparo tudo e escrevo o passo a passo; a geração do arquivo final você roda no Android Studio.
+- Faturamento, número de vendas e ticket médio de hoje, calculados das vendas já registradas.
+- Comparação percentual com ontem e gráfico compacto por hora, também derivados do histórico local existente.
+- Ações rápidas para vender, estoque e abrir/fechar caixa.
+- Alertas reais de estoque baixo e sem estoque.
+- Últimas vendas com horário, itens, pagamento e total.
+- Resumo de caixa usando as informações disponíveis: vendas de hoje como entradas e saldo atual; saídas permanecem zeradas e identificadas como não registradas.
+- Estados vazios claros quando ainda não houver produtos ou vendas.
 
-## Passo a passo da preparação
+## Visual
 
-1. **Gerar as páginas estáticas do app**: ativar a pré-geração das telas (`/`, `/estoque`, `/vendas`, `/vendas/configuracoes`) para que o app abra sem servidor, direto do aparelho. O build web atual continua o mesmo.
-2. **Adicionar o Capacitor** (`@capacitor/core`, `@capacitor/cli`, `@capacitor/android`) com `capacitor.config.ts` apontando para a pasta do build web, nome e identificador definidos.
-3. **Criar a pasta `android/`** com o projeto nativo, permissão de câmera no manifesto, ícones e cor de tema.
-4. **Scanner nativo no Android**: usar `@capacitor-mlkit/barcode-scanning` quando o app roda como app nativo, mantendo o leitor atual no navegador. Um único componente decide qual usar; permissão pedida na hora de abrir a câmera, com aviso claro se for negada.
-5. **Scripts de apoio** no `package.json`: preparar o build e sincronizar com o Android.
-6. **README-ANDROID.md**: instruções exatas de como abrir no Android Studio, gerar APK de teste, gerar AAB assinado para a Play Store, onde ficam as permissões e como atualizar o app depois de mudanças.
-7. **Verificação**: rodar o build web completo e conferir que as telas continuam funcionando na prévia.
+- Inter em toda a interface, números com hierarquia forte, fundo claro sofisticado e superfícies brancas.
+- Verde profundo para operação e venda, amarelo apenas para atenção e vermelho apenas para perigo.
+- Bordas discretas, raio de 12–16 px, sombras sutis, alvos de toque amplos e foco de teclado visível.
+- Dark mode equivalente, sem perder contraste ou significado das cores.
 
 ## Detalhes técnicos
 
-- `tanstackStart.pages` (ou `prerender`) no `vite.config.ts` para emitir HTML estático das rotas em `dist/client`; `capacitor.config.ts` com `webDir: "dist/client"`, `appId: "app.minimarket.pos"`, `appName: "Mini Market POS"`, `android.allowMixedContent` e `backgroundColor` do tema.
-- `src/lib/platform.ts` com `isNativeApp()` via `Capacitor.isNativePlatform()`; `BarcodeScanner.tsx` mantém o caminho `html5-qrcode` e ganha um caminho nativo (`BarcodeScanner.requestPermissions()` + `startScan`/`stopScan` do MLKit) atrás de import dinâmico, para não afetar o bundle web nem o SSR.
-- `registerPWA()` não roda em plataforma nativa (o Capacitor já serve local); nada mais muda em `__root.tsx`.
-- `android/app/src/main/AndroidManifest.xml`: `<uses-permission android:name="android.permission.CAMERA" />` e `<uses-feature android:name="android.hardware.camera" android:required="false" />`.
-- Scripts: `"android:sync": "vite build && cap sync android"`, `"android:open": "cap open android"`.
+- Criar uma tela de dashboard em `/` e mover o PDV existente para `/vender`, preservando seu código funcional.
+- Derivar métricas, comparativo, série horária, alertas e últimas vendas com seletores/memos sobre `sales` e `products` já persistidos.
+- Acrescentar somente o estado necessário de caixa aberto/fechado ao mesmo armazenamento local, com migração compatível para não perder dados existentes.
+- Criar `/mais` como menu de navegação para as telas já existentes.
+- Atualizar a navegação global, tokens visuais e páginas estáticas do Android/PWA.
+- Validar Início e Vender em celular e desktop, modo claro/escuro e ausência de regressões no fluxo de venda.
