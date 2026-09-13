@@ -6,6 +6,37 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { VitePWA } from "vite-plugin-pwa";
+import { copyFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
+import { join } from "node:path";
+
+// vite-plugin-pwa emits sw.js/workbox into the SSR build outDir (dist/).
+// The published static files live in dist/client/, so copy them over.
+function copyServiceWorkerToClient() {
+  return {
+    name: "copy-sw-to-client",
+    apply: "build" as const,
+    closeBundle() {
+      const dist = join(__dirname, "dist");
+      const client = join(dist, "client");
+      if (!existsSync(client)) return;
+      try {
+        const files = readdirSync(dist).filter(
+          (f) => f === "sw.js" || /^workbox-.*\.js$/.test(f)
+        );
+        for (const f of files) {
+          copyFileSync(join(dist, f), join(client, f));
+        }
+        if (files.length) {
+          console.log(
+            `[copy-sw-to-client] copied: ${files.join(", ")} -> dist/client`
+          );
+        }
+      } catch (err) {
+        console.warn("[copy-sw-to-client] failed:", err);
+      }
+    },
+  };
+}
 
 export default defineConfig({
   tanstackStart: {
@@ -15,6 +46,7 @@ export default defineConfig({
   },
   vite: {
     plugins: [
+      copyServiceWorkerToClient(),
       VitePWA({
         registerType: "autoUpdate",
         injectRegister: null,
