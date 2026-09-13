@@ -225,12 +225,18 @@ export const useStore = create<StoreState>()(
     }),
     {
       name: "pdv-mercado",
-      version: 3,
+      version: 4,
+      // Non-destructive: only fills in missing fields, never drops data.
       migrate: (persisted) => {
         const state = (persisted ?? {}) as Partial<StoreState>;
         return {
           ...state,
-          sales: state.sales ?? [],
+          products: state.products ?? {},
+          cart: state.cart ?? [],
+          sales: (state.sales ?? []).map((sale) => ({
+            ...sale,
+            syncState: sale.syncState ?? "pending",
+          })),
           settings: { ...defaultSettings, ...(state.settings ?? {}) },
           cashOpen: state.cashOpen ?? true,
         } as StoreState;
