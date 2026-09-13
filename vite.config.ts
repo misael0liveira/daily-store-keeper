@@ -105,9 +105,11 @@ export default defineConfig({
           ],
         },
         workbox: {
-          globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest,woff2}"],
-          navigateFallback: "/",
-          navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
+          // The SSR build outDir nests the client build under client/, so a
+          // broad glob produces wrong precache URLs and the SW install fails.
+          // Precache only the small static files; the app shell is cached at
+          // runtime by the NetworkFirst/CacheFirst handlers below.
+          globPatterns: ["manifest.webmanifest", "favicon.png", "icons/*.png"],
           cleanupOutdatedCaches: true,
           clientsClaim: true,
           skipWaiting: true,
