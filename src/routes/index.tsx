@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { PaymentSheet } from "@/components/PaymentSheet";
 import { Button } from "@/components/ui/button";
-import { beep, vibrate } from "@/lib/feedback";
+import { beep, unlockAudio, vibrate } from "@/lib/feedback";
 import {
   PAYMENT_LABELS,
   formatBRL,
@@ -92,7 +92,10 @@ function CaixaPage() {
         ) : (
           <Button
             className="h-14 w-full gap-3 text-lg"
-            onClick={() => setScannerOpen(true)}
+            onClick={() => {
+              unlockAudio();
+              setScannerOpen(true);
+            }}
           >
             <ScanBarcode className="size-6" />
             Abrir leitor de código

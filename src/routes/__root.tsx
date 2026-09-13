@@ -13,6 +13,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
+import { unlockAudio } from "@/lib/feedback";
 import { useStore } from "@/store/useStore";
 
 function NotFoundComponent() {
@@ -214,6 +215,16 @@ function BottomNav() {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    const unlock = () => unlockAudio();
+    document.addEventListener("pointerdown", unlock, { once: true });
+    document.addEventListener("touchstart", unlock, { once: true });
+    return () => {
+      document.removeEventListener("pointerdown", unlock);
+      document.removeEventListener("touchstart", unlock);
+    };
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

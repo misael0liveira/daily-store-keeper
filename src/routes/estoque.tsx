@@ -13,7 +13,7 @@ import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { beep, vibrate } from "@/lib/feedback";
+import { beep, unlockAudio, vibrate } from "@/lib/feedback";
 import { formatBRL, useStore } from "@/store/useStore";
 
 export const Route = createFileRoute("/estoque")({
@@ -141,7 +141,10 @@ function EstoquePage() {
         <Button
           variant="outline"
           className="h-14 w-full gap-3 text-lg"
-          onClick={() => setScannerOpen(true)}
+          onClick={() => {
+            unlockAudio();
+            setScannerOpen(true);
+          }}
         >
           <ScanBarcode className="size-6" />
           Ler produto com a câmera
