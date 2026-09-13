@@ -10,3 +10,9 @@
 - [x] Build web e prévia verificados (4 telas, sem erros de console)
 
 Pendente do seu lado: gerar o APK/AAB no Android Studio (não é possível compilar aqui).
+
+## Dashboard operacional — concluído
+- [x] Início com métricas, gráfico, alertas, últimas vendas e resumo de caixa
+- [x] PDV preservado em Vender e navegação com quatro destinos
+- [x] Visual verde operacional, Inter e dark mode
+- [x] Verificação mobile/desktop e fluxo de venda

@@ -1,281 +1,247 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Barcode, Minus, Plus, ScanBarcode, Search, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
-import { toast } from "sonner";
-import { BarcodeScanner } from "@/components/BarcodeScanner";
-import { PaymentSheet } from "@/components/PaymentSheet";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { beep, unlockAudio, vibrate } from "@/lib/feedback";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import {
-  PAYMENT_LABELS,
-  formatBRL,
-  useStore,
-  type PaymentMethod,
-} from "@/store/useStore";
+  AlertTriangle,
+  ArrowDownRight,
+  ArrowRight,
+  ArrowUpRight,
+  Boxes,
+  CircleDollarSign,
+  Clock3,
+  PackageX,
+  Power,
+  ReceiptText,
+  ScanLine,
+} from "lucide-react";
+import { useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import { PAYMENT_LABELS, formatBRL, useStore } from "@/store/useStore";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Caixa — Mini Mercado PDV" },
+      { title: "Início — Mini Market POS" },
       {
         name: "description",
-        content:
-          "Frente de caixa do mini mercado: leia códigos de barras e finalize vendas rápido.",
+        content: "Resumo de hoje, situação do caixa, estoque e últimas vendas do mini mercado.",
       },
-      { property: "og:title", content: "Caixa — Mini Mercado PDV" },
+      { property: "og:title", content: "Início — Mini Market POS" },
       {
         property: "og:description",
-        content: "Frente de caixa mobile com leitura de código de barras.",
+        content: "Painel operacional do mini mercado com vendas e estoque em tempo real.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: CaixaPage,
+  component: DashboardPage,
 });
 
-function CaixaPage() {
-  const { products, cart, addToCart, changeQty, removeFromCart, checkout } =
-    useStore();
-  const [scannerOpen, setScannerOpen] = useState(false);
-  const [payOpen, setPayOpen] = useState(false);
-  const [query, setQuery] = useState("");
+const HOUR_START = 6;
+const HOUR_END = 22;
 
-  const addProduct = (code: string) => {
-    const product = products[code];
-    if (product) {
-      addToCart(code);
-      beep(true);
-      vibrate(60);
-      toast.success(`${product.name} adicionado`, {
-        description: formatBRL(product.price),
-      });
-    } else {
-      beep(false);
-      vibrate([60, 40, 60]);
-      toast.error("Produto não cadastrado", {
-        description: `Código: ${code}`,
-      });
-    }
-  };
+function dayBounds(offset = 0) {
+  const date = new Date();
+  date.setDate(date.getDate() + offset);
+  date.setHours(0, 0, 0, 0);
+  const start = date.getTime();
+  return { start, end: start + 86_400_000 - 1 };
+}
 
-  const handleScan = (code: string) => {
-    addProduct(code);
-  };
+function DashboardPage() {
+  const sales = useStore((s) => s.sales);
+  const products = useStore((s) => s.products);
+  const cashOpen = useStore((s) => s.cashOpen);
+  const toggleCash = useStore((s) => s.toggleCash);
 
-  const suggestions = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return Object.entries(products)
-      .filter(
-        ([code, p]) =>
-          code.toLowerCase().includes(q) || p.name.toLowerCase().includes(q),
-      )
-      .slice(0, 6);
-  }, [query, products]);
-
-  const submitQuery = () => {
-    const q = query.trim();
-    if (!q) return;
-    if (products[q]) {
-      addProduct(q);
-      setQuery("");
-    } else {
-      const first = suggestions.at(0);
-      if (first) {
-        addProduct(first[0]);
-        setQuery("");
-      }
-    }
-  };
-
-  const total = cart.reduce((sum, item) => {
-    const p = products[item.barcode];
-    return sum + (p ? p.price * item.qty : 0);
-  }, 0);
-
-  const confirmPayment = (payload: {
-    method: PaymentMethod;
-    paidAmount?: number;
-    change?: number;
-  }) => {
-    const sale = checkout(payload);
-    if (!sale) return;
-    setPayOpen(false);
-    beep(true);
-    vibrate(120);
-    toast.success("Venda registrada!", {
-      description:
-        sale.change && sale.change > 0
-          ? `${PAYMENT_LABELS[sale.method]} · Troco ${formatBRL(sale.change)}`
-          : `${PAYMENT_LABELS[sale.method]} · ${formatBRL(sale.total)}`,
+  const data = useMemo(() => {
+    const todayBounds = dayBounds();
+    const yesterdayBounds = dayBounds(-1);
+    const today = sales
+      .filter((sale) => sale.timestamp >= todayBounds.start && sale.timestamp <= todayBounds.end)
+      .sort((a, b) => b.timestamp - a.timestamp);
+    const yesterday = sales.filter(
+      (sale) => sale.timestamp >= yesterdayBounds.start && sale.timestamp <= yesterdayBounds.end,
+    );
+    const revenue = today.reduce((sum, sale) => sum + sale.total, 0);
+    const yesterdayRevenue = yesterday.reduce((sum, sale) => sum + sale.total, 0);
+    const hourly = Array.from({ length: HOUR_END - HOUR_START + 1 }, (_, index) => {
+      const hour = HOUR_START + index;
+      return today
+        .filter((sale) => new Date(sale.timestamp).getHours() === hour)
+        .reduce((sum, sale) => sum + sale.total, 0);
     });
-  };
+    const allProducts = Object.values(products);
+    const outOfStock = allProducts.filter((product) => product.stock === 0);
+    const lowStock = allProducts.filter((product) => product.stock > 0 && product.stock <= 5);
+    return {
+      today,
+      revenue,
+      yesterdayRevenue,
+      average: today.length ? revenue / today.length : 0,
+      hourly,
+      outOfStock,
+      lowStock,
+    };
+  }, [products, sales]);
+
+  const change =
+    data.yesterdayRevenue > 0
+      ? ((data.revenue - data.yesterdayRevenue) / data.yesterdayRevenue) * 100
+      : null;
+  const maxHour = Math.max(...data.hourly, 1);
+  const saleWord = data.today.length === 1 ? "venda" : "vendas";
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      <div className="flex-1 space-y-4 px-4 pb-44 pt-4">
-        {scannerOpen ? (
-          <BarcodeScanner
-            onScan={handleScan}
-            onClose={() => setScannerOpen(false)}
-          />
-        ) : (
-          <Button
-            className="h-14 w-full gap-3 text-lg"
-            onClick={() => {
-              unlockAudio();
-              setScannerOpen(true);
-            }}
-          >
-            <ScanBarcode className="size-6" />
-            Abrir leitor de código
-          </Button>
-        )}
+    <div className="space-y-6 px-4 pb-28 pt-5">
+      <section aria-labelledby="today-title">
+        <div className="mb-3 flex items-end justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase text-muted-foreground">Visão operacional</p>
+            <h1 id="today-title" className="mt-1 text-xl font-extrabold">Hoje</h1>
+          </div>
+          <p className="text-xs font-medium text-muted-foreground">
+            {new Intl.DateTimeFormat("pt-BR", { weekday: "short", day: "2-digit", month: "short" }).format(new Date())}
+          </p>
+        </div>
 
-        <form
-          className="relative"
-          onSubmit={(e) => {
-            e.preventDefault();
-            submitQuery();
-          }}
-        >
-          <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Digitar código ou nome do produto"
-            className="h-13 rounded-2xl pl-12 text-base"
-            inputMode="search"
-            aria-label="Digitar código ou nome do produto"
-          />
-        </form>
-
-        {query.trim() !== "" && (
-          <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
-            {suggestions.length === 0 ? (
-              <p className="px-4 py-3 text-sm text-muted-foreground">
-                Nenhum produto encontrado.
-              </p>
+        <div className="rounded-2xl border bg-card p-5 shadow-soft">
+          <p className="text-sm font-medium text-muted-foreground">Faturamento</p>
+          <p className="mt-1 text-4xl font-extrabold text-foreground">{formatBRL(data.revenue)}</p>
+          <div className="mt-3 flex items-center gap-2 text-sm">
+            {change == null ? (
+              <span className="text-muted-foreground">Sem vendas ontem para comparar</span>
             ) : (
-              <ul className="divide-y">
-                {suggestions.map(([code, p]) => (
-                  <li key={code}>
-                    <button
-                      type="button"
-                      className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left active:bg-muted"
-                      onClick={() => {
-                        addProduct(code);
-                        setQuery("");
-                      }}
-                    >
-                      <div className="min-w-0">
-                        <p className="truncate font-medium">{p.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Cód. {code}
-                        </p>
-                      </div>
-                      <span className="shrink-0 text-sm font-semibold text-primary">
-                        {formatBRL(p.price)}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              <span className={`inline-flex items-center gap-1 font-semibold ${change >= 0 ? "text-success" : "text-destructive"}`}>
+                {change >= 0 ? <ArrowUpRight className="size-4" /> : <ArrowDownRight className="size-4" />}
+                {Math.abs(change).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% vs. ontem
+              </span>
+            )}
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 gap-3 border-t pt-4">
+            <div>
+              <p className="text-xs text-muted-foreground">Vendas</p>
+              <p className="mt-1 text-xl font-bold">{data.today.length}</p>
+            </div>
+            <div className="border-l pl-4">
+              <p className="text-xs text-muted-foreground">Ticket médio</p>
+              <p className="mt-1 text-xl font-bold">{formatBRL(data.average)}</p>
+            </div>
+          </div>
+
+          <div className="mt-5" aria-label="Vendas por hora de hoje">
+            <div className="flex h-20 items-end gap-1.5 border-b border-dashed">
+              {data.hourly.map((value, index) => (
+                <div
+                  key={HOUR_START + index}
+                  className="min-h-1 flex-1 rounded-t-sm bg-primary/80 transition-[height]"
+                  style={{ height: `${Math.max((value / maxHour) * 100, 4)}%` }}
+                  title={`${HOUR_START + index}h: ${formatBRL(value)}`}
+                />
+              ))}
+            </div>
+            <div className="mt-2 flex justify-between text-[10px] font-medium text-muted-foreground">
+              <span>06h</span><span>10h</span><span>14h</span><span>18h</span><span>22h</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="actions-title">
+        <h2 id="actions-title" className="mb-3 text-base font-bold">Ações rápidas</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <Button asChild className="col-span-2 h-16 justify-between rounded-2xl px-5 text-base shadow-action">
+            <Link to="/vender">
+              <span className="flex items-center gap-3"><ScanLine className="size-6" /> Nova venda</span>
+              <ArrowRight className="size-5" />
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="h-14 rounded-2xl bg-card">
+            <Link to="/estoque"><Boxes className="size-5" /> Estoque</Link>
+          </Button>
+          <Button
+            variant={cashOpen ? "outline" : "default"}
+            className={cashOpen ? "h-14 rounded-2xl bg-card" : "h-14 rounded-2xl"}
+            onClick={toggleCash}
+          >
+            <Power className="size-5" /> {cashOpen ? "Fechar caixa" : "Abrir caixa"}
+          </Button>
+        </div>
+      </section>
+
+      <section aria-labelledby="alerts-title">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 id="alerts-title" className="text-base font-bold">Alertas operacionais</h2>
+          <Button asChild variant="link" className="h-auto p-0 text-xs"><Link to="/estoque">Ver estoque</Link></Button>
+        </div>
+        {data.lowStock.length === 0 && data.outOfStock.length === 0 ? (
+          <div className="rounded-2xl border bg-card px-4 py-4 text-sm text-muted-foreground shadow-soft">
+            Estoque sem alertas no momento.
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-2xl border bg-card shadow-soft">
+            {data.outOfStock.length > 0 && (
+              <Link to="/estoque" className="grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
+                <span className="grid size-10 place-items-center rounded-xl bg-destructive/10"><PackageX className="size-5 text-destructive" /></span>
+                <span className="min-w-0"><strong className="block text-sm">Itens sem estoque</strong><span className="block truncate text-xs text-muted-foreground">{data.outOfStock.slice(0, 2).map((p) => p.name).join(", ")}</span></span>
+                <strong className="text-destructive">{data.outOfStock.length}</strong>
+              </Link>
+            )}
+            {data.lowStock.length > 0 && (
+              <Link to="/estoque" className="grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-t px-4 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
+                <span className="grid size-10 place-items-center rounded-xl bg-warning/20"><AlertTriangle className="size-5 text-warning-foreground" /></span>
+                <span className="min-w-0"><strong className="block text-sm">Estoque baixo</strong><span className="block truncate text-xs text-muted-foreground">{data.lowStock.slice(0, 2).map((p) => p.name).join(", ")}</span></span>
+                <strong className="text-warning-foreground">{data.lowStock.length}</strong>
+              </Link>
             )}
           </div>
         )}
+      </section>
 
-        {cart.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 py-16 text-center">
-            <Barcode className="size-12 text-muted-foreground" />
-            <p className="font-display text-2xl tracking-wide text-muted-foreground">
-              Carrinho vazio
-            </p>
-            <p className="max-w-56 text-sm text-muted-foreground">
-              Escaneie um produto ou digite o código/nome no campo acima.
-            </p>
+      <section aria-labelledby="cash-title">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 id="cash-title" className="text-base font-bold">Resumo do caixa</h2>
+          <Button asChild variant="link" className="h-auto p-0 text-xs"><Link to="/vendas">Detalhes</Link></Button>
+        </div>
+        <div className="rounded-2xl border bg-card p-4 shadow-soft">
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-2 text-sm font-medium"><CircleDollarSign className="size-5 text-primary" /> Valor atual</span>
+            <strong className="text-xl">{formatBRL(data.revenue)}</strong>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-3 border-t pt-4 text-sm">
+            <div><span className="text-muted-foreground">Entradas</span><strong className="mt-1 block text-success">+ {formatBRL(data.revenue)}</strong></div>
+            <div><span className="text-muted-foreground">Saídas</span><strong className="mt-1 block">{formatBRL(0)}</strong><span className="text-[10px] text-muted-foreground">Sem registro disponível</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="recent-title">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 id="recent-title" className="text-base font-bold">Últimas vendas</h2>
+          <Button asChild variant="link" className="h-auto p-0 text-xs"><Link to="/vendas">Ver todas</Link></Button>
+        </div>
+        {data.today.length === 0 ? (
+          <div className="rounded-2xl border bg-card px-5 py-7 text-center shadow-soft">
+            <ReceiptText className="mx-auto size-8 text-muted-foreground" />
+            <p className="mt-3 text-sm font-semibold">Nenhuma venda hoje</p>
+            <p className="mt-1 text-xs text-muted-foreground">As vendas finalizadas aparecem aqui.</p>
           </div>
         ) : (
-          <ul className="space-y-2">
-            {cart.map((item) => {
-              const p = products[item.barcode];
-              if (!p) return null;
-              return (
-                <li
-                  key={item.barcode}
-                  className="flex items-center gap-3 rounded-2xl border bg-card p-3 shadow-sm"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{p.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {formatBRL(p.price)} un.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="size-11"
-                      onClick={() => changeQty(item.barcode, -1)}
-                      aria-label="Diminuir quantidade"
-                    >
-                      <Minus className="size-5" />
-                    </Button>
-                    <span className="w-8 text-center text-lg font-semibold">
-                      {item.qty}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="size-11"
-                      onClick={() => changeQty(item.barcode, 1)}
-                      aria-label="Aumentar quantidade"
-                    >
-                      <Plus className="size-5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-11 text-destructive"
-                      onClick={() => removeFromCart(item.barcode)}
-                      aria-label={`Remover ${p.name}`}
-                    >
-                      <Trash2 className="size-5" />
-                    </Button>
-                  </div>
-                </li>
-              );
-            })}
+          <ul className="overflow-hidden rounded-2xl border bg-card shadow-soft">
+            {data.today.slice(0, 4).map((sale) => (
+              <li key={sale.id} className="grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b px-4 py-3 last:border-b-0">
+                <span className="grid size-9 place-items-center rounded-xl bg-secondary"><Clock3 className="size-4 text-primary" /></span>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">{new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(sale.timestamp)}</p>
+                  <p className="truncate text-xs text-muted-foreground">{sale.items.reduce((sum, item) => sum + item.qty, 0)} itens · {PAYMENT_LABELS[sale.method]}</p>
+                </div>
+                <strong className="text-sm">{formatBRL(sale.total)}</strong>
+              </li>
+            ))}
           </ul>
         )}
-      </div>
-
-      <div className="fixed inset-x-0 bottom-16 z-20 border-t bg-card/95 px-4 py-3 backdrop-blur">
-        <div className="mb-2 flex items-baseline justify-between">
-          <span className="text-sm font-medium text-muted-foreground">
-            Total da compra
-          </span>
-          <span className="font-display text-3xl tracking-wide text-primary">
-            {formatBRL(total)}
-          </span>
-        </div>
-        <Button
-          className="h-14 w-full text-lg"
-          disabled={cart.length === 0}
-          onClick={() => setPayOpen(true)}
-        >
-          Finalizar Compra
-        </Button>
-      </div>
-
-      <PaymentSheet
-        open={payOpen}
-        onOpenChange={setPayOpen}
-        total={total}
-        onConfirm={confirmPayment}
-      />
+        <span className="sr-only">{data.today.length} {saleWord} hoje</span>
+      </section>
     </div>
   );
 }
