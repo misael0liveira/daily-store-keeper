@@ -34,11 +34,20 @@ jobs:
 
       - name: Prepare GitHub Pages SPA/PWA files
         run: |
+          set -e
+          ROOT="dist"
+          if [ -d "dist/client" ]; then
+            ROOT="dist/client"
+          fi
+          rm -rf dist-pages
+          mkdir -p dist-pages
+          cp -R "$ROOT"/. dist-pages/
+
           node --input-type=module <<'NODE'
           import { readFileSync, writeFileSync, existsSync, copyFileSync } from 'node:fs';
           import { join } from 'node:path';
 
-          const root = 'dist/client';
+          const root = 'dist-pages';
           const manifestPath = join(root, 'manifest.webmanifest');
           if (existsSync(manifestPath)) {
             const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
@@ -69,9 +78,9 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
-          path: dist/client
+          path: dist-pages
 
   deploy:
     environment:
