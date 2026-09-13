@@ -77,6 +77,7 @@ type StoreState = {
     change?: number;
   }) => Sale | null;
   deleteSale: (id: string) => void;
+  markSalesSynced: (ids: string[]) => void;
   setSettings: (settings: Partial<Settings>) => void;
   setTheme: (theme: Theme) => void;
   toggleCash: () => void;
