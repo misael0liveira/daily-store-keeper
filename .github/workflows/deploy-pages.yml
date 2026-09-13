@@ -64,36 +64,79 @@ jobs:
           mkdir -p dist-pages
           cp -R "$ROOT"/. dist-pages/
 
+          # vite-plugin-pwa generates the service worker in dist/ while
+          # TanStack Start publishes the static site in .output/public.
+          # GitHub Pages must expose both at the project root so the PWA
+          # registration can use /daily-store-keeper/sw.js.
+          if [ -f "dist/sw.js" ]; then
+            cp dist/sw.js dist-pages/sw.js
+          else
+            echo "ERROR: dist/sw.js was not generated."
+            exit 1
+          fi
+          for file in dist/workbox-*.js; do
+            if [ -f "$file" ]; then
+              cp "$file" dist-pages/"$(basename "$file")"
+            fi
+          done
+
           node --input-type=module <<'NODE'
-          import { readFileSync, writeFileSync, existsSync, copyFileSync } from 'node:fs';
+          import { readFileSync, writeFileSync, existsSync, copyFileSync, readdirSync } from 'node:fs';
           import { join } from 'node:path';
 
           const root = 'dist-pages';
+          const base = '/daily-store-keeper/';
           const manifestPath = join(root, 'manifest.webmanifest');
+
           if (existsSync(manifestPath)) {
             const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
-            manifest.id = '/daily-store-keeper/';
-            manifest.start_url = '/daily-store-keeper/';
-            manifest.scope = '/daily-store-keeper/';
+            manifest.id = base;
+            manifest.start_url = base;
+            manifest.scope = base;
             if (Array.isArray(manifest.icons)) {
               manifest.icons = manifest.icons.map((icon) => ({
                 ...icon,
-                src: icon.src.startsWith('/') ? `/daily-store-keeper${icon.src}` : icon.src,
+                src: icon.src.startsWith('/') ? `${base.replace(/\/$/, '')}${icon.src}` : icon.src,
               }));
             }
             if (Array.isArray(manifest.screenshots)) {
               manifest.screenshots = manifest.screenshots.map((shot) => ({
                 ...shot,
-                src: shot.src.startsWith('/') ? `/daily-store-keeper${shot.src}` : shot.src,
+                src: shot.src.startsWith('/') ? `${base.replace(/\/$/, '')}${shot.src}` : shot.src,
               }));
             }
             writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+          } else {
+            throw new Error('manifest.webmanifest was not generated');
+          }
+
+          // TanStack prerendered HTML contains root-absolute public URLs.
+          // On a GitHub Pages project site these must include the repository base path.
+          const htmlFiles = readdirSync(root, { recursive: true })
+            .filter((file) => typeof file === 'string' && file.endsWith('.html'));
+          for (const relative of htmlFiles) {
+            const file = join(root, relative);
+            let html = readFileSync(file, 'utf8');
+            html = html
+              .replaceAll('href="/manifest.webmanifest"', `href="${base}manifest.webmanifest"`)
+              .replaceAll('href="/favicon.png"', `href="${base}favicon.png"`)
+              .replaceAll('href="/icons/', `href="${base}icons/`)
+              .replaceAll('src="/screenshots/', `src="${base}screenshots/`);
+            writeFileSync(file, html);
           }
 
           const index = join(root, 'index.html');
           const fallback = join(root, '404.html');
           if (existsSync(index)) copyFileSync(index, fallback);
           NODE
+
+          echo "=== Final PWA files ==="
+          test -f dist-pages/index.html
+          test -f dist-pages/manifest.webmanifest
+          test -f dist-pages/sw.js
+          test -f dist-pages/icons/icon-192.png
+          test -f dist-pages/icons/icon-512.png
+          find dist-pages -maxdepth 2 -type f | sort | grep -E '(^|/)(index.html|manifest.webmanifest|sw.js|workbox-.*\.js|icon-.*\.png)$' || true
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
