@@ -116,11 +116,20 @@ export default defineConfig({
           ],
         },
         workbox: {
-          // The SSR build outDir nests the client build under client/, so a
-          // broad glob produces wrong precache URLs and the SW install fails.
-          // Precache only the small static files; the app shell is cached at
-          // runtime by the NetworkFirst/CacheFirst handlers below.
-          globPatterns: ["manifest.webmanifest", "favicon.png", "icons/*.png"],
+          // The SSR build outDir nests the client build under client/, so the
+          // precache manifest must be globbed from the client folder to get
+          // correct URLs. This precaches the whole app shell (HTML, JS, CSS,
+          // icons) so the app opens offline after the first visit.
+          globDirectory: "dist/client",
+          globPatterns: [
+            "**/*.{html,js,css,png,svg,ico,webmanifest,woff,woff2}",
+          ],
+          globIgnores: ["**/_server/**", "**/screenshots/**"],
+          maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
+          // Offline navigations fall back to the precached shell; the client
+          // router then renders the requested screen from local data.
+          navigateFallback: "/index.html",
+          navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
           cleanupOutdatedCaches: true,
           clientsClaim: true,
           skipWaiting: true,
@@ -130,7 +139,7 @@ export default defineConfig({
               handler: "NetworkFirst",
               options: {
                 cacheName: "pages",
-                networkTimeoutSeconds: 5,
+                networkTimeoutSeconds: 4,
                 expiration: { maxEntries: 50 },
               },
             },
