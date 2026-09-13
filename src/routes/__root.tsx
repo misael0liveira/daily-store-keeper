@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { unlockAudio } from "@/lib/feedback";
+import { registerPWA } from "@/lib/pwa-register";
 import { useStore } from "@/store/useStore";
 
 function NotFoundComponent() {
@@ -215,6 +216,10 @@ function BottomNav() {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    registerPWA();
+  }, []);
 
   useEffect(() => {
     const unlock = () => unlockAudio();
