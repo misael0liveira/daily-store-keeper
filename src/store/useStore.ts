@@ -209,6 +209,14 @@ export const useStore = create<StoreState>()(
       deleteSale: (id) =>
         set((s) => ({ sales: s.sales.filter((sale) => sale.id !== id) })),
 
+      markSalesSynced: (ids) =>
+        set((s) => ({
+          sales: s.sales.map((sale) =>
+            ids.includes(sale.id) ? { ...sale, syncState: "synced" } : sale
+          ),
+        })),
+
+
       setSettings: (settings) =>
         set((s) => ({ settings: { ...s.settings, ...settings } })),
 
