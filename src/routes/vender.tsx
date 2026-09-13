@@ -14,7 +14,7 @@ import {
   type PaymentMethod,
 } from "@/store/useStore";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/vender")({
   head: () => ({
     meta: [
       { title: "Caixa — Mini Mercado PDV" },
