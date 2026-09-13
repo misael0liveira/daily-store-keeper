@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { getDeviceId } from "@/lib/sync";
 
 export type Product = {
   barcode: string;
