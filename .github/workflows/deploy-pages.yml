@@ -17,6 +17,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      VITE_SUPABASE_URL: https://qmwnjhgckuifsipxsbao.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_TMzXxiwIFhT-h35rClIfIw_mtFagjm-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -64,10 +67,6 @@ jobs:
           mkdir -p dist-pages
           cp -R "$ROOT"/. dist-pages/
 
-          # vite-plugin-pwa generates the service worker in dist/ while
-          # TanStack Start publishes the static site in .output/public.
-          # GitHub Pages must expose both at the project root so the PWA
-          # registration can use /daily-store-keeper/sw.js.
           if [ -f "dist/sw.js" ]; then
             cp dist/sw.js dist-pages/sw.js
           else
@@ -110,8 +109,6 @@ jobs:
             throw new Error('manifest.webmanifest was not generated');
           }
 
-          // TanStack prerendered HTML contains root-absolute public URLs.
-          // On a GitHub Pages project site these must include the repository base path.
           const htmlFiles = readdirSync(root, { recursive: true })
             .filter((file) => typeof file === 'string' && file.endsWith('.html'));
           for (const relative of htmlFiles) {
