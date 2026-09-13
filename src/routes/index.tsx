@@ -85,7 +85,7 @@ function CaixaPage() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <div className="flex-1 space-y-4 px-4 pb-48 pt-4">
+      <div className="flex-1 space-y-4 px-4 pb-72 pt-4">
         {scannerOpen ? (
           <BarcodeScanner
             onScan={handleScan}
