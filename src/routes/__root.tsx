@@ -7,7 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { Moon, Package, Receipt, ShoppingCart, Store, Sun } from "lucide-react";
+import { Home, Menu, Moon, Package, ScanLine, Settings, Store, Sun } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
@@ -93,7 +93,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           content:
             "Frente de caixa e gestão de estoque para mini mercado, direto no celular.",
         },
-        { name: "theme-color", content: "#3b82f6" },
+        { name: "theme-color", content: "#225d3f" },
         { name: "mobile-web-app-capable", content: "yes" },
         { name: "apple-mobile-web-app-capable", content: "yes" },
         {
@@ -112,7 +112,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         },
         {
           rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Bebas+Neue&display=swap",
+          href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
         },
         { rel: "icon", href: "/favicon.png", type: "image/png" },
         { rel: "manifest", href: "/manifest.webmanifest" },
@@ -151,21 +151,36 @@ function ThemeApplier() {
 function Header() {
   const theme = useStore((s) => s.theme);
   const setTheme = useStore((s) => s.setTheme);
+  const storeName = useStore((s) => s.settings.storeName);
+  const cashOpen = useStore((s) => s.cashOpen);
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-card/95 px-4 backdrop-blur">
-      <div className="flex items-center gap-2">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-primary">
+    <header className="sticky top-0 z-30 border-b bg-card/95 backdrop-blur">
+      <div className="mx-auto grid h-16 max-w-lg grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary">
           <Store className="size-5 text-primary-foreground" />
         </div>
-        <span className="font-display text-2xl tracking-wide">
-          Mini Mercado
-        </span>
+        <div className="min-w-0">
+          <span className="block truncate text-sm font-bold text-foreground">{storeName}</span>
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span className={`size-2 rounded-full ${cashOpen ? "bg-success" : "bg-muted-foreground"}`} />
+            Caixa {cashOpen ? "aberto" : "fechado"}
+          </span>
+        </div>
       </div>
+      <div className="flex items-center gap-1">
+      <Link
+        to="/vendas/configuracoes"
+        aria-label="Abrir configurações"
+        className="flex size-11 items-center justify-center rounded-xl transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <Settings className="size-5" />
+      </Link>
       <button
         type="button"
         onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
         aria-label="Alternar tema claro e escuro"
-        className="flex size-11 items-center justify-center rounded-full transition-colors hover:bg-accent"
+        className="flex size-11 items-center justify-center rounded-xl transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {theme === "dark" ? (
           <Sun className="size-5" />
@@ -173,15 +188,17 @@ function Header() {
           <Moon className="size-5" />
         )}
       </button>
+      </div>
+      </div>
     </header>
   );
 }
 
 function BottomNav() {
   const linkClass =
-    "flex flex-1 flex-col items-center justify-center gap-1 py-2 text-xs font-medium transition-colors";
+    "flex min-w-0 flex-1 flex-col items-center justify-center gap-1 py-2 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring";
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 flex h-16 border-t bg-card pb-[env(safe-area-inset-bottom)]">
+    <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto flex h-18 max-w-lg border-t bg-card/98 pb-[env(safe-area-inset-bottom)] shadow-nav backdrop-blur">
       <Link
         to="/"
         className={linkClass}
@@ -189,8 +206,19 @@ function BottomNav() {
         inactiveProps={{ className: `${linkClass} text-muted-foreground` }}
         activeOptions={{ exact: true }}
       >
-        <ShoppingCart className="size-6" />
-        Caixa
+        <Home className="size-5" />
+        Início
+      </Link>
+      <Link
+        to="/vender"
+        className={linkClass}
+        activeProps={{ className: `${linkClass} text-primary` }}
+        inactiveProps={{ className: `${linkClass} text-foreground` }}
+      >
+        <span className="-mt-7 flex size-13 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-action">
+          <ScanLine className="size-6" />
+        </span>
+        <span className="-mt-0.5">Vender</span>
       </Link>
       <Link
         to="/estoque"
@@ -198,17 +226,17 @@ function BottomNav() {
         activeProps={{ className: `${linkClass} text-primary` }}
         inactiveProps={{ className: `${linkClass} text-muted-foreground` }}
       >
-        <Package className="size-6" />
+        <Package className="size-5" />
         Estoque
       </Link>
       <Link
-        to="/vendas"
+        to="/mais"
         className={linkClass}
         activeProps={{ className: `${linkClass} text-primary` }}
         inactiveProps={{ className: `${linkClass} text-muted-foreground` }}
       >
-        <Receipt className="size-6" />
-        Vendas
+        <Menu className="size-5" />
+        Mais
       </Link>
     </nav>
   );
