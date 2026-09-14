@@ -49,8 +49,8 @@ jobs:
         run: |
           test -d .output/public
           rm -rf dist
-          mkdir -p dist
-          cp -R .output/public/. dist/
+          mkdir -p dist/client
+          cp -R .output/public/. dist/client/
 
       - name: Sync Capacitor Android
         run: bunx cap sync android
