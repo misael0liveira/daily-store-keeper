@@ -1,9 +1,10 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
+const isAdminBuild = process.env.ADMIN_BUILD === "1";
+
 const config: CapacitorConfig = {
-  appId: "app.minimarket.pos",
-  appName: "Mini Market POS",
-  // Static output of `bun run build` (client assets + prerendered HTML).
+  appId: isAdminBuild ? "app.minimarket.adm" : "app.minimarket.pos",
+  appName: isAdminBuild ? "Mini Mercado ADM" : "Mini Market POS",
   webDir: "dist/client",
   backgroundColor: "#fafbfc",
   android: {
@@ -12,8 +13,6 @@ const config: CapacitorConfig = {
   },
   plugins: {
     BarcodeScanning: {
-      // Barcode model is bundled with the app instead of downloaded at runtime,
-      // so scanning works offline right after install.
       googleBarcodeScannerModuleInstallState: false,
     },
   },
