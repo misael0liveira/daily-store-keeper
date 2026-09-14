@@ -3,6 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 const LICENSE_STORAGE_KEY = "pdv-license";
 const INSTALL_ID_KEY = "pdv-install-id";
 
+type LicenseRpcClient = {
+  rpc: (fn: string, args: Record<string, string>) => Promise<{ data: unknown; error: { message: string } | null }>;
+};
+
 export type LicenseActivation = {
   ok: boolean;
   license_id?: string;
@@ -46,12 +50,11 @@ export async function activateLicense(code: string): Promise<LicenseActivation> 
   const normalizedCode = code.trim().toUpperCase();
   const deviceId = getInstallId();
 
-  if (normalizedCode.length < 8) {
-    return { ok: false, error: "invalid_code" };
-  }
+  if (normalizedCode.length < 8) return { ok: false, error: "invalid_code" };
 
   try {
-    const { data, error } = await supabase.rpc("activate_device_license", {
+    const client = supabase as unknown as LicenseRpcClient;
+    const { data, error } = await client.rpc("activate_device_license", {
       p_code: normalizedCode,
       p_device_id: deviceId,
     });
@@ -62,9 +65,7 @@ export async function activateLicense(code: string): Promise<LicenseActivation> 
     }
 
     const result = data as LicenseActivation;
-    if (result?.ok) {
-      window.localStorage.setItem(LICENSE_STORAGE_KEY, JSON.stringify(result));
-    }
+    if (result?.ok) window.localStorage.setItem(LICENSE_STORAGE_KEY, JSON.stringify(result));
     return result ?? { ok: false, error: "activation_error" };
   } catch (error) {
     console.error("[License activation]", error);
