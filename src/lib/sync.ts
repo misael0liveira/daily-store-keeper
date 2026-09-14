@@ -1,7 +1,13 @@
+import { Capacitor } from "@capacitor/core";
 import type { Sale, Product } from "@/store/useStore";
-import { supabase } from "@/integrations/supabase/client";
 
-export const SYNC_ENABLED = true;
+// The Android APK is local-first: its data is persisted in the WebView's
+// local storage and does not require Supabase. Cloud sync is opt-in on native
+// builds (VITE_SYNC_ENABLED=true) and remains enabled by default on the web.
+export const SYNC_ENABLED =
+  import.meta.env.VITE_SYNC_ENABLED === "true" ||
+  (!Capacitor.isNativePlatform() && import.meta.env.VITE_SYNC_ENABLED !== "false");
+
 export type SyncResult = { status: "offline" | "done" | "error"; synced: string[]; failed: string[]; pending?: number; error?: string };
 export function pendingSales(sales: Sale[]): Sale[] { return sales.filter((sale) => sale.syncState !== "synced"); }
 export function getDeviceId(): string {
@@ -24,7 +30,11 @@ function errorMessage(error: unknown): string {
 
 export async function syncPendingSales(sales: Sale[], products: Record<string, Product> = {}): Promise<SyncResult> {
   const pending = pendingSales(sales);
+  if (!SYNC_ENABLED) return { status: "done", synced: [], failed: [], pending: pending.length };
   if (typeof navigator !== "undefined" && navigator.onLine === false) return { status: "offline", synced: [], failed: pending.map((s) => s.id), pending: pending.length };
+
+  // Keep Supabase out of the native runtime unless cloud sync was explicitly enabled.
+  const { supabase } = await import("@/integrations/supabase/client");
   const { data: auth, error: authError } = await supabase.auth.getUser();
   if (authError || !auth.user) return { status: "error", synced: [], failed: pending.map((s) => s.id), error: errorMessage(authError) || "Usuário não autenticado" };
 
@@ -82,7 +92,6 @@ export async function syncPendingSales(sales: Sale[], products: Record<string, P
           if (itemError) throw itemError;
         }
 
-        // Remove movements from an earlier partial attempt so retries cannot duplicate stock history.
         const { error: deleteMovementsError } = await (supabase as any)
           .from("stock_movements")
           .delete()
