@@ -67,6 +67,7 @@ jobs:
         run: |
           test -n "$KEYSTORE_BASE64"
           echo "$KEYSTORE_BASE64" | base64 --decode > android/app/mini-market-release.keystore
+          test -s android/app/mini-market-release.keystore
 
       - name: Verify release keystore
         env:
@@ -75,7 +76,7 @@ jobs:
         run: |
           keytool -list -keystore android/app/mini-market-release.keystore \
             -storepass "$ANDROID_KEYSTORE_PASSWORD" \
-            -alias "$ANDROID_KEY_ALIAS" > /dev/null
+            -alias "$ANDROID_KEY_ALIAS"
 
       - name: Build signed release APK
         working-directory: android
