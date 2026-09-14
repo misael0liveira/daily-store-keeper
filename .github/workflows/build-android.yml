@@ -12,6 +12,16 @@ on:
       - "bun.lock"
       - "capacitor.config.ts"
       - ".github/workflows/build-android.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "public/**"
+      - "android/**"
+      - "package.json"
+      - "bun.lock"
+      - "capacitor.config.ts"
+      - ".github/workflows/build-android.yml"
 
 permissions:
   contents: read
