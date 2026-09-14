@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { LogOut, Plus, RefreshCw, ShieldCheck, Smartphone, UserRound, XCircle } from "lucide-react";
+import { AlertTriangle, LogOut, Plus, RefreshCw, ShieldCheck, Smartphone, Trash2, UserRound, XCircle } from "lucide-react";
 
 type License = {
   id: string;
@@ -91,6 +91,24 @@ export function AdminApp() {
     setBusy(false);
   }
 
+  async function deleteLicense(license: License) {
+    const confirmed = window.confirm(
+      `Excluir o código ${license.code}${license.client_name ? ` (${license.client_name})` : ""}?\n\nEsta ação remove a licença definitivamente e, se estiver vinculada, o vínculo do dispositivo também será perdido.`
+    );
+    if (!confirmed) return;
+
+    setBusy(true);
+    setError("");
+    setMessage("");
+    const { error } = await rpc("admin_delete_license", { p_id: license.id });
+    if (error) setError(error.message);
+    else {
+      setMessage(`Código ${license.code} excluído com sucesso.`);
+      await loadLicenses();
+    }
+    setBusy(false);
+  }
+
   if (loading) return <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">Carregando ADM...</div>;
 
   if (!session) {
@@ -156,8 +174,9 @@ export function AdminApp() {
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500"><span className="inline-flex items-center gap-1"><Smartphone className="size-3.5" />{license.device_id ? "Dispositivo vinculado" : "Sem dispositivo"}</span></div>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {license.status === "active" ? <button onClick={() => void updateLicense(license.id, "blocked")} className="rounded-lg bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300">Bloquear</button> : <button onClick={() => void updateLicense(license.id, "active")} className="rounded-lg bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-300">Ativar</button>}
-                  {license.device_id && <button onClick={() => void updateLicense(license.id, null, true)} className="rounded-lg bg-white/5 px-3 py-2 text-xs font-semibold text-slate-300"><XCircle className="mr-1 inline size-3.5" />Liberar dispositivo</button>}
+                  {license.status === "active" ? <button onClick={() => void updateLicense(license.id, "blocked")} disabled={busy} className="rounded-lg bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300 disabled:opacity-50">Bloquear</button> : <button onClick={() => void updateLicense(license.id, "active")} disabled={busy} className="rounded-lg bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-300 disabled:opacity-50">Ativar</button>}
+                  {license.device_id && <button onClick={() => void updateLicense(license.id, null, true)} disabled={busy} className="rounded-lg bg-white/5 px-3 py-2 text-xs font-semibold text-slate-300 disabled:opacity-50"><XCircle className="mr-1 inline size-3.5" />Liberar dispositivo</button>}
+                  <button onClick={() => void deleteLicense(license)} disabled={busy} className="rounded-lg bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300 disabled:opacity-50"><Trash2 className="mr-1 inline size-3.5" />Excluir código</button>
                 </div>
               </article>
             ))}
