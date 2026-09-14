@@ -38,9 +38,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       if (cancelled) return;
       const state = useStore.getState();
       const result = await syncPendingSales(state.sales, state.products);
-      if (result.status === "done" && result.synced.length) {
-        useStore.getState().markSalesSynced(result.synced);
-      }
+      if (result.status === "done" && result.synced.length) useStore.getState().markSalesSynced(result.synced);
       if (result.status === "error") console.warn("[Supabase sync]", result.error);
     };
     const timers = [500, 2000, 5000].map((delay) => window.setTimeout(() => void sync(), delay));
@@ -61,33 +59,22 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
     try {
       const deviceId = getDeviceId();
-      const { data, error } = await supabase
-        .from("client_codes")
-        .select("id, code, device_id, active")
-        .eq("code", normalized)
-        .maybeSingle();
+      const { data, error } = await (supabase as any).rpc("activate_device_license", {
+        p_code: normalized,
+        p_device_id: deviceId,
+      });
 
       if (error) throw error;
-      if (!data) {
-        setMessage("Código inválido. Verifique o código e tente novamente.");
-        return;
-      }
-      if (data.active === false) {
-        setMessage("Este código está desativado.");
-        return;
-      }
-      if (data.device_id && data.device_id !== deviceId) {
-        setMessage("Este código já está vinculado a outro celular.");
-        return;
-      }
 
-      if (!data.device_id) {
-        const { error: updateError } = await supabase
-          .from("client_codes")
-          .update({ device_id: deviceId, activated_at: new Date().toISOString() })
-          .eq("id", data.id)
-          .is("device_id", null);
-        if (updateError) throw updateError;
+      if (!data?.ok) {
+        const messages: Record<string, string> = {
+          invalid_code: "Código inválido. Verifique o código e tente novamente.",
+          inactive_code: "Este código está desativado.",
+          device_mismatch: "Este código já está vinculado a outro celular.",
+          invalid_input: "Informe um código válido.",
+        };
+        setMessage(messages[data?.reason] || "Não foi possível ativar este código.");
+        return;
       }
 
       const activation: Activation = { code: normalized, deviceId };
