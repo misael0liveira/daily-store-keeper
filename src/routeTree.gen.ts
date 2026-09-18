@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CodigosRouteImport } from './routes/codigos'
 import { Route as EstoqueRouteImport } from './routes/estoque'
 import { Route as MaisRouteImport } from './routes/mais'
 import { Route as VendasRouteImport } from './routes/vendas'
@@ -20,6 +21,11 @@ import { Route as VendasConfiguracoesRouteImport } from './routes/vendas.configu
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CodigosRoute = CodigosRouteImport.update({
+  id: '/codigos',
+  path: '/codigos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EstoqueRoute = EstoqueRouteImport.update({
@@ -55,6 +61,7 @@ const VendasConfiguracoesRoute = VendasConfiguracoesRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/codigos': typeof CodigosRoute
   '/estoque': typeof EstoqueRoute
   '/mais': typeof MaisRoute
   '/vendas': typeof VendasRouteWithChildren
@@ -64,6 +71,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/codigos': typeof CodigosRoute
   '/estoque': typeof EstoqueRoute
   '/mais': typeof MaisRoute
   '/vender': typeof VenderRoute
@@ -73,6 +81,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/codigos': typeof CodigosRoute
   '/estoque': typeof EstoqueRoute
   '/mais': typeof MaisRoute
   '/vendas': typeof VendasRouteWithChildren
@@ -84,6 +93,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/codigos'
     | '/estoque'
     | '/mais'
     | '/vendas'
@@ -92,10 +102,17 @@ export interface FileRouteTypes {
     | '/vendas/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    '/' | '/estoque' | '/mais' | '/vender' | '/vendas/configuracoes' | '/vendas'
+    | '/'
+    | '/codigos'
+    | '/estoque'
+    | '/mais'
+    | '/vender'
+    | '/vendas/configuracoes'
+    | '/vendas'
   id:
     | '__root__'
     | '/'
+    | '/codigos'
     | '/estoque'
     | '/mais'
     | '/vendas'
@@ -106,6 +123,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CodigosRoute: typeof CodigosRoute
   EstoqueRoute: typeof EstoqueRoute
   MaisRoute: typeof MaisRoute
   VendasRoute: typeof VendasRouteWithChildren
@@ -119,6 +137,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/codigos': {
+      id: '/codigos'
+      path: '/codigos'
+      fullPath: '/codigos'
+      preLoaderRoute: typeof CodigosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/estoque': {
@@ -181,6 +206,7 @@ const VendasRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CodigosRoute: CodigosRoute,
   EstoqueRoute: EstoqueRoute,
   MaisRoute: MaisRoute,
   VendasRoute: VendasRouteWithChildren,
