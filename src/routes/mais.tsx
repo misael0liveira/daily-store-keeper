@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowRight, FileText, HardDrive, Settings, Wifi, WifiOff } from "lucide-react";
+import { ArrowRight, FileText, HardDrive, KeyRound, Settings, Wifi, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
