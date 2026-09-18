@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Outlet, Link, createRootRouteWithContext, useRouter, HeadContent, Scripts } from "@tanstack/react-router";
+import { Outlet, Link, createRootRouteWithContext, useRouter, useRouterState, HeadContent, Scripts } from "@tanstack/react-router";
 import { Home, Menu, Moon, Package, ScanLine, Settings, Store, Sun } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
