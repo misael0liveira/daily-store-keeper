@@ -31,7 +31,7 @@ function errorMessage(error: unknown): string {
 
 export async function syncPendingSales(sales: Sale[], products: Record<string, Product> = {}): Promise<SyncResult> {
   const pending = pendingSales(sales);
-  if (!SYNC_ENABLED) return { status: "done", synced: [], failed: [], pending: pending.length };
+  if (!SYNC_ENABLED) return { status: "no-backend", synced: [], failed: [], pending: pending.length };
   if (typeof navigator !== "undefined" && navigator.onLine === false) return { status: "offline", synced: [], failed: pending.map((s) => s.id), pending: pending.length };
 
   // Keep Supabase out of the native runtime unless cloud sync was explicitly enabled.
