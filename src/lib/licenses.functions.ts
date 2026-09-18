@@ -67,7 +67,7 @@ export const updateLicenseCode = createServerFn({ method: "POST" })
     checkPassword(data.password);
     if (!data.id) throw new Error("Código inválido.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const patch: Record<string, unknown> = {};
+    const patch: { active?: boolean; device_id?: string | null; activated_at?: string | null } = {};
     if (typeof data.active === "boolean") patch["active"] = data.active;
     if (data.unbind) {
       patch["device_id"] = null;
