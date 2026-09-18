@@ -14,13 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      license_codes: {
+        Row: {
+          activated_at: string | null
+          active: boolean
+          code: string
+          created_at: string
+          device_id: string | null
+          id: string
+        }
+        Insert: {
+          activated_at?: string | null
+          active?: boolean
+          code: string
+          created_at?: string
+          device_id?: string | null
+          id?: string
+        }
+        Update: {
+          activated_at?: string | null
+          active?: boolean
+          code?: string
+          created_at?: string
+          device_id?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      activate_device_license: {
+        Args: { p_code: string; p_device_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
