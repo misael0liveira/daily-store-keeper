@@ -5,10 +5,10 @@ import type { Sale, Product } from "@/store/useStore";
 // local storage and does not require Supabase. Cloud sync is opt-in on native
 // builds (VITE_SYNC_ENABLED=true) and remains enabled by default on the web.
 export const SYNC_ENABLED =
-  import.meta.env.VITE_SYNC_ENABLED === "true" ||
-  (!Capacitor.isNativePlatform() && import.meta.env.VITE_SYNC_ENABLED !== "false");
+  import.meta.env["VITE_SYNC_ENABLED"] === "true" ||
+  (!Capacitor.isNativePlatform() && import.meta.env["VITE_SYNC_ENABLED"] !== "false");
 
-export type SyncResult = { status: "offline" | "done" | "error"; synced: string[]; failed: string[]; pending?: number; error?: string };
+export type SyncResult = { status: "offline" | "done" | "error" | "no-backend"; synced: string[]; failed: string[]; pending?: number; error?: string };
 export function pendingSales(sales: Sale[]): Sale[] { return sales.filter((sale) => sale.syncState !== "synced"); }
 export function getDeviceId(): string {
   if (typeof window === "undefined") return "server";
@@ -17,8 +17,9 @@ export function getDeviceId(): string {
   return id;
 }
 
+const REMOTE_PAYMENT_METHODS: Record<Sale["method"], "cash" | "debit" | "credit" | "pix"> = { dinheiro: "cash", debito: "debit", credito: "credit", pix: "pix" };
 function toRemotePaymentMethod(method: Sale["method"]): "cash" | "debit" | "credit" | "pix" {
-  return { dinheiro: "cash", debito: "debit", credito: "credit", pix: "pix" }[method];
+  return REMOTE_PAYMENT_METHODS[method];
 }
 
 function errorMessage(error: unknown): string {
