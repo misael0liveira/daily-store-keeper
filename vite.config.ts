@@ -1,7 +1,6 @@
 import { defineConfig } from "vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
-import { cloudflare } from "@cloudflare/vite-plugin";
 import { VitePWA } from "vite-plugin-pwa";
 import tailwindcss from "@tailwindcss/vite";
 import { copyFileSync, existsSync, readdirSync } from "node:fs";
@@ -19,12 +18,8 @@ function copyServiceWorkerToClient() {
         const files = readdirSync(dist).filter(
           (f) => f === "sw.js" || /^workbox-.*\.js$/.test(f)
         );
-        for (const f of files) {
-          copyFileSync(join(dist, f), join(client, f));
-        }
-        if (files.length) {
-          console.log(`[copy-sw-to-client] copied: ${files.join(", ")} -> dist/client`);
-        }
+        for (const f of files) copyFileSync(join(dist, f), join(client, f));
+        if (files.length) console.log(`[copy-sw-to-client] copied: ${files.join(", ")} -> dist/client`);
       } catch (err) {
         console.warn("[copy-sw-to-client] failed:", err);
       }
@@ -33,9 +28,7 @@ function copyServiceWorkerToClient() {
 }
 
 export default defineConfig({
-  resolve: {
-    tsconfigPaths: true,
-  },
+  resolve: { tsconfigPaths: true },
   plugins: [
     copyServiceWorkerToClient(),
     tanstackStart({
@@ -50,7 +43,6 @@ export default defineConfig({
       },
     }),
     tailwindcss(),
-    cloudflare({ viteEnvironment: { name: "ssr" } }),
     viteReact(),
     VitePWA({
       registerType: "autoUpdate",
@@ -102,10 +94,7 @@ export default defineConfig({
               (request.destination === "script" || request.destination === "style" ||
                 request.destination === "image" || request.destination === "font"),
             handler: "CacheFirst",
-            options: {
-              cacheName: "assets",
-              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
-            },
+            options: { cacheName: "assets", expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 } },
           },
           {
             urlPattern: ({ url }) =>
