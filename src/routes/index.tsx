@@ -1,6 +1,6 @@
 // Auditoria 2026-09-19: tela principal, navegação e leitor de barras verificados.
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState } from "react";
 import {
   BarChart3,
   Boxes,
@@ -92,7 +92,7 @@ function Dashboard() {
   };
 
   return (
-    <div className="min-h-dvh bg-background pb-24">
+    <div className="min-h-dvh bg-background">
       <header className="bg-primary px-4 pb-5 pt-4 text-primary-foreground">
         <div className="mx-auto flex max-w-lg items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-2xl bg-white/15">
@@ -289,35 +289,7 @@ function Dashboard() {
         </section>
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto flex max-w-lg border-t bg-card/95 px-2 py-2 backdrop-blur">
-        <BottomLink to="/" label="Início" icon={<Store className="size-5" />} />
-        <BottomLink to="/vender" label="Vender" icon={<ShoppingCart className="size-5" />} />
-        <BottomLink to="/estoque" label="Estoque" icon={<Boxes className="size-5" />} />
-        <BottomLink to="/vendas" label="Vendas" icon={<BarChart3 className="size-5" />} />
-        <BottomLink to="/mais" label="Mais" icon={<Wallet className="size-5" />} />
-      </nav>
     </div>
   );
 }
 
-function BottomLink({
-  to,
-  label,
-  icon,
-}: {
-  to: "/" | "/vender" | "/estoque" | "/vendas" | "/mais";
-  label: string;
-  icon: ReactNode;
-}) {
-  return (
-    <Link
-      to={to}
-      activeOptions={{ exact: to === "/" }}
-      className="flex flex-1 flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[11px] font-bold text-muted-foreground"
-      activeProps={{ className: "flex flex-1 flex-col items-center gap-1 rounded-xl bg-primary/10 px-2 py-1.5 text-[11px] font-extrabold text-primary" }}
-    >
-      {icon}
-      {label}
-    </Link>
-  );
-}
