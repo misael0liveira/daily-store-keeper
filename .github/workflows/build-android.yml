@@ -111,15 +111,15 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
-          name: Mini Market PDV \${{ env.APP_VERSION_NAME }}
+          name: Mini Market PDV ${{ env.APP_VERSION_NAME }}
           body: |
-            version=\${{ env.APP_VERSION_NAME }}
+            version=${{ env.APP_VERSION_NAME }}
 
             Atualização oficial do Mini Market PDV.
           make_latest: true
           files: Mini-Market-PDV.apk
         env:
-          GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload release APK
         uses: actions/upload-artifact@v4
