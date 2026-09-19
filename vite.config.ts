@@ -38,6 +38,7 @@ export default defineConfig({
   },
   tanstackStart: {
     server: { entry: "server" },
+    spa: { enabled: true, prerender: { outputPath: "/index.html", crawlLinks: false } },
     prerender: { enabled: true, crawlLinks: false },
     pages: [
       { path: "/", prerender: { enabled: true } },
