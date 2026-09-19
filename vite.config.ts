@@ -40,16 +40,14 @@ export default defineConfig({
     copyServiceWorkerToClient(),
     tanstackStart({
       server: { entry: "server" },
-      prerender: { enabled: true, crawlLinks: false },
-      pages: [
-        { path: "/", prerender: { enabled: true } },
-        { path: "/vender", prerender: { enabled: true } },
-        { path: "/estoque", prerender: { enabled: true } },
-        { path: "/mais", prerender: { enabled: true } },
-        { path: "/codigos", prerender: { enabled: true } },
-        { path: "/vendas", prerender: { enabled: true } },
-        { path: "/vendas/configuracoes", prerender: { enabled: true } },
-      ],
+      spa: {
+        enabled: true,
+        prerender: {
+          outputPath: "/index.html",
+          crawlLinks: false,
+          retryCount: 0,
+        },
+      },
     }),
     tailwindcss(),
     cloudflare({ viteEnvironment: { name: "ssr" } }),
