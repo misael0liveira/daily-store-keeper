@@ -48,11 +48,12 @@ jobs:
 
       - name: Prepare Capacitor web assets
         run: |
-          test -d .output/public
-          rm -rf dist
-          mkdir -p dist/client
-          cp -R .output/public/. dist/client/
-          if [ ! -f dist/client/index.html ] && [ -f dist/client/_shell.html ]; then cp dist/client/_shell.html dist/client/index.html; fi
+          # TanStack Start SPA already writes the client output to dist/client.
+          # Do not remove dist after the web build, otherwise the generated shell is destroyed.
+          test -d dist/client
+          if [ ! -f dist/client/index.html ] && [ -f dist/client/_shell.html ]; then
+            cp dist/client/_shell.html dist/client/index.html
+          fi
           test -f dist/client/index.html
 
       - name: Sync Capacitor Android
