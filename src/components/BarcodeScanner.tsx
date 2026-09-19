@@ -1,10 +1,8 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { CameraOff, ScanLine } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { NativeBarcodeScanner } from "@/components/NativeBarcodeScanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { isNativeApp } from "@/lib/platform";
 
 type Props = {
   onScan: (code: string) => void;
@@ -122,11 +120,8 @@ function ScannerInner({ onScan, onClose }: Props) {
 }
 
 function ScannerSwitch(props: Props) {
-  // Android (Capacitor) uses the native ML Kit reader; the web/PWA build keeps
-  // the html5-qrcode WebView reader.
-  if (isNativeApp()) {
-    return <NativeBarcodeScanner {...props} />;
-  }
+  // Use the embedded WebView camera on Android too so the preview stays inside
+  // the approved rectangular Caixa area instead of opening a full-screen native UI.
   return <ScannerInner {...props} />;
 }
 
