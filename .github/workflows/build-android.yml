@@ -3,7 +3,7 @@ name: Build Android Release APK
 on:
   workflow_dispatch:
   push:
-    branches: [main, chore/detach-lovable]
+    branches: [main]
     paths:
       - "src/**"
       - "public/**"
@@ -129,8 +129,5 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-# DevMasterIA detached-build validation.
 
-# validation trigger
 
-# validation trigger 2
