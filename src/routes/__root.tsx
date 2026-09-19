@@ -4,6 +4,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppLock } from "@/components/AppLock";
+import { AppUpdatePrompt } from "@/components/AppUpdatePrompt";
 import { Toaster } from "@/components/ui/sonner";
 import { registerPWA } from "@/lib/pwa-register";
 import { useStore } from "@/store/useStore";
@@ -62,7 +63,7 @@ function RootComponent() {
   useEffect(() => { registerPWA(); }, []);
 
   if (isAdminCodes) {
-    return <QueryClientProvider client={queryClient}><ThemeApplier /><main className="mx-auto max-w-lg"><Outlet /></main><Toaster richColors position="top-center" /></QueryClientProvider>;
+    return <QueryClientProvider client={queryClient}><ThemeApplier /><main className="mx-auto max-w-lg"><Outlet /></main><Toaster richColors position="top-center" /><AppUpdatePrompt /></QueryClientProvider>;
   }
 
   return <QueryClientProvider client={queryClient}>
