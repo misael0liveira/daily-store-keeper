@@ -10,6 +10,7 @@ on:
       - "android/**"
       - "package.json"
       - "bun.lock"
+      - "vite.config.ts"
       - "capacitor.config.ts"
       - ".github/workflows/build-android.yml"
 
@@ -130,10 +131,3 @@ jobs:
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 14
-
-
-
-
-
-
-
