@@ -71,6 +71,7 @@ function RootComponent() {
       <ThemeApplier />
       <main className="mx-auto max-w-lg min-h-screen"><Outlet /></main>
       <Toaster richColors position="top-center" />
+      <AppUpdatePrompt />
     </AppLock>
   </QueryClientProvider>;
 }
