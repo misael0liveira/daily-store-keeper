@@ -3,6 +3,7 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { VitePWA } from "vite-plugin-pwa";
+import tailwindcss from "@tailwindcss/vite";
 import { copyFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
@@ -51,6 +52,7 @@ export default defineConfig({
   plugins: [
     copyServiceWorkerToClient(),
     tanstackStart(),
+    tailwindcss(),
     nitro(),
     viteReact(),
     VitePWA({
