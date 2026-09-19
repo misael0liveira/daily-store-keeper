@@ -11,7 +11,6 @@ import {
   Store,
   Wallet,
   ChevronRight,
-  Plus,
   CircleAlert,
   DoorOpen,
 } from "lucide-react";
