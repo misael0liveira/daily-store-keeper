@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
-import { nitro } from "nitro/vite";
+import { cloudflare } from "@cloudflare/vite-plugin";
 import { VitePWA } from "vite-plugin-pwa";
 import tailwindcss from "@tailwindcss/vite";
 import { copyFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
@@ -38,7 +38,6 @@ export default defineConfig({
   },
   tanstackStart: {
     server: { entry: "server" },
-    spa: { enabled: true, prerender: { outputPath: "/index.html", crawlLinks: false } },
     prerender: { enabled: true, crawlLinks: false },
     pages: [
       { path: "/", prerender: { enabled: true } },
@@ -54,7 +53,7 @@ export default defineConfig({
     copyServiceWorkerToClient(),
     tanstackStart(),
     tailwindcss(),
-    nitro(),
+    cloudflare({ viteEnvironment: { name: "ssr" } }),
     viteReact(),
     VitePWA({
       registerType: "autoUpdate",
