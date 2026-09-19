@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowRight, FileText, HardDrive, KeyRound, Settings, Wifi, WifiOff } from "lucide-react";
+import { ArrowRight, FileText, HardDrive, Settings, Wifi, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
@@ -61,13 +61,6 @@ function MorePage() {
           <Link to="/vendas/configuracoes">
             <span className="grid size-11 place-items-center rounded-xl bg-secondary"><Settings className="size-5 text-primary" /></span>
             <span className="min-w-0 flex-1 text-left"><strong className="block">Configurações</strong><span className="block truncate text-xs font-normal text-muted-foreground">Mercado, Pix e recebedor</span></span>
-            <ArrowRight className="size-5 text-muted-foreground" />
-          </Link>
-        </Button>
-        <Button asChild variant="ghost" className="h-18 w-full justify-start rounded-none border-t px-4">
-          <Link to="/codigos">
-            <span className="grid size-11 place-items-center rounded-xl bg-secondary"><KeyRound className="size-5 text-primary" /></span>
-            <span className="min-w-0 flex-1 text-left"><strong className="block">Códigos de ativação</strong><span className="block truncate text-xs font-normal text-muted-foreground">Gerar códigos para outros celulares</span></span>
             <ArrowRight className="size-5 text-muted-foreground" />
           </Link>
         </Button>

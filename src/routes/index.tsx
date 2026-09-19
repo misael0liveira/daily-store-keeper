@@ -11,7 +11,6 @@ import {
   Store,
   Wallet,
   ChevronRight,
-  Plus,
   CircleAlert,
   DoorOpen,
 } from "lucide-react";
@@ -265,11 +264,8 @@ function Dashboard() {
           </section>
         )}
 
-        <section className="grid grid-cols-2 gap-3">
-          <Link to="/codigos" className="flex items-center justify-center gap-2 rounded-2xl border bg-card px-3 py-3 text-sm font-bold shadow-sm">
-            <Plus className="size-4" /> Administração
-          </Link>
-          <div className="flex items-center justify-center gap-2 rounded-2xl border bg-card px-3 py-3 text-sm font-bold text-muted-foreground shadow-sm">
+        <section className="rounded-2xl border bg-card px-4 py-3 shadow-sm">
+          <div className="flex items-center justify-center gap-2 text-sm font-bold text-muted-foreground">
             <DoorOpen className="size-4" /> {cashOpen ? "Caixa aberto" : "Caixa fechado"}
           </div>
         </section>
