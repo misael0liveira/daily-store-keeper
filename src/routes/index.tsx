@@ -1,5 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import { BarcodeScanner } from "@/components/BarcodeScanner";
+import { beep, unlockAudio, vibrate } from "@/lib/feedback";
+import { formatBRL, useStore } from "@/store/useStore";
 import {
   ArrowLeft,
   ArrowDownLeft,
@@ -307,7 +311,7 @@ function Dashboard({ go, reset }: { go: (s: ScreenId) => void; reset: (s: Screen
         title="Mini Market"
         subtitle="Sistema PDV"
         action={
-          <button aria-label="Notificações">
+          <button aria-label="Notificações" onClick={() => toast.info("Notificações", { description: "Alertas de estoque e operação aparecerão aqui." })}>
             <Bell size={18} />
           </button>
         }
@@ -385,53 +389,160 @@ function Dashboard({ go, reset }: { go: (s: ScreenId) => void; reset: (s: Screen
 
 /* 3 — Vender */
 function Sell({ go }: { go: (s: ScreenId) => void }) {
-  const [qty, setQty] = useState<number[]>([1, 1, 1, 1]);
-  const total = sellItems.reduce((s, it, i) => s + it.price * (qty[i] ?? 0), 0);
-  const count = qty.reduce((a, b) => a + b, 0);
+  const { products, cart } = useStore();
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [query, setQuery] = useState("");
+
+  const addProduct = (barcode: string) => {
+    const product = products[barcode];
+    if (!product) {
+      beep(false);
+      vibrate([60, 40, 60]);
+      toast.error("Produto não cadastrado", { description: `Código: ${barcode}` });
+      return;
+    }
+    useStore.getState().addToCart(barcode);
+    beep(true);
+    vibrate(60);
+    toast.success(`${product.name} adicionado`, { description: formatBRL(product.price) });
+  };
+
+  const suggestions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    return Object.entries(products)
+      .filter(([code, p]) => code.toLowerCase().includes(q) || p.name.toLowerCase().includes(q))
+      .slice(0, 6);
+  }, [query, products]);
+
+  const total = cart.reduce((sum, item) => {
+    const product = products[item.barcode];
+    return sum + (product ? product.price * item.qty : 0);
+  }, 0);
+  const count = cart.reduce((sum, item) => sum + item.qty, 0);
+
   return (
     <>
       <TopBar title="Frente de caixa" subtitle="Nova venda" />
       <div className="scroll">
         <div className="page with-tabs" style={{ paddingBottom: 168 }}>
-          <div className="search-row">
-            <div className="search">
-              <Search size={16} />
-              <input placeholder="Buscar produto..." />
-            </div>
-            <button className="icon-btn" aria-label="Scanner">
-              <ScanLine size={18} />
-            </button>
-          </div>
-          <button className="btn ghost-green" style={{ marginTop: 10 }}>
-            <ScanLine size={17} /> Ler código de barras
-          </button>
-
-          <p className="sec-title">Itens da venda</p>
-          <div className="list">
-            {sellItems.map((it, i) => (
-              <div className="card item" key={it.name}>
-                <span className="thumb">
-                  <Package size={17} />
-                </span>
-                <div className="body">
-                  <h3>{it.name}</h3>
-                  <p>{brl(it.price)}</p>
+          {scannerOpen ? (
+            <BarcodeScanner onScan={addProduct} onClose={() => setScannerOpen(false)} />
+          ) : (
+            <>
+              <div className="search-row">
+                <div className="search">
+                  <Search size={16} />
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key !== "Enter") return;
+                      e.preventDefault();
+                      const value = query.trim();
+                      if (products[value]) {
+                        addProduct(value);
+                        setQuery("");
+                      } else if (suggestions[0]) {
+                        addProduct(suggestions[0][0]);
+                        setQuery("");
+                      }
+                    }}
+                    placeholder="Buscar produto ou código..."
+                    aria-label="Buscar produto ou código"
+                  />
                 </div>
-                <div className="stepper">
-                  <button onClick={() => setQty((q) => q.map((v, j) => (j === i ? Math.max(0, v - 1) : v)))}>
-                    <Minus size={13} />
-                  </button>
-                  <b>{qty[i]}</b>
-                  <button
-                    className="solid"
-                    onClick={() => setQty((q) => q.map((v, j) => (j === i ? v + 1 : v)))}
-                  >
-                    <Plus size={13} />
-                  </button>
-                </div>
+                <button
+                  className="icon-btn"
+                  aria-label="Abrir leitor de código de barras"
+                  onClick={() => {
+                    unlockAudio();
+                    setScannerOpen(true);
+                  }}
+                >
+                  <ScanLine size={18} />
+                </button>
               </div>
-            ))}
-          </div>
+
+              {query.trim() !== "" && (
+                <div className="list" style={{ marginTop: 10 }}>
+                  {suggestions.length === 0 ? (
+                    <p className="muted" style={{ padding: 8 }}>Nenhum produto encontrado.</p>
+                  ) : (
+                    suggestions.map(([barcode, product]) => (
+                      <button
+                        key={barcode}
+                        type="button"
+                        className="card item"
+                        onClick={() => {
+                          addProduct(barcode);
+                          setQuery("");
+                        }}
+                      >
+                        <span className="thumb"><Package size={17} /></span>
+                        <div className="body">
+                          <h3>{product.name}</h3>
+                          <p>Cód. {barcode} · estoque {product.stock}</p>
+                        </div>
+                        <strong>{formatBRL(product.price)}</strong>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+
+              <button
+                className="btn ghost-green"
+                style={{ marginTop: 10 }}
+                onClick={() => {
+                  unlockAudio();
+                  setScannerOpen(true);
+                }}
+              >
+                <ScanLine size={17} /> Ler código de barras
+              </button>
+            </>
+          )}
+
+          {!scannerOpen && (
+            <>
+              <p className="sec-title">Itens da venda</p>
+              <div className="list">
+                {cart.length === 0 ? (
+                  <div className="card" style={{ padding: 18, textAlign: "center" }}>
+                    <Package size={24} style={{ margin: "0 auto 6px" }} />
+                    <p className="muted" style={{ margin: 0 }}>Nenhum item na venda.</p>
+                    <p className="muted" style={{ margin: "4px 0 0", fontSize: 11 }}>
+                      Use a busca ou o leitor de código de barras.
+                    </p>
+                  </div>
+                ) : (
+                  cart.map((item) => {
+                    const product = products[item.barcode];
+                    if (!product) return null;
+                    return (
+                      <div className="card item" key={item.barcode}>
+                        <span className="thumb"><Package size={17} /></span>
+                        <div className="body">
+                          <h3>{product.name}</h3>
+                          <p>{formatBRL(product.price)} · estoque {product.stock}</p>
+                        </div>
+                        <div className="stepper">
+                          <button onClick={() => useStore.getState().changeQty(item.barcode, -1)} aria-label="Diminuir quantidade">
+                            <Minus size={13} />
+                          </button>
+                          <b>{item.qty}</b>
+                          <button className="solid" onClick={() => useStore.getState().changeQty(item.barcode, 1)} aria-label="Aumentar quantidade">
+                            <Plus size={13} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
       <div className="sticky-foot" style={{ bottom: 66 }}>
@@ -439,9 +550,9 @@ function Sell({ go }: { go: (s: ScreenId) => void }) {
           <span className="muted" style={{ fontSize: 12.5, fontWeight: 700 }}>
             {count} {count === 1 ? "item" : "itens"}
           </span>
-          <strong style={{ fontSize: 18 }}>{brl(total)}</strong>
+          <strong style={{ fontSize: 18 }}>{formatBRL(total)}</strong>
         </div>
-        <button className="btn" onClick={() => go("checkout")}>
+        <button className="btn" disabled={cart.length === 0} onClick={() => go("checkout")}>
           Finalizar venda
         </button>
       </div>
@@ -678,8 +789,8 @@ function Finance({ back }: { back: () => void }) {
             ))}
           </div>
 
-          <button className="btn outline" style={{ marginTop: 16 }}>
-            Ver extrato completo
+          <button className="btn outline" style={{ marginTop: 16 }} onClick={() => window.print()}>
+            <Printer size={16} /> Imprimir extrato
           </button>
         </div>
       </div>
@@ -740,7 +851,7 @@ function Reports({ back }: { back: () => void }) {
           <p className="sec-title">Relatórios disponíveis</p>
           <div className="list">
             {reports.map((r) => (
-              <button className="card item" key={r}>
+              <button className="card item" key={r} onClick={() => window.print()}>
                 <span className="thumb">
                   <FileText size={17} />
                 </span>
@@ -878,7 +989,7 @@ function SettingsScreen({
           <p className="sec-title">Outras configurações</p>
           <div className="list">
             {others.map((o) => (
-              <button className="card item" key={o.label}>
+              <button className="card item" key={o.label} onClick={() => toast.info(o.label, { description: `${o.value}. Configuração detalhada será conectada na próxima etapa.` })}>
                 <span className="thumb">
                   <o.icon size={17} />
                 </span>
@@ -1092,7 +1203,7 @@ function SaleReceipt({ go, back }: { go: (s: ScreenId) => void; back: () => void
           </div>
 
           <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
-            <button className="btn outline">
+            <button className="btn outline" onClick={() => window.print()}>
               <Printer size={16} /> Imprimir
             </button>
             <button className="btn" onClick={() => go("dashboard")}>
@@ -1356,7 +1467,7 @@ function Suppliers({ back }: { back: () => void }) {
         subtitle="4 cadastrados"
         onBack={back}
         action={
-          <button aria-label="Novo fornecedor">
+          <button aria-label="Novo fornecedor" onClick={() => toast.info("Novo fornecedor", { description: "Cadastro será conectado ao armazenamento local na próxima etapa." })}>
             <Plus size={18} />
           </button>
         }
@@ -1454,7 +1565,7 @@ function UsersScreen({ back }: { back: () => void }) {
         subtitle="4 usuários"
         onBack={back}
         action={
-          <button aria-label="Novo usuário">
+          <button aria-label="Novo usuário" onClick={() => toast.info("Novo usuário", { description: "Cadastro de operador será conectado ao armazenamento local na próxima etapa." })}>
             <Plus size={18} />
           </button>
         }
@@ -1610,7 +1721,7 @@ function Customers({ back }: { back: () => void }) {
         subtitle="Contas a receber"
         onBack={back}
         action={
-          <button aria-label="Novo cliente">
+          <button aria-label="Novo cliente" onClick={() => toast.info("Novo cliente", { description: "Cadastro de cliente será conectado ao armazenamento local na próxima etapa." })}>
             <Plus size={18} />
           </button>
         }
