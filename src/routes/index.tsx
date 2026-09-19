@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { BarcodeScanner } from "@/components/BarcodeScanner";
 import {
   ArrowLeft,
   ArrowDownLeft,
@@ -307,7 +308,10 @@ function Dashboard({ go, reset }: { go: (s: ScreenId) => void; reset: (s: Screen
         title="Mini Market"
         subtitle="Sistema PDV"
         action={
-          <button aria-label="Notificações">
+          <button
+            aria-label="Notificações"
+            onClick={() => window.alert("Nenhuma nova notificação.")}
+          >
             <Bell size={18} />
           </button>
         }
@@ -386,6 +390,8 @@ function Dashboard({ go, reset }: { go: (s: ScreenId) => void; reset: (s: Screen
 /* 3 — Vender */
 function Sell({ go }: { go: (s: ScreenId) => void }) {
   const [qty, setQty] = useState<number[]>([1, 1, 1, 1]);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [scannedCode, setScannedCode] = useState("");
   const total = sellItems.reduce((s, it, i) => s + it.price * (qty[i] ?? 0), 0);
   const count = qty.reduce((a, b) => a + b, 0);
   return (
@@ -398,13 +404,39 @@ function Sell({ go }: { go: (s: ScreenId) => void }) {
               <Search size={16} />
               <input placeholder="Buscar produto..." />
             </div>
-            <button className="icon-btn" aria-label="Scanner">
+            <button
+              className="icon-btn"
+              aria-label="Scanner"
+              onClick={() => setScannerOpen(true)}
+            >
               <ScanLine size={18} />
             </button>
           </div>
-          <button className="btn ghost-green" style={{ marginTop: 10 }}>
-            <ScanLine size={17} /> Ler código de barras
-          </button>
+          {scannerOpen ? (
+            <div style={{ marginTop: 10 }}>
+              <BarcodeScanner
+                onScan={(code) => {
+                  setScannedCode(code);
+                  setScannerOpen(false);
+                }}
+                onClose={() => setScannerOpen(false)}
+              />
+            </div>
+          ) : (
+            <button
+              className="btn ghost-green"
+              style={{ marginTop: 10 }}
+              onClick={() => setScannerOpen(true)}
+            >
+              <ScanLine size={17} /> Ler código de barras
+            </button>
+          )}
+          {scannedCode && (
+            <div className="card" style={{ marginTop: 10, padding: 12 }}>
+              <span className="muted" style={{ fontSize: 11 }}>Último código lido</span>
+              <strong style={{ display: "block", marginTop: 3 }}>{scannedCode}</strong>
+            </div>
+          )}
 
           <p className="sec-title">Itens da venda</p>
           <div className="list">
@@ -487,7 +519,12 @@ function Products({ go }: { go: (s: ScreenId) => void }) {
                     {brl(p.price)} · estoque {p.stock}
                   </p>
                 </button>
-                <button className="icon-btn" style={{ width: 34, height: 34 }} aria-label="Adicionar">
+                <button
+                  className="icon-btn"
+                  style={{ width: 34, height: 34 }}
+                  aria-label="Adicionar"
+                  onClick={() => go("sell")}
+                >
                   <Plus size={16} />
                 </button>
               </div>
@@ -678,7 +715,11 @@ function Finance({ back }: { back: () => void }) {
             ))}
           </div>
 
-          <button className="btn outline" style={{ marginTop: 16 }}>
+          <button
+            className="btn outline"
+            style={{ marginTop: 16 }}
+            onClick={() => window.alert("O extrato detalhado será integrado nesta tela.")}
+          >
             Ver extrato completo
           </button>
         </div>
@@ -740,7 +781,11 @@ function Reports({ back }: { back: () => void }) {
           <p className="sec-title">Relatórios disponíveis</p>
           <div className="list">
             {reports.map((r) => (
-              <button className="card item" key={r}>
+              <button
+                className="card item"
+                key={r}
+                onClick={() => window.alert(`Relatório selecionado: ${r}`)}
+              >
                 <span className="thumb">
                   <FileText size={17} />
                 </span>
@@ -768,8 +813,8 @@ function More({ go, reset }: { go: (s: ScreenId) => void; reset: (s: ScreenId) =
     { label: "Clientes e crediário", icon: UserRound, to: "customers" as ScreenId },
     { label: "Configuração fiscal (NFC-e / NF-e)", icon: Calculator, to: "fiscal" as ScreenId },
     { label: "Configurações do sistema", icon: Settings, to: "settings" as ScreenId },
-    { label: "Backup / Sincronização", icon: RefreshCw },
-    { label: "Ajuda e suporte", icon: CircleHelp },
+    { label: "Backup / Sincronização", icon: RefreshCw, action: "backup" as const },
+    { label: "Ajuda e suporte", icon: CircleHelp, action: "help" as const },
     { label: "Sobre o sistema", icon: Info, to: "about" as ScreenId },
   ];
   return (
@@ -790,7 +835,15 @@ function More({ go, reset }: { go: (s: ScreenId) => void; reset: (s: ScreenId) =
           <p className="sec-title">Sistema</p>
           <div className="list">
             {items.map((it) => (
-              <button className="card item" key={it.label} onClick={() => it.to && go(it.to)}>
+              <button
+                className="card item"
+                key={it.label}
+                onClick={() => {
+                  if (it.to) go(it.to);
+                  else if (it.action === "backup") window.alert("Backup e sincronização serão configurados nesta versão.");
+                  else if (it.action === "help") window.alert("Ajuda e suporte: procure o administrador do sistema.");
+                }}
+              >
                 <span className="thumb">
                   <it.icon size={17} />
                 </span>
@@ -1092,7 +1145,7 @@ function SaleReceipt({ go, back }: { go: (s: ScreenId) => void; back: () => void
           </div>
 
           <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
-            <button className="btn outline">
+            <button className="btn outline" onClick={() => window.print()}>
               <Printer size={16} /> Imprimir
             </button>
             <button className="btn" onClick={() => go("dashboard")}>
@@ -1356,7 +1409,10 @@ function Suppliers({ back }: { back: () => void }) {
         subtitle="4 cadastrados"
         onBack={back}
         action={
-          <button aria-label="Novo fornecedor">
+          <button
+            aria-label="Novo fornecedor"
+            onClick={() => window.alert("O cadastro de fornecedor será adicionado nesta tela.")}
+          >
             <Plus size={18} />
           </button>
         }
@@ -1454,7 +1510,10 @@ function UsersScreen({ back }: { back: () => void }) {
         subtitle="4 usuários"
         onBack={back}
         action={
-          <button aria-label="Novo usuário">
+          <button
+            aria-label="Novo usuário"
+            onClick={() => window.alert("O cadastro de usuário será adicionado nesta tela.")}
+          >
             <Plus size={18} />
           </button>
         }
@@ -1610,7 +1669,10 @@ function Customers({ back }: { back: () => void }) {
         subtitle="Contas a receber"
         onBack={back}
         action={
-          <button aria-label="Novo cliente">
+          <button
+            aria-label="Novo cliente"
+            onClick={() => window.alert("O cadastro de cliente será adicionado nesta tela.")}
+          >
             <Plus size={18} />
           </button>
         }
