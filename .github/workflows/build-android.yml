@@ -51,6 +51,8 @@ jobs:
           rm -rf dist
           mkdir -p dist/client
           cp -R .output/public/. dist/client/
+          if [ ! -f dist/client/index.html ] && [ -f dist/client/_shell.html ]; then cp dist/client/_shell.html dist/client/index.html; fi
+          test -f dist/client/index.html
 
       - name: Sync Capacitor Android
         run: bunx cap sync android
