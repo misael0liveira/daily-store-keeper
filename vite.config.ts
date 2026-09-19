@@ -4,7 +4,7 @@ import viteReact from "@vitejs/plugin-react";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import { VitePWA } from "vite-plugin-pwa";
 import tailwindcss from "@tailwindcss/vite";
-import { copyFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
+import { copyFileSync, existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 function copyServiceWorkerToClient() {
@@ -43,7 +43,7 @@ export default defineConfig({
       spa: {
         enabled: true,
         prerender: {
-          outputPath: "/index.html",
+          outputPath: "/_shell.html",
           crawlLinks: false,
           retryCount: 0,
         },
