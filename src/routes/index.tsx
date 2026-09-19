@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import {
   BarChart3,
   Boxes,
@@ -293,7 +293,7 @@ function BottomLink({
 }: {
   to: "/" | "/vender" | "/estoque" | "/vendas" | "/mais";
   label: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
 }) {
   return (
     <Link
