@@ -66,9 +66,6 @@ Integre uma biblioteca robusta de leitura de código de barras pela câmera do d
 
 - Garanta que os botões tenham uma "touch target" (área de toque) grande o suficiente para uso rápido e ergonômico no celular.
 
-This project was built with [Lovable](https://lovable.dev).
-
-**Live app**: https://daily-store-keeper.lovable.app
 
 ## Build with Lovable
 
