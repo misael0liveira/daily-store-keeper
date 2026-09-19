@@ -14,7 +14,7 @@ on:
       - ".github/workflows/build-android.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   VITE_SUPABASE_URL: https://qmwnjhgckuifsipxsbao.supabase.co
@@ -80,6 +80,11 @@ jobs:
             -storepass "$ANDROID_KEYSTORE_PASSWORD" \
             -alias "$ANDROID_KEY_ALIAS"
 
+      - name: Define app version
+        run: |
+          echo "APP_VERSION_CODE=${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+          echo "APP_VERSION_NAME=1.0.${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+
       - name: Build signed release APK
         working-directory: android
         env:
@@ -91,11 +96,27 @@ jobs:
             -Pandroid.injected.signing.store.password="$ANDROID_KEYSTORE_PASSWORD" \
             -Pandroid.injected.signing.key.alias="$ANDROID_KEY_ALIAS" \
             -Pandroid.injected.signing.key.password="$ANDROID_KEYSTORE_PASSWORD" \
+            -PappVersionCode="$APP_VERSION_CODE" \
+            -PappVersionName="$APP_VERSION_NAME" \
             --no-daemon
 
       - name: Remove signing keystore from workspace
         if: always()
         run: rm -f android/app/mini-market-release.keystore
+
+      - name: Publish latest public APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Mini Market PDV \${{ env.APP_VERSION_NAME }}
+          body: |
+            version=\${{ env.APP_VERSION_NAME }}
+
+            Atualização oficial do Mini Market PDV.
+          make_latest: true
+          files: android/app/build/outputs/apk/release/app-release.apk#Mini-Market-PDV.apk
+        env:
+          GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload release APK
         uses: actions/upload-artifact@v4
