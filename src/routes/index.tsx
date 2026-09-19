@@ -15,7 +15,7 @@ import {
   Users,
   Info,
   LayoutGrid,
-  LogOut,
+
   Minus,
   Moon,
   Package,
@@ -67,7 +67,6 @@ export const Route = createFileRoute("/")({
 });
 
 type ScreenId =
-  | "login"
   | "dashboard"
   | "sell"
   | "products"
@@ -111,9 +110,9 @@ const productList = [
 ];
 
 function MiniMarketPdv() {
-  const [stack, setStack] = useState<ScreenId[]>(["login"]);
+  const [stack, setStack] = useState<ScreenId[]>(["dashboard"]);
   const [dark, setDark] = useState(false);
-  const screen = stack[stack.length - 1] ?? "login";
+  const screen = stack[stack.length - 1] ?? "dashboard";
 
   const go = (s: ScreenId) => setStack((p) => [...p, s]);
   const back = () => setStack((p) => (p.length > 1 ? p.slice(0, -1) : p));
@@ -139,11 +138,8 @@ function MiniMarketPdv() {
   return (
     <div className="stage">
       <div className="phone" data-theme={dark ? "dark" : "light"}>
-        {screen === "login" ? (
-          <LoginScreen onEnter={() => reset("dashboard")} />
-        ) : (
-          <>
-            <Screens
+        <>
+<Screens
               screen={screen}
               go={go}
               back={back}
@@ -171,8 +167,7 @@ function MiniMarketPdv() {
                 ))}
               </nav>
             )}
-          </>
-        )}
+</>
       </div>
     </div>
   );
@@ -221,60 +216,6 @@ function TopBar({
         {action}
       </div>
     </div>
-  );
-}
-
-/* ---------------------------------- login --------------------------------- */
-
-function LoginScreen({ onEnter }: { onEnter: () => void }) {
-  const [cnpj, setCnpj] = useState("");
-  const [operator, setOperator] = useState("");
-  const [pass, setPass] = useState("");
-  return (
-    <>
-      <StatusBar light />
-      <div className="login">
-        <span className="logo">
-          <Store size={30} />
-        </span>
-        <h1>Mini Market</h1>
-        <p className="sub">Sistema PDV · Gestão do estabelecimento</p>
-        <div className="panel">
-          <label htmlFor="cnpj">CNPJ do estabelecimento</label>
-          <input
-            id="cnpj"
-            value={cnpj}
-            onChange={(e) => setCnpj(e.target.value)}
-            placeholder="Ex: 12.345.678/0001-90"
-            inputMode="numeric"
-            style={{ marginBottom: 12 }}
-          />
-          <label htmlFor="operator">Operador</label>
-          <input
-            id="operator"
-            value={operator}
-            onChange={(e) => setOperator(e.target.value)}
-            placeholder="Ex: joao.silva"
-            style={{ marginBottom: 12 }}
-          />
-          <label htmlFor="pass">Senha de acesso</label>
-          <input
-            id="pass"
-            type="password"
-            value={pass}
-            onChange={(e) => setPass(e.target.value)}
-            placeholder="••••••"
-          />
-          <button className="btn" style={{ marginTop: 12 }} onClick={onEnter}>
-            <Lock size={16} /> Entrar no sistema
-          </button>
-        </div>
-        <p className="hint">Acesso restrito a operadores autorizados do estabelecimento</p>
-        <div className="art">
-          <img src={cartArt} alt="Mercadinho" width={1024} height={768} />
-        </div>
-      </div>
-    </>
   );
 }
 
@@ -861,8 +802,8 @@ function More({ go, reset }: { go: (s: ScreenId) => void; reset: (s: ScreenId) =
             ))}
           </div>
 
-          <button className="btn danger" style={{ marginTop: 18 }} onClick={() => reset("login")}>
-            <LogOut size={17} /> Encerrar sessão do operador
+          <button className="btn danger" style={{ marginTop: 18 }} onClick={() => reset("dashboard")}>
+            Voltar ao início
           </button>
         </div>
       </div>
