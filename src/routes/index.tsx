@@ -931,7 +931,11 @@ function SettingsScreen({
           <p className="sec-title">Outras configurações</p>
           <div className="list">
             {others.map((o) => (
-              <button className="card item" key={o.label}>
+              <button
+                className="card item"
+                key={o.label}
+                onClick={() => window.alert(`${o.label}: ${o.value}`)}
+              >
                 <span className="thumb">
                   <o.icon size={17} />
                 </span>
