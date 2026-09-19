@@ -104,6 +104,9 @@ jobs:
         if: always()
         run: rm -f android/app/mini-market-release.keystore
 
+      - name: Prepare public APK filename
+        run: cp android/app/build/outputs/apk/release/app-release.apk Mini-Market-PDV.apk
+
       - name: Publish latest public APK
         uses: softprops/action-gh-release@v2
         with:
@@ -114,7 +117,7 @@ jobs:
 
             Atualização oficial do Mini Market PDV.
           make_latest: true
-          files: android/app/build/outputs/apk/release/app-release.apk#Mini-Market-PDV.apk
+          files: Mini-Market-PDV.apk
         env:
           GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
 
