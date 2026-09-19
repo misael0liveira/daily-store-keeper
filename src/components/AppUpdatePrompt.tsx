@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { App as CapacitorApp } from "@capacitor/app";
 import { Download, RefreshCw, X } from "lucide-react";
 import { toast } from "sonner";
 import { checkForAppUpdate, installAppUpdate, type UpdateInfo } from "@/lib/app-update";
@@ -14,15 +15,32 @@ export function AppUpdatePrompt() {
     const run = async () => {
       try {
         const info = await checkForAppUpdate();
-        if (active && info) setUpdate(info);
+        if (active && info) {
+          setDismissed(false);
+          setUpdate(info);
+        }
       } catch (error) {
         console.warn("Falha ao verificar atualização:", error);
       }
     };
 
-    run();
+    void run();
+
+    let removeListener: (() => void) | undefined;
+
+    if (window.location.protocol === "capacitor:") {
+      CapacitorApp.addListener("appStateChange", ({ isActive }) => {
+        if (isActive) {
+          void run();
+        }
+      }).then((listener) => {
+        removeListener = () => listener.remove();
+      });
+    }
+
     return () => {
       active = false;
+      removeListener?.();
     };
   }, []);
 
@@ -32,12 +50,15 @@ export function AppUpdatePrompt() {
     try {
       setInstalling(true);
       const result = await installAppUpdate(update.downloadUrl);
+
       if (result.needsPermission) {
         toast.info("Permita instalações deste aplicativo e toque em atualizar novamente.");
       }
     } catch (error) {
       console.error(error);
-      toast.error("Não foi possível iniciar a atualização.");
+      toast.error("Não foi possível iniciar a atualização.", {
+        description: "Verifique a permissão de instalação de fontes desconhecidas e tente novamente.",
+      });
     } finally {
       setInstalling(false);
     }
@@ -49,12 +70,16 @@ export function AppUpdatePrompt() {
         <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
           <RefreshCw className="size-5" />
         </div>
+
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="text-sm font-black">Nova versão disponível</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">Mini Market PDV · versão {update.version}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Mini Market PDV · versão {update.version}
+              </p>
             </div>
+
             <button
               type="button"
               aria-label="Fechar aviso"
