@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Outlet, Link, createRootRouteWithContext, useRouter, useRouterState, HeadContent, Scripts } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { Boxes, ScanBarcode, ShoppingCart, Store, Wallet } from "lucide-react";
 import appCss from "../styles.css?url";
 import { AppLock } from "@/components/AppLock";
 import { AppUpdatePrompt } from "@/components/AppUpdatePrompt";
@@ -54,6 +55,36 @@ function ThemeApplier() {
   return null;
 }
 
+function BottomNav() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const active = (path: string) => path === "/" ? pathname === "/" : pathname.startsWith(path);
+
+  return (
+    <nav className="fixed inset-x-0 bottom-0 z-50 mx-auto flex h-[76px] max-w-lg items-end border-t bg-card/95 px-2 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 shadow-[0_-6px_24px_rgba(0,0,0,0.06)] backdrop-blur">
+      <BottomItem to="/" label="Início" icon={<Store className="size-5" />} active={active("/")} />
+      <BottomItem to="/vender" label="Vender" icon={<ShoppingCart className="size-5" />} active={active("/vender")} />
+      <Link to="/vender" aria-label="Abrir Caixa" className="-mt-9 mx-1 flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-4 border-background bg-primary text-primary-foreground shadow-[0_8px_22px_rgba(34,93,63,0.32)] transition-transform active:scale-95">
+        <ScanBarcode className="size-7" strokeWidth={2.4} />
+      </Link>
+      <BottomItem to="/estoque" label="Estoque" icon={<Boxes className="size-5" />} active={active("/estoque")} />
+      <BottomItem to="/mais" label="Mais" icon={<Wallet className="size-5" />} active={active("/mais")} />
+    </nav>
+  );
+}
+
+function BottomItem({ to, label, icon, active }: { to: "/" | "/vender" | "/estoque" | "/mais"; label: string; icon: ReactNode; active: boolean }) {
+  return (
+    <Link
+      to={to}
+      activeOptions={{ exact: to === "/" }}
+      className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-1 py-2 text-[11px] font-bold transition-colors ${active ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}
+    >
+      {icon}
+      <span>{label}</span>
+    </Link>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -67,7 +98,8 @@ function RootComponent() {
   return <QueryClientProvider client={queryClient}>
     <AppLock>
       <ThemeApplier />
-      <main className="mx-auto max-w-lg min-h-screen"><Outlet /></main>
+      <main className="mx-auto max-w-lg min-h-screen pb-20"><Outlet /></main>
+      <BottomNav />
       <Toaster richColors position="top-center" />
       <AppUpdatePrompt />
     </AppLock>
