@@ -3,7 +3,7 @@ import { Outlet, Link, createRootRouteWithContext, useRouter, useRouterState, He
 import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { AuthGate } from "@/components/AuthGate";
+import { AppLock } from "@/components/AppLock";
 import { Toaster } from "@/components/ui/sonner";
 import { registerPWA } from "@/lib/pwa-register";
 import { useStore } from "@/store/useStore";
@@ -66,10 +66,10 @@ function RootComponent() {
   }
 
   return <QueryClientProvider client={queryClient}>
-    <AuthGate>
+    <AppLock>
       <ThemeApplier />
       <main className="mx-auto max-w-lg min-h-screen"><Outlet /></main>
       <Toaster richColors position="top-center" />
-    </AuthGate>
+    </AppLock>
   </QueryClientProvider>;
 }
