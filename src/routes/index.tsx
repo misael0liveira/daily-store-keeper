@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
+import { beep, unlockAudio, vibrate } from "@/lib/feedback";
 import { useStore, formatBRL } from "@/store/useStore";
 
 export const Route = createFileRoute("/")({
@@ -64,12 +65,25 @@ function Dashboard() {
   );
 
   const addProduct = (barcode: string) => {
-    const product = products[barcode.trim()];
+    const code = barcode.trim();
+    const product = products[code];
     if (!product) {
-      toast.error("Produto não cadastrado", { description: `Código: ${barcode}` });
+      beep(false);
+      vibrate([60, 40, 60]);
+      toast.error("Produto não cadastrado", {
+        description: `Código: ${code || "vazio"}`,
+        action: {
+          label: "Abrir PDV",
+          onClick: () => {
+            window.location.href = "/vender";
+          },
+        },
+      });
       return;
     }
     addToCart(product.barcode);
+    beep(true);
+    vibrate(60);
     toast.success(`${product.name} adicionado à venda`, {
       description: formatBRL(product.price),
     });
@@ -161,7 +175,10 @@ function Dashboard() {
             <button
               type="button"
               className="flex h-16 w-full items-center justify-center gap-3 rounded-2xl bg-primary px-4 text-base font-extrabold text-primary-foreground shadow-sm active:scale-[0.99]"
-              onClick={() => setScannerOpen(true)}
+              onClick={() => {
+                unlockAudio();
+                setScannerOpen(true);
+              }}
             >
               <ScanBarcode className="size-6" />
               Ler código de barras
