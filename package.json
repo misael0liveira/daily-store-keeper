@@ -105,5 +105,6 @@
     "typescript-eslint": "^8.56.1",
     "vite": "8.1.5",
     "vite-plugin-pwa": "^1.3.0"
-  }
+  },
+  "description": "Mini Market PDV — aplicativo Android independente do Lovable"
 }
