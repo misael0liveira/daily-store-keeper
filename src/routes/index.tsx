@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+// Auditoria 2026-09-19: tela principal, navegação e leitor de barras verificados.\nimport { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, type ReactNode } from "react";
 import {
   BarChart3,
