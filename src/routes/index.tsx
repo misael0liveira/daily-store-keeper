@@ -1,1650 +1,309 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import {
-  ArrowLeft,
-  ArrowDownLeft,
-  ArrowUpRight,
-  Banknote,
   BarChart3,
+  Boxes,
   Bell,
-  Camera,
-  Check,
-  ChevronRight,
-  CircleHelp,
-  CreditCard,
-  Users,
-  Info,
-  LayoutGrid,
-
-  Minus,
-  Moon,
   Package,
-  Plus,
-  Printer,
-  QrCode,
-  RefreshCw,
-  Wallet,
-  ScanLine,
+  ScanBarcode,
   Search,
-  Settings,
   ShoppingCart,
   Store,
-  Sun,
-  TrendingUp,
-  Boxes,
-  FileText,
-  MoreHorizontal,
-  Receipt,
-  Lock,
-  Truck,
-  ClipboardList,
-  Building2,
-  HandCoins,
-  Calculator,
-  UserRound,
+  Wallet,
+  ChevronRight,
+  Plus,
+  CircleAlert,
   DoorOpen,
 } from "lucide-react";
+import { toast } from "sonner";
+import { BarcodeScanner } from "@/components/BarcodeScanner";
+import { useStore, formatBRL } from "@/store/useStore";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Mini Market — Sistema PDV para mercadinhos" },
+      { title: "Mini Market PDV" },
       {
         name: "description",
-        content:
-          "Protótipo navegável do Mini Market: PDV mobile para gestão de mercadinho com vendas, produtos, estoque, relatórios e financeiro.",
+        content: "Tela principal do Mini Market PDV com acesso rápido a vendas, estoque e leitor de código de barras.",
       },
-      { property: "og:title", content: "Mini Market — Sistema PDV para mercadinhos" },
-      {
-        property: "og:description",
-        content: "Vendas, estoque, relatórios e financeiro do seu mercadinho em um app simples.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: MiniMarketPdv,
+  component: Dashboard,
 });
 
-type ScreenId =
-  | "dashboard"
-  | "sell"
-  | "products"
-  | "stock"
-  | "sales"
-  | "finance"
-  | "reports"
-  | "more"
-  | "settings"
-  | "productDetail"
-  | "productNew"
-  | "checkout"
-  | "sale"
-  | "stockMove"
-  | "cashier"
-  | "cashierMove"
-  | "suppliers"
-  | "purchases"
-  | "users"
-  | "company"
-  | "fiscal"
-  | "customers"
-  | "about";
+function Dashboard() {
+  const products = useStore((s) => s.products);
+  const sales = useStore((s) => s.sales);
+  const cashOpen = useStore((s) => s.cashOpen);
+  const settings = useStore((s) => s.settings);
+  const addToCart = useStore((s) => s.addToCart);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [query, setQuery] = useState("");
 
-const brl = (v: number) =>
-  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }).replace("\u00a0", " ");
+  const productList = useMemo(() => Object.values(products), [products]);
+  const suggestions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return productList.slice(0, 6);
+    return productList
+      .filter((p) => p.name.toLowerCase().includes(q) || p.barcode.toLowerCase().includes(q))
+      .slice(0, 6);
+  }, [productList, query]);
 
-const sellItems = [
-  { name: "Arroz Tipo 1 5kg", price: 24.9 },
-  { name: "Feijão Carioca 1kg", price: 8.9 },
-  { name: "Óleo de Soja 900ml", price: 6.99 },
-  { name: "Leite 1L", price: 4.39 },
-];
+  const todaySales = useMemo(() => {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    return sales.filter((sale) => sale.timestamp >= start.getTime());
+  }, [sales]);
 
-const productList = [
-  { name: "Água Mineral 500ml", price: 1.99, stock: 48, cat: "Bebidas" },
-  { name: "Refrigerante 2L", price: 7.99, stock: 24, cat: "Bebidas" },
-  { name: "Cerveja Lata 350ml", price: 3.49, stock: 36, cat: "Bebidas" },
-  { name: "Pão de Forma", price: 5.99, stock: 12, cat: "Alimentos" },
-  { name: "Leite 1L", price: 4.39, stock: 18, cat: "Alimentos" },
-];
+  const todayTotal = todaySales.reduce((sum, sale) => sum + sale.total, 0);
+  const lowStock = productList.filter((p) => p.stock <= 5);
+  const itemsSold = todaySales.reduce(
+    (sum, sale) => sum + sale.items.reduce((n, item) => n + item.qty, 0),
+    0,
+  );
 
-function MiniMarketPdv() {
-  const [stack, setStack] = useState<ScreenId[]>(["dashboard"]);
-  const [dark, setDark] = useState(false);
-  const screen = stack[stack.length - 1] ?? "dashboard";
-
-  const go = (s: ScreenId) => setStack((p) => [...p, s]);
-  const back = () => setStack((p) => (p.length > 1 ? p.slice(0, -1) : p));
-  const reset = (s: ScreenId) => setStack([s]);
-
-  const tabOf: Partial<Record<ScreenId, string>> = {
-    dashboard: "inicio",
-    sell: "vender",
-    checkout: "vender",
-    sale: "vender",
-    products: "produtos",
-    productDetail: "produtos",
-    productNew: "produtos",
-    sales: "vendas",
-    more: "mais",
-    settings: "mais",
-    about: "mais",
+  const addProduct = (barcode: string) => {
+    const product = products[barcode.trim()];
+    if (!product) {
+      toast.error("Produto não cadastrado", { description: `Código: ${barcode}` });
+      return;
+    }
+    addToCart(product.barcode);
+    toast.success(`${product.name} adicionado à venda`, {
+      description: formatBRL(product.price),
+    });
+    setQuery("");
+    setScannerOpen(false);
   };
-  const showTabs = ["dashboard", "sell", "products", "sales", "more", "stock", "finance", "reports"].includes(
-    screen,
-  );
 
   return (
-    <div className="stage">
-      <div className="phone" data-theme={dark ? "dark" : "light"}>
-        <>
-<Screens
-              screen={screen}
-              go={go}
-              back={back}
-              reset={reset}
-              dark={dark}
-              setDark={setDark}
+    <div className="min-h-dvh bg-background pb-24">
+      <header className="bg-primary px-4 pb-5 pt-4 text-primary-foreground">
+        <div className="mx-auto flex max-w-lg items-center gap-3">
+          <div className="flex size-10 items-center justify-center rounded-2xl bg-white/15">
+            <ShoppingCart className="size-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold uppercase tracking-wider text-white/75">Sistema PDV</p>
+            <h1 className="truncate text-xl font-black">Mini Market</h1>
+          </div>
+          <button
+            type="button"
+            className="flex size-10 items-center justify-center rounded-full bg-white/10"
+            aria-label="Notificações"
+            onClick={() => toast.info("Notificações", { description: "Nenhuma notificação nova." })}
+          >
+            <Bell className="size-5" />
+          </button>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-lg space-y-4 px-4 pt-4">
+        <section className="rounded-2xl border bg-card p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Store className="size-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="truncate font-extrabold">{settings.storeName || "Mini Mercado"}</h2>
+              <p className="text-xs text-muted-foreground">
+                {cashOpen ? "Caixa aberto" : "Caixa fechado"} · Operação local
+              </p>
+            </div>
+            <span className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold ${cashOpen ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+              {cashOpen ? "ABERTO" : "FECHADO"}
+            </span>
+          </div>
+        </section>
+
+        <section className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl border bg-card p-4 shadow-sm">
+            <p className="text-xs font-semibold text-muted-foreground">Vendas hoje</p>
+            <strong className="mt-1 block text-xl font-black text-primary">{formatBRL(todayTotal)}</strong>
+          </div>
+          <div className="rounded-2xl border bg-card p-4 shadow-sm">
+            <p className="text-xs font-semibold text-muted-foreground">Qtd. de vendas</p>
+            <strong className="mt-1 block text-xl font-black">{todaySales.length}</strong>
+          </div>
+          <div className="rounded-2xl border bg-card p-4 shadow-sm">
+            <p className="text-xs font-semibold text-muted-foreground">Itens vendidos</p>
+            <strong className="mt-1 block text-xl font-black">{itemsSold}</strong>
+          </div>
+          <div className="rounded-2xl border bg-card p-4 shadow-sm">
+            <p className="text-xs font-semibold text-muted-foreground">Estoque baixo</p>
+            <strong className={`mt-1 block text-xl font-black ${lowStock.length ? "text-destructive" : "text-primary"}`}>
+              {lowStock.length}
+            </strong>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border bg-card p-4 shadow-sm">
+          <div className="mb-3 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Frente de caixa</p>
+              <h2 className="text-lg font-black">Nova venda</h2>
+            </div>
+            <Link
+              to="/vender"
+              className="text-sm font-extrabold text-primary"
+            >
+              Abrir PDV
+            </Link>
+          </div>
+
+          {scannerOpen ? (
+            <BarcodeScanner
+              onScan={addProduct}
+              onClose={() => setScannerOpen(false)}
             />
-            {showTabs && (
-              <nav className="tabbar">
-                {[
-                  { id: "inicio", label: "Início", icon: Store, to: "dashboard" as ScreenId },
-                  { id: "vender", label: "Vender", icon: ShoppingCart, to: "sell" as ScreenId },
-                  { id: "produtos", label: "Produtos", icon: Package, to: "products" as ScreenId },
-                  { id: "vendas", label: "Vendas", icon: BarChart3, to: "sales" as ScreenId },
-                  { id: "mais", label: "Mais", icon: MoreHorizontal, to: "more" as ScreenId },
-                ].map((t) => (
-                  <button
-                    key={t.id}
-                    className={tabOf[screen] === t.id ? "on" : ""}
-                    onClick={() => reset(t.to)}
-                  >
-                    <t.icon size={19} strokeWidth={2} />
-                    {t.label}
-                  </button>
-                ))}
-              </nav>
-            )}
-</>
-      </div>
-    </div>
-  );
-}
-
-/* --------------------------------- chrome --------------------------------- */
-
-function StatusBar({ light }: { light?: boolean }) {
-  return (
-    <div className="statusbar" style={light ? { color: "#fff" } : undefined}>
-      <span>9:41</span>
-      <span>▮▮▮ ⌁ 100%</span>
-    </div>
-  );
-}
-
-function TopBar({
-  title,
-  subtitle,
-  onBack,
-  action,
-}: {
-  title: string;
-  subtitle?: string;
-  onBack?: () => void;
-  action?: React.ReactNode;
-}) {
-  return (
-    <div style={{ background: "var(--primary-deep)" }}>
-      <StatusBar light />
-      <div className="topbar">
-        {onBack ? (
-          <button onClick={onBack} aria-label="Voltar">
-            <ArrowLeft size={19} />
-          </button>
-        ) : (
-          <span className="brand-dot">
-            <ShoppingCart size={18} />
-          </span>
-        )}
-        <div>
-          <h1>{title}</h1>
-          {subtitle && <p>{subtitle}</p>}
-        </div>
-        <span className="spacer" />
-        {action}
-      </div>
-    </div>
-  );
-}
-
-/* --------------------------------- screens -------------------------------- */
-
-function Screens({
-  screen,
-  go,
-  back,
-  reset,
-  dark,
-  setDark,
-}: {
-  screen: ScreenId;
-  go: (s: ScreenId) => void;
-  back: () => void;
-  reset: (s: ScreenId) => void;
-  dark: boolean;
-  setDark: (v: boolean) => void;
-}) {
-  switch (screen) {
-    case "dashboard":
-      return <Dashboard go={go} reset={reset} />;
-    case "sell":
-      return <Sell go={go} />;
-    case "products":
-      return <Products go={go} />;
-    case "stock":
-      return <Stock go={go} back={back} />;
-    case "sales":
-      return <Sales go={go} />;
-    case "finance":
-      return <Finance back={back} />;
-    case "reports":
-      return <Reports back={back} />;
-    case "more":
-      return <More go={go} reset={reset} />;
-    case "settings":
-      return <SettingsScreen back={back} dark={dark} setDark={setDark} />;
-    case "productDetail":
-      return <ProductDetail go={go} back={back} />;
-    case "productNew":
-      return <ProductNew back={back} />;
-    case "checkout":
-      return <Checkout go={go} back={back} />;
-    case "sale":
-      return <SaleReceipt go={go} back={back} />;
-    case "stockMove":
-      return <StockMove back={back} />;
-    case "cashier":
-      return <Cashier go={go} back={back} />;
-    case "cashierMove":
-      return <CashierMove back={back} />;
-    case "suppliers":
-      return <Suppliers back={back} />;
-    case "purchases":
-      return <Purchases go={go} back={back} />;
-    case "users":
-      return <UsersScreen back={back} />;
-    case "company":
-      return <Company back={back} />;
-    case "fiscal":
-      return <Fiscal back={back} />;
-    case "customers":
-      return <Customers back={back} />;
-    case "about":
-      return <About back={back} />;
-    default:
-      return null;
-  }
-}
-
-/* 2 — Dashboard */
-function Dashboard({ go, reset }: { go: (s: ScreenId) => void; reset: (s: ScreenId) => void }) {
-  const shortcuts = [
-    { label: "Vender", icon: ShoppingCart, to: "sell" as ScreenId, tab: true },
-    { label: "Produtos", icon: Package, to: "products" as ScreenId, tab: true },
-    { label: "Estoque", icon: Boxes, to: "stock" as ScreenId },
-    { label: "Relatórios", icon: FileText, to: "reports" as ScreenId },
-    { label: "Financeiro", icon: Wallet, to: "finance" as ScreenId },
-    { label: "Caixa", icon: DoorOpen, to: "cashier" as ScreenId },
-    { label: "Compras", icon: ClipboardList, to: "purchases" as ScreenId },
-    { label: "Fornecedores", icon: Truck, to: "suppliers" as ScreenId },
-    { label: "Configurações", icon: Settings, to: "settings" as ScreenId },
-  ];
-  return (
-    <>
-      <TopBar
-        title="Mini Market"
-        subtitle="Sistema PDV"
-        action={
-          <button aria-label="Notificações">
-            <Bell size={18} />
-          </button>
-        }
-      />
-      <div className="scroll">
-        <div className="page with-tabs">
-          <div className="card" style={{ padding: 14 }}>
-            <h2 style={{ margin: 0, fontSize: 16, fontWeight: 850 }}>Mercadinho Bom Preço LTDA</h2>
-            <p style={{ margin: "3px 0 0", fontSize: 12 }} className="muted">
-              CNPJ 12.345.678/0001-90 · Operador: João Silva
-            </p>
-          </div>
-
-          <div className="card item" style={{ marginTop: 10 }}>
-            <span className="thumb">
-              <DoorOpen size={17} />
-            </span>
-            <div className="body">
-              <h3>Caixa 01 aberto</h3>
-              <p>Abertura 08:00 · saldo {brl(1898.2)}</p>
-            </div>
-            <span className="up" style={{ fontSize: 10, fontWeight: 800, color: "var(--primary)" }}>
-              ABERTO
-            </span>
-          </div>
-
-          <p className="sec-title">Faturamento do dia · 14/09/2026</p>
-          <div className="grid2">
-            <div className="card stat">
-              <span>Vendas</span>
-              <strong>{brl(2487.5)}</strong>
-            </div>
-            <div className="card stat">
-              <span>Qtd. de vendas</span>
-              <strong>48</strong>
-            </div>
-            <div className="card stat">
-              <span>Ticket médio</span>
-              <strong>{brl(51.82)}</strong>
-            </div>
-            <div className="card stat">
-              <span>Itens vendidos</span>
-              <strong>126</strong>
-            </div>
-            <div className="card stat">
-              <span>Estoque baixo</span>
-              <strong style={{ color: "var(--destructive)" }}>12 produtos</strong>
-            </div>
-            <div className="card stat">
-              <span>Saldo em caixa</span>
-              <strong>{brl(1898.2)}</strong>
-            </div>
-          </div>
-
-          <p className="sec-title">Gestão</p>
-          <div className="grid3">
-            {shortcuts.map((s) => (
-              <button
-                key={s.label}
-                className="card shortcut"
-                onClick={() => (s.tab ? reset(s.to) : go(s.to))}
-              >
-                <span className="ic">
-                  <s.icon size={18} />
-                </span>
-                {s.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* 3 — Vender */
-function Sell({ go }: { go: (s: ScreenId) => void }) {
-  const [qty, setQty] = useState<number[]>([1, 1, 1, 1]);
-  const total = sellItems.reduce((s, it, i) => s + it.price * (qty[i] ?? 0), 0);
-  const count = qty.reduce((a, b) => a + b, 0);
-  return (
-    <>
-      <TopBar title="Frente de caixa" subtitle="Nova venda" />
-      <div className="scroll">
-        <div className="page with-tabs" style={{ paddingBottom: 168 }}>
-          <div className="search-row">
-            <div className="search">
-              <Search size={16} />
-              <input placeholder="Buscar produto..." />
-            </div>
-            <button className="icon-btn" aria-label="Scanner">
-              <ScanLine size={18} />
+          ) : (
+            <button
+              type="button"
+              className="flex h-16 w-full items-center justify-center gap-3 rounded-2xl bg-primary px-4 text-base font-extrabold text-primary-foreground shadow-sm active:scale-[0.99]"
+              onClick={() => setScannerOpen(true)}
+            >
+              <ScanBarcode className="size-6" />
+              Ler código de barras
             </button>
-          </div>
-          <button className="btn ghost-green" style={{ marginTop: 10 }}>
-            <ScanLine size={17} /> Ler código de barras
-          </button>
-
-          <p className="sec-title">Itens da venda</p>
-          <div className="list">
-            {sellItems.map((it, i) => (
-              <div className="card item" key={it.name}>
-                <span className="thumb">
-                  <Package size={17} />
-                </span>
-                <div className="body">
-                  <h3>{it.name}</h3>
-                  <p>{brl(it.price)}</p>
-                </div>
-                <div className="stepper">
-                  <button onClick={() => setQty((q) => q.map((v, j) => (j === i ? Math.max(0, v - 1) : v)))}>
-                    <Minus size={13} />
-                  </button>
-                  <b>{qty[i]}</b>
-                  <button
-                    className="solid"
-                    onClick={() => setQty((q) => q.map((v, j) => (j === i ? v + 1 : v)))}
-                  >
-                    <Plus size={13} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-      <div className="sticky-foot" style={{ bottom: 66 }}>
-        <div className="row-between" style={{ marginBottom: 9 }}>
-          <span className="muted" style={{ fontSize: 12.5, fontWeight: 700 }}>
-            {count} {count === 1 ? "item" : "itens"}
-          </span>
-          <strong style={{ fontSize: 18 }}>{brl(total)}</strong>
-        </div>
-        <button className="btn" onClick={() => go("checkout")}>
-          Finalizar venda
-        </button>
-      </div>
-    </>
-  );
-}
-
-/* 4 — Produtos */
-function Products({ go }: { go: (s: ScreenId) => void }) {
-  const [cat, setCat] = useState("Todos");
-  const cats = ["Todos", "Bebidas", "Alimentos", "Higiene"];
-  const list = cat === "Todos" ? productList : productList.filter((p) => p.cat === cat);
-  return (
-    <>
-      <TopBar
-        title="Produtos"
-        subtitle="248 cadastrados"
-        action={
-          <button aria-label="Novo produto" onClick={() => go("productNew")}>
-            <Plus size={19} />
-          </button>
-        }
-      />
-      <div className="scroll">
-        <div className="page with-tabs">
-          <div className="search">
-            <Search size={16} />
-            <input placeholder="Buscar produto..." />
-          </div>
-          <div className="chips">
-            {cats.map((c) => (
-              <button key={c} className={c === cat ? "on" : ""} onClick={() => setCat(c)}>
-                {c}
-              </button>
-            ))}
-          </div>
-          <div className="list" style={{ marginTop: 10 }}>
-            {list.map((p) => (
-              <div className="card item" key={p.name}>
-                <button className="body" onClick={() => go("productDetail")}>
-                  <h3>{p.name}</h3>
-                  <p>
-                    {brl(p.price)} · estoque {p.stock}
-                  </p>
-                </button>
-                <button className="icon-btn" style={{ width: 34, height: 34 }} aria-label="Adicionar">
-                  <Plus size={16} />
-                </button>
-              </div>
-            ))}
-            {list.length === 0 && <p className="muted">Nenhum produto nesta categoria.</p>}
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* 5 — Estoque */
-function Stock({ go, back }: { go: (s: ScreenId) => void; back: () => void }) {
-  const cats = [
-    ["Alimentos", 96],
-    ["Bebidas", 52],
-    ["Higiene", 38],
-    ["Limpeza", 22],
-    ["Diversos", 40],
-  ] as const;
-  return (
-    <>
-      <TopBar
-        title="Estoque"
-        subtitle="Controle de produtos"
-        onBack={back}
-        action={
-          <button aria-label="Movimentação" onClick={() => go("stockMove")}>
-            <RefreshCw size={18} />
-          </button>
-        }
-      />
-      <div className="scroll">
-        <div className="page with-tabs">
-          <div className="grid2">
-            <div className="card stat">
-              <span>Total de produtos</span>
-              <strong>248</strong>
-            </div>
-            <div className="card stat">
-              <span>Estoque baixo</span>
-              <strong style={{ color: "var(--destructive)" }}>12</strong>
-            </div>
-          </div>
-
-          <p className="sec-title">Estoque por categoria</p>
-          <div className="list">
-            {cats.map(([name, qty]) => (
-              <div className="card item" key={name}>
-                <span className="thumb">
-                  <Boxes size={17} />
-                </span>
-                <div className="body">
-                  <h3>{name}</h3>
-                </div>
-                <strong>{qty}</strong>
-              </div>
-            ))}
-          </div>
-
-          <button className="btn outline" style={{ marginTop: 16 }} onClick={() => go("stockMove")}>
-            <RefreshCw size={16} /> Registrar movimentação
-          </button>
-          <button className="btn" style={{ marginTop: 10 }} onClick={() => go("products")}>
-            Ver todos os produtos
-          </button>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* 6 — Vendas */
-function Sales({ go }: { go: (s: ScreenId) => void }) {
-  const bars = [30, 45, 38, 62, 55, 80, 70, 95, 66, 48];
-  const hours = ["8h", "9h", "10h", "11h", "12h", "13h", "14h", "15h", "16h", "17h"];
-  const last = [
-    ["#0487", 68.9],
-    ["#0486", 32.5],
-    ["#0485", 45.0],
-  ] as const;
-  return (
-    <>
-      <TopBar title="Vendas" subtitle="14/09/2026" />
-      <div className="scroll">
-        <div className="page with-tabs">
-          <div className="card stat" style={{ marginBottom: 10 }}>
-            <span>Total de vendas</span>
-            <strong style={{ fontSize: 22 }}>{brl(2487.5)}</strong>
-          </div>
-          <div className="grid2">
-            <div className="card stat">
-              <span>Qtd. de vendas</span>
-              <strong>48</strong>
-            </div>
-            <div className="card stat">
-              <span>Ticket médio</span>
-              <strong>{brl(51.82)}</strong>
-            </div>
-          </div>
-
-          <p className="sec-title">Vendas por hora</p>
-          <div className="card">
-            <div className="bars">
-              {bars.map((h, i) => (
-                <div key={i} style={{ height: `${h}%` }} />
-              ))}
-            </div>
-            <div className="bar-labels">
-              {hours.map((h) => (
-                <span key={h}>{h}</span>
-              ))}
-            </div>
-          </div>
-
-          <p className="sec-title">Últimas vendas</p>
-          <div className="list">
-            {last.map(([id, v]) => (
-              <button className="card item" key={id} onClick={() => go("sale")}>
-                <span className="thumb">
-                  <Receipt size={17} />
-                </span>
-                <div className="body">
-                  <h3>Venda {id}</h3>
-                  <p>14/09/2026</p>
-                </div>
-                <strong>{brl(v)}</strong>
-                <ChevronRight size={16} className="muted" />
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* 7 — Financeiro */
-function Finance({ back }: { back: () => void }) {
-  const moves = [
-    ["Vendas", 2487.5, "in"],
-    ["Fornecedores", 420.0, "out"],
-    ["Despesas", 169.3, "out"],
-  ] as const;
-  return (
-    <>
-      <TopBar title="Financeiro" subtitle="14/09/2026" onBack={back} />
-      <div className="scroll">
-        <div className="page with-tabs">
-          <div className="grid2">
-            <div className="card stat">
-              <span>Entradas</span>
-              <strong style={{ color: "var(--primary)" }}>{brl(2487.5)}</strong>
-            </div>
-            <div className="card stat">
-              <span>Saídas</span>
-              <strong style={{ color: "var(--destructive)" }}>{brl(589.3)}</strong>
-            </div>
-          </div>
-          <div className="card stat" style={{ marginTop: 10 }}>
-            <span>Saldo do dia</span>
-            <strong style={{ fontSize: 22 }}>{brl(1898.2)}</strong>
-          </div>
-
-          <p className="sec-title">Movimentações</p>
-          <div className="list">
-            {moves.map(([name, v, dir]) => (
-              <div className="card item" key={name}>
-                <span
-                  className="thumb"
-                  style={
-                    dir === "out"
-                      ? { background: "color-mix(in oklab, var(--destructive) 12%, transparent)", color: "var(--destructive)" }
-                      : undefined
-                  }
-                >
-                  {dir === "in" ? <ArrowDownLeft size={17} /> : <ArrowUpRight size={17} />}
-                </span>
-                <div className="body">
-                  <h3>{name}</h3>
-                  <p>{dir === "in" ? "Entrada" : "Saída"}</p>
-                </div>
-                <strong style={dir === "out" ? { color: "var(--destructive)" } : { color: "var(--primary)" }}>
-                  {dir === "in" ? "+" : "-"} {brl(v)}
-                </strong>
-              </div>
-            ))}
-          </div>
-
-          <button className="btn outline" style={{ marginTop: 16 }}>
-            Ver extrato completo
-          </button>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* 8 — Relatórios */
-function Reports({ back }: { back: () => void }) {
-  const [range, setRange] = useState("Hoje");
-  const ranges = ["Hoje", "7 dias", "30 dias", "Personalizado"];
-  const cards = [
-    ["Vendas", brl(2487.5), "+12%"],
-    ["Qtd. de vendas", "48", "+8%"],
-    ["Ticket médio", brl(51.82), "+5%"],
-  ] as const;
-  const reports = [
-    "Vendas por período",
-    "Produtos mais vendidos",
-    "Formas de pagamento",
-    "Movimentação de estoque",
-  ];
-  return (
-    <>
-      <TopBar title="Relatórios" subtitle="Desempenho do mercadinho" onBack={back} />
-      <div className="scroll">
-        <div className="page with-tabs">
-          <div className="chips" style={{ marginTop: 0 }}>
-            {ranges.map((r) => (
-              <button key={r} className={r === range ? "on" : ""} onClick={() => setRange(r)}>
-                {r}
-              </button>
-            ))}
-          </div>
-
-          <div className="list" style={{ marginTop: 12 }}>
-            {cards.map(([label, value, delta]) => (
-              <div className="card stat" key={label}>
-                <div className="row-between">
-                  <div>
-                    <span>{label}</span>
-                    <strong>{value}</strong>
-                  </div>
-                  <span className="up">
-                    <TrendingUp size={13} style={{ display: "inline", marginRight: 3 }} />
-                    {delta}
-                  </span>
-                </div>
-                <div className="spark">
-                  {[40, 55, 35, 70, 60, 85, 75].map((h, i) => (
-                    <i key={i} style={{ height: `${h}%` }} />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <p className="sec-title">Relatórios disponíveis</p>
-          <div className="list">
-            {reports.map((r) => (
-              <button className="card item" key={r}>
-                <span className="thumb">
-                  <FileText size={17} />
-                </span>
-                <div className="body">
-                  <h3>{r}</h3>
-                </div>
-                <ChevronRight size={16} className="muted" />
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* 9 — Mais */
-function More({ go, reset }: { go: (s: ScreenId) => void; reset: (s: ScreenId) => void }) {
-  const items = [
-    { label: "Dados do estabelecimento", icon: Building2, to: "company" as ScreenId },
-    { label: "Usuários e operadores", icon: Users, to: "users" as ScreenId },
-    { label: "Caixa (abertura e fechamento)", icon: DoorOpen, to: "cashier" as ScreenId },
-    { label: "Fornecedores", icon: Truck, to: "suppliers" as ScreenId },
-    { label: "Compras e entradas", icon: ClipboardList, to: "purchases" as ScreenId },
-    { label: "Clientes e crediário", icon: UserRound, to: "customers" as ScreenId },
-    { label: "Configuração fiscal (NFC-e / NF-e)", icon: Calculator, to: "fiscal" as ScreenId },
-    { label: "Configurações do sistema", icon: Settings, to: "settings" as ScreenId },
-    { label: "Backup / Sincronização", icon: RefreshCw },
-    { label: "Ajuda e suporte", icon: CircleHelp },
-    { label: "Sobre o sistema", icon: Info, to: "about" as ScreenId },
-  ];
-  return (
-    <>
-      <TopBar title="Mais" subtitle="Ajustes e informações" />
-      <div className="scroll">
-        <div className="page with-tabs">
-          <div className="card item" style={{ padding: 14 }}>
-            <span className="thumb" style={{ width: 44, height: 44 }}>
-              <Store size={20} />
-            </span>
-            <div className="body">
-              <h3 style={{ fontSize: 15, fontWeight: 850 }}>Mercadinho Bom Preço LTDA</h3>
-              <p>CNPJ 12.345.678/0001-90 · Mini Market PDV</p>
-            </div>
-          </div>
-
-          <p className="sec-title">Sistema</p>
-          <div className="list">
-            {items.map((it) => (
-              <button className="card item" key={it.label} onClick={() => it.to && go(it.to)}>
-                <span className="thumb">
-                  <it.icon size={17} />
-                </span>
-                <div className="body">
-                  <h3>{it.label}</h3>
-                </div>
-                <ChevronRight size={16} className="muted" />
-              </button>
-            ))}
-          </div>
-
-          <button className="btn danger" style={{ marginTop: 18 }} onClick={() => reset("dashboard")}>
-            Voltar ao início
-          </button>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* 10 — Configurações */
-function SettingsScreen({
-  back,
-  dark,
-  setDark,
-}: {
-  back: () => void;
-  dark: boolean;
-  setDark: (v: boolean) => void;
-}) {
-  const [notif, setNotif] = useState({ estoque: true, vendas: true, sistema: false });
-  const others = [
-    { label: "Impressora térmica", icon: Printer, value: "Conectada" },
-    { label: "Leitor de código de barras", icon: ScanLine, value: "Ativo" },
-    { label: "Sincronização na nuvem", icon: RefreshCw, value: "Automática" },
-  ];
-  return (
-    <>
-      <TopBar title="Configurações" onBack={back} />
-      <div className="scroll">
-        <div className="page">
-          <p className="sec-title" style={{ marginTop: 4 }}>
-            Aparência
-          </p>
-          <div className="list">
-            <button className={`card choice ${!dark ? "on" : ""}`} onClick={() => setDark(false)}>
-              <span className="radio" />
-              <Sun size={17} />
-              <span style={{ fontSize: 13.5, fontWeight: 700 }}>Tema claro</span>
-            </button>
-            <button className={`card choice ${dark ? "on" : ""}`} onClick={() => setDark(true)}>
-              <span className="radio" />
-              <Moon size={17} />
-              <span style={{ fontSize: 13.5, fontWeight: 700 }}>Tema escuro</span>
-            </button>
-          </div>
-
-          <p className="sec-title">Notificações</p>
-          <div className="list">
-            {(
-              [
-                ["Estoque baixo", "estoque"],
-                ["Novas vendas", "vendas"],
-                ["Atualizações do sistema", "sistema"],
-              ] as const
-            ).map(([label, key]) => (
-              <div className="card item" key={key}>
-                <span className="thumb">
-                  <Bell size={16} />
-                </span>
-                <div className="body">
-                  <h3>{label}</h3>
-                </div>
-                <button
-                  className={`switch ${notif[key] ? "on" : ""}`}
-                  aria-label={label}
-                  onClick={() => setNotif((n) => ({ ...n, [key]: !n[key] }))}
-                >
-                  <i />
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <p className="sec-title">Outras configurações</p>
-          <div className="list">
-            {others.map((o) => (
-              <button className="card item" key={o.label}>
-                <span className="thumb">
-                  <o.icon size={17} />
-                </span>
-                <div className="body">
-                  <h3>{o.label}</h3>
-                  <p>{o.value}</p>
-                </div>
-                <ChevronRight size={16} className="muted" />
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* 11 — Detalhes do Produto */
-function ProductDetail({ go, back }: { go: (s: ScreenId) => void; back: () => void }) {
-  const [editing, setEditing] = useState(false);
-  return (
-    <>
-      <TopBar
-        title="Detalhes do produto"
-        onBack={back}
-        action={
-          <button aria-label="Novo produto" onClick={() => go("productNew")}>
-            <Plus size={19} />
-          </button>
-        }
-      />
-      <div className="scroll">
-        <div className="page">
-          <div className="card item" style={{ padding: 14, marginBottom: 6 }}>
-            <span className="thumb" style={{ width: 48, height: 48 }}>
-              <Package size={21} />
-            </span>
-            <div className="body">
-              <h3 style={{ fontSize: 16, fontWeight: 850 }}>Coca-Cola 2L</h3>
-              <p>Código 78900012345 · Bebidas</p>
-            </div>
-          </div>
-
-          <p className="sec-title">Preços</p>
-          <div className="grid2">
-            <div className="card stat">
-              <span>Preço de venda</span>
-              <strong>{brl(7.99)}</strong>
-            </div>
-            <div className="card stat">
-              <span>Preço de custo</span>
-              <strong>{brl(5.2)}</strong>
-            </div>
-          </div>
-
-          <p className="sec-title">Estoque</p>
-          <div className="grid2">
-            <div className="card stat">
-              <span>Estoque inicial</span>
-              <strong>24</strong>
-            </div>
-            <div className="card stat">
-              <span>Estoque mínimo</span>
-              <strong>6</strong>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
-            <button className="btn outline" onClick={() => setEditing(true)}>
-              Editar
-            </button>
-            <button className="btn" onClick={() => setEditing(false)}>
-              {editing ? "Salvar" : "Salvar"}
-            </button>
-          </div>
-          {editing && (
-            <p className="muted" style={{ fontSize: 11.5, textAlign: "center", marginTop: 10 }}>
-              Modo de edição ativo (demonstração)
-            </p>
           )}
-        </div>
-      </div>
-    </>
-  );
-}
 
-/* 12 — Novo Produto */
-function ProductNew({ back }: { back: () => void }) {
-  return (
-    <>
-      <TopBar title="Novo produto" onBack={back} />
-      <div className="scroll">
-        <div className="page">
-          <div className="photo-drop" style={{ marginBottom: 16 }}>
-            <Camera size={22} />
-            Adicionar foto do produto
-          </div>
-          <div className="field">
-            <label>Nome do produto</label>
-            <input placeholder="Ex: Coca-Cola 2L" />
-          </div>
-          <div className="field">
-            <label>Categoria</label>
-            <select defaultValue="Bebidas">
-              <option>Bebidas</option>
-              <option>Alimentos</option>
-              <option>Higiene</option>
-              <option>Limpeza</option>
-              <option>Diversos</option>
-            </select>
-          </div>
-          <div className="grid2">
-            <div className="field">
-              <label>Preço de venda</label>
-              <input placeholder="R$ 0,00" />
-            </div>
-            <div className="field">
-              <label>Preço de custo</label>
-              <input placeholder="R$ 0,00" />
-            </div>
-          </div>
-          <div className="field">
-            <label>Estoque inicial</label>
-            <input placeholder="0" inputMode="numeric" />
-          </div>
-          <button className="btn" style={{ marginTop: 6 }} onClick={back}>
-            Salvar
-          </button>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* 13 — Finalizar Venda */
-function Checkout({ go, back }: { go: (s: ScreenId) => void; back: () => void }) {
-  const [pay, setPay] = useState("Dinheiro");
-  const methods = [
-    { label: "Dinheiro", icon: Banknote },
-    { label: "Cartão de débito", icon: CreditCard },
-    { label: "Cartão de crédito", icon: CreditCard },
-    { label: "Pix", icon: QrCode },
-  ];
-  return (
-    <>
-      <TopBar title="Finalizar venda" onBack={back} />
-      <div className="scroll">
-        <div className="page">
-          <div className="card stat" style={{ textAlign: "center", padding: 18 }}>
-            <span>Total da venda</span>
-            <strong style={{ fontSize: 30 }}>{brl(68.9)}</strong>
-          </div>
-
-          <p className="sec-title">Forma de pagamento</p>
-          <div className="list">
-            {methods.map((m) => (
-              <button
-                key={m.label}
-                className={`card choice ${pay === m.label ? "on" : ""}`}
-                onClick={() => setPay(m.label)}
-              >
-                <span className="radio" />
-                <m.icon size={17} />
-                <span style={{ fontSize: 13.5, fontWeight: 700 }}>{m.label}</span>
-              </button>
-            ))}
-          </div>
-
-          <button className="btn" style={{ marginTop: 18 }} onClick={() => go("sale")}>
-            Confirmar venda
-          </button>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* 14 — Venda #0487 */
-function SaleReceipt({ go, back }: { go: (s: ScreenId) => void; back: () => void }) {
-  const items = [
-    ["Coca-Cola 2L", 1, 7.99],
-    ["Pão de Forma", 1, 5.99],
-    ["Leite 1L", 1, 4.39],
-  ] as const;
-  return (
-    <>
-      <TopBar title="Venda #0487" subtitle="14/09/2026 - 19:42" onBack={back} />
-      <div className="scroll">
-        <div className="page">
-          <div className="card" style={{ padding: 14 }}>
-            {items.map(([name, q, v]) => (
-              <div className="receipt-line" key={name}>
-                <span>
-                  {name} <span className="muted">{q}x</span>
-                </span>
-                <strong>{brl(v)}</strong>
-              </div>
-            ))}
-            <div className="receipt-line" style={{ borderTop: "1px dashed var(--border)", marginTop: 6, paddingTop: 11 }}>
-              <span className="muted">Subtotal</span>
-              <span>{brl(16.37)}</span>
-            </div>
-            <div className="receipt-line">
-              <span className="muted">Desconto</span>
-              <span>{brl(0)}</span>
-            </div>
-            <div className="receipt-line total">
-              <span>Total</span>
-              <span>{brl(18.37)}</span>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
-            <button className="btn outline">
-              <Printer size={16} /> Imprimir
-            </button>
-            <button className="btn" onClick={() => go("dashboard")}>
-              Concluir
-            </button>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* 15 — Movimentação de Estoque */
-function StockMove({ back }: { back: () => void }) {
-  const [type, setType] = useState("Entrada");
-  return (
-    <>
-      <TopBar title="Movimentação de estoque" onBack={back} />
-      <div className="scroll">
-        <div className="page">
-          <div className="grid2">
-            {["Entrada", "Saída"].map((t) => (
-              <button
-                key={t}
-                className={`card choice ${type === t ? "on" : ""}`}
-                style={{ justifyContent: "center" }}
-                onClick={() => setType(t)}
-              >
-                {t === "Entrada" ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}
-                <span style={{ fontSize: 13.5, fontWeight: 750 }}>{t}</span>
-              </button>
-            ))}
-          </div>
-
-          <div style={{ height: 16 }} />
-          <div className="field">
-            <label>Produto</label>
-            <select defaultValue="Coca-Cola 2L">
-              {["Coca-Cola 2L", "Leite 1L", "Pão de Forma", "Arroz Tipo 1 5kg"].map((p) => (
-                <option key={p}>{p}</option>
-              ))}
-            </select>
-          </div>
-          <div className="field">
-            <label>Quantidade</label>
-            <input placeholder="0" inputMode="numeric" />
-          </div>
-          <div className="field">
-            <label>Observação</label>
-            <textarea placeholder="Ex: reposição do fornecedor" />
-          </div>
-          <button className="btn" onClick={back}>
-            Registrar
-          </button>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* 16 — Sobre o Sistema */
-function About({ back }: { back: () => void }) {
-  const features = [
-    "Vendas e caixa",
-    "Controle de estoque",
-    "Relatórios completos",
-    "Gestão financeira e de caixa",
-    "Backup e sincronização",
-  ];
-  return (
-    <>
-      <TopBar title="Sobre o sistema" onBack={back} />
-      <div className="scroll">
-        <div className="page" style={{ textAlign: "center" }}>
-          <span
-            style={{
-              width: 66,
-              height: 66,
-              borderRadius: 20,
-              margin: "12px auto 0",
-              display: "grid",
-              placeItems: "center",
-              background: "var(--primary-soft)",
-              color: "var(--accent-foreground)",
+          <form
+            className="relative mt-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const exact = products[query.trim()];
+              if (exact) addProduct(exact.barcode);
+              else if (suggestions[0]) addProduct(suggestions[0].barcode);
+              else if (query.trim()) toast.error("Produto não encontrado");
             }}
           >
-            <ShoppingCart size={30} />
-          </span>
-          <h2 style={{ margin: "12px 0 0", fontSize: 19, fontWeight: 850 }}>Mini Market</h2>
-          <p className="muted" style={{ margin: "3px 0 0", fontSize: 12 }}>
-            v1.0.0
-          </p>
-          <p className="muted" style={{ margin: "8px 0 0", fontSize: 13 }}>
-            Sistema PDV para gestão de mercadinhos
-          </p>
+            <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar por nome ou código"
+              className="h-13 w-full rounded-2xl border bg-background pl-12 pr-4 text-base outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-primary"
+              inputMode="search"
+              aria-label="Buscar produto por nome ou código"
+            />
+          </form>
 
-          <div className="card" style={{ padding: 14, marginTop: 18, textAlign: "left" }}>
-            {features.map((f) => (
-              <div className="check-line" key={f}>
-                <span>
-                  <Check size={13} />
-                </span>
-                {f}
-              </div>
-            ))}
-          </div>
-
-          <div className="card item" style={{ marginTop: 14 }}>
-            <span className="thumb">
-              <LayoutGrid size={16} />
-            </span>
-            <div className="body">
-              <h3>Protótipo navegável</h3>
-              <p>Dados de demonstração</p>
+          {query.trim() && (
+            <div className="mt-2 overflow-hidden rounded-2xl border">
+              {suggestions.length ? (
+                suggestions.map((p) => (
+                  <button
+                    type="button"
+                    key={p.barcode}
+                    className="flex w-full items-center gap-3 border-b px-3 py-3 text-left last:border-b-0 active:bg-muted"
+                    onClick={() => addProduct(p.barcode)}
+                  >
+                    <Package className="size-5 text-primary" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-semibold">{p.name}</span>
+                      <span className="block text-xs text-muted-foreground">{p.barcode}</span>
+                    </span>
+                    <strong className="text-sm">{formatBRL(p.price)}</strong>
+                  </button>
+                ))
+              ) : (
+                <p className="px-4 py-3 text-sm text-muted-foreground">Nenhum produto encontrado.</p>
+              )}
             </div>
+          )}
+        </section>
+
+        <section>
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="font-black">Acesso rápido</h2>
           </div>
-
-          <p className="muted" style={{ marginTop: 22, fontSize: 12 }}>
-            Desenvolvido com ❤️ para o seu mercadinho
-          </p>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* ------------------------- gestão do estabelecimento ------------------------ */
-
-/* Caixa: abertura, fechamento, sangria e suprimento */
-function Cashier({ go, back }: { go: (s: ScreenId) => void; back: () => void }) {
-  const [open, setOpen] = useState(true);
-  return (
-    <>
-      <TopBar title="Caixa 01" subtitle="Operador: João Silva" onBack={back} />
-      <div className="scroll">
-        <div className="page">
-          <div className="card" style={{ padding: 14 }}>
-            <p className="muted" style={{ margin: 0, fontSize: 12 }}>
-              Situação do caixa
-            </p>
-            <h2 style={{ margin: "4px 0 0", fontSize: 18, fontWeight: 850 }}>
-              {open ? "Aberto desde 08:00" : "Fechado"}
-            </h2>
+          <div className="grid grid-cols-2 gap-3">
+            <Link to="/vender" className="flex min-h-20 items-center gap-3 rounded-2xl border bg-card p-4 shadow-sm">
+              <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><ShoppingCart className="size-5" /></span>
+              <span className="font-extrabold">Vender</span>
+              <ChevronRight className="ml-auto size-4 text-muted-foreground" />
+            </Link>
+            <Link to="/estoque" className="flex min-h-20 items-center gap-3 rounded-2xl border bg-card p-4 shadow-sm">
+              <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><Boxes className="size-5" /></span>
+              <span className="font-extrabold">Estoque</span>
+              <ChevronRight className="ml-auto size-4 text-muted-foreground" />
+            </Link>
+            <Link to="/vendas" className="flex min-h-20 items-center gap-3 rounded-2xl border bg-card p-4 shadow-sm">
+              <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><BarChart3 className="size-5" /></span>
+              <span className="font-extrabold">Vendas</span>
+              <ChevronRight className="ml-auto size-4 text-muted-foreground" />
+            </Link>
+            <Link to="/mais" className="flex min-h-20 items-center gap-3 rounded-2xl border bg-card p-4 shadow-sm">
+              <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><Wallet className="size-5" /></span>
+              <span className="font-extrabold">Mais</span>
+              <ChevronRight className="ml-auto size-4 text-muted-foreground" />
+            </Link>
           </div>
+        </section>
 
-          <div className="grid2" style={{ marginTop: 10 }}>
-            <div className="card stat">
-              <span>Abertura</span>
-              <strong>{brl(200)}</strong>
+        {lowStock.length > 0 && (
+          <section className="rounded-2xl border border-destructive/20 bg-destructive/5 p-4">
+            <div className="mb-3 flex items-center gap-2 text-destructive">
+              <CircleAlert className="size-5" />
+              <h2 className="font-black">Estoque baixo</h2>
             </div>
-            <div className="card stat">
-              <span>Vendas em dinheiro</span>
-              <strong>{brl(812.4)}</strong>
-            </div>
-            <div className="card stat">
-              <span>Sangrias</span>
-              <strong>{brl(300)}</strong>
-            </div>
-            <div className="card stat">
-              <span>Suprimentos</span>
-              <strong>{brl(100)}</strong>
-            </div>
-          </div>
-
-          <p className="sec-title">Saldo esperado em gaveta</p>
-          <div className="card" style={{ padding: 14 }}>
-            <strong style={{ fontSize: 20 }}>{brl(812.4)}</strong>
-          </div>
-
-          <p className="sec-title">Operações de caixa</p>
-          <div className="list">
-            <button className="card item" onClick={() => go("cashierMove")}>
-              <span className="thumb">
-                <ArrowUpRight size={17} />
-              </span>
-              <div className="body">
-                <h3>Sangria</h3>
-                <p>Retirada de valores da gaveta</p>
-              </div>
-              <ChevronRight size={16} className="muted" />
-            </button>
-            <button className="card item" onClick={() => go("cashierMove")}>
-              <span className="thumb">
-                <ArrowDownLeft size={17} />
-              </span>
-              <div className="body">
-                <h3>Suprimento</h3>
-                <p>Entrada de troco no caixa</p>
-              </div>
-              <ChevronRight size={16} className="muted" />
-            </button>
-          </div>
-
-          <button className="btn" style={{ marginTop: 16 }} onClick={() => setOpen(!open)}>
-            {open ? "Fechar caixa" : "Abrir caixa"}
-          </button>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* Sangria / suprimento */
-function CashierMove({ back }: { back: () => void }) {
-  const [type, setType] = useState("Sangria");
-  return (
-    <>
-      <TopBar title="Movimentação de caixa" onBack={back} />
-      <div className="scroll">
-        <div className="page">
-          <div className="grid2">
-            {["Sangria", "Suprimento"].map((t) => (
-              <button
-                key={t}
-                className={`card choice ${type === t ? "on" : ""}`}
-                style={{ justifyContent: "center" }}
-                onClick={() => setType(t)}
-              >
-                {t === "Sangria" ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
-                <span style={{ fontSize: 13.5, fontWeight: 750 }}>{t}</span>
-              </button>
-            ))}
-          </div>
-          <div style={{ height: 16 }} />
-          <div className="field">
-            <label>Valor</label>
-            <input placeholder="R$ 0,00" inputMode="decimal" />
-          </div>
-          <div className="field">
-            <label>Responsável</label>
-            <select defaultValue="João Silva (gerente)">
-              <option>João Silva (gerente)</option>
-              <option>Maria Souza (operadora)</option>
-            </select>
-          </div>
-          <div className="field">
-            <label>Observação</label>
-            <textarea placeholder="Ex: retirada para depósito bancário" />
-          </div>
-          <button className="btn" onClick={back}>
-            Registrar movimentação
-          </button>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* Fornecedores */
-function Suppliers({ back }: { back: () => void }) {
-  const list = [
-    { name: "Distribuidora Sul Alimentos", doc: "CNPJ 04.112.998/0001-22", tag: "Alimentos" },
-    { name: "Bebidas Vale Norte", doc: "CNPJ 18.774.320/0001-05", tag: "Bebidas" },
-    { name: "Higiene & Limpeza Prime", doc: "CNPJ 22.905.117/0001-71", tag: "Higiene" },
-    { name: "Panificadora Central", doc: "CNPJ 31.660.404/0001-18", tag: "Padaria" },
-  ];
-  return (
-    <>
-      <TopBar
-        title="Fornecedores"
-        subtitle="4 cadastrados"
-        onBack={back}
-        action={
-          <button aria-label="Novo fornecedor">
-            <Plus size={18} />
-          </button>
-        }
-      />
-      <div className="scroll">
-        <div className="page">
-          <div className="search">
-            <Search size={16} className="muted" />
-            <input placeholder="Buscar fornecedor..." />
-          </div>
-          <div className="list" style={{ marginTop: 12 }}>
-            {list.map((f) => (
-              <div className="card item" key={f.name}>
-                <span className="thumb">
-                  <Truck size={17} />
-                </span>
-                <div className="body">
-                  <h3>{f.name}</h3>
-                  <p>
-                    {f.doc} · {f.tag}
-                  </p>
+            <div className="space-y-2">
+              {lowStock.slice(0, 4).map((p) => (
+                <div key={p.barcode} className="flex items-center gap-3 rounded-xl bg-background/80 p-3">
+                  <Package className="size-4 text-muted-foreground" />
+                  <span className="min-w-0 flex-1 truncate text-sm font-semibold">{p.name}</span>
+                  <strong className="text-sm text-destructive">{p.stock} un.</strong>
                 </div>
-                <ChevronRight size={16} className="muted" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* Compras / entradas */
-function Purchases({ go, back }: { go: (s: ScreenId) => void; back: () => void }) {
-  const list = [
-    { id: "#C-1042", sup: "Distribuidora Sul Alimentos", total: 1240.5, st: "Recebida" },
-    { id: "#C-1041", sup: "Bebidas Vale Norte", total: 860.0, st: "Recebida" },
-    { id: "#C-1040", sup: "Higiene & Limpeza Prime", total: 412.9, st: "Pendente" },
-  ];
-  return (
-    <>
-      <TopBar title="Compras e entradas" subtitle="Setembro / 2026" onBack={back} />
-      <div className="scroll">
-        <div className="page">
-          <div className="grid2">
-            <div className="card stat">
-              <span>Compras do mês</span>
-              <strong>{brl(2513.4)}</strong>
+              ))}
             </div>
-            <div className="card stat">
-              <span>Notas pendentes</span>
-              <strong>1</strong>
-            </div>
-          </div>
-
-          <p className="sec-title">Últimas entradas</p>
-          <div className="list">
-            {list.map((c) => (
-              <div className="card item" key={c.id}>
-                <span className="thumb">
-                  <ClipboardList size={17} />
-                </span>
-                <div className="body">
-                  <h3>
-                    {c.id} · {c.sup}
-                  </h3>
-                  <p>{c.st}</p>
-                </div>
-                <strong style={{ fontSize: 13.5 }}>{brl(c.total)}</strong>
-              </div>
-            ))}
-          </div>
-
-          <button className="btn" style={{ marginTop: 16 }} onClick={() => go("stockMove")}>
-            <Plus size={16} /> Lançar entrada de mercadoria
-          </button>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* Usuários e operadores */
-function UsersScreen({ back }: { back: () => void }) {
-  const list = [
-    { name: "João Silva", role: "Administrador", on: true },
-    { name: "Maria Souza", role: "Operador de caixa", on: true },
-    { name: "Carlos Lima", role: "Estoquista", on: true },
-    { name: "Ana Reis", role: "Operador de caixa", on: false },
-  ];
-  return (
-    <>
-      <TopBar
-        title="Usuários e operadores"
-        subtitle="4 usuários"
-        onBack={back}
-        action={
-          <button aria-label="Novo usuário">
-            <Plus size={18} />
-          </button>
-        }
-      />
-      <div className="scroll">
-        <div className="page">
-          <div className="list">
-            {list.map((u) => (
-              <div className="card item" key={u.name}>
-                <span className="thumb">
-                  <UserRound size={17} />
-                </span>
-                <div className="body">
-                  <h3>{u.name}</h3>
-                  <p>{u.role}</p>
-                </div>
-                <span
-                  style={{
-                    fontSize: 10,
-                    fontWeight: 800,
-                    color: u.on ? "var(--primary)" : "var(--destructive)",
-                  }}
-                >
-                  {u.on ? "ATIVO" : "INATIVO"}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          <p className="sec-title">Permissões</p>
-          <div className="list">
-            {["Aplicar descontos", "Cancelar venda", "Realizar sangria", "Editar produtos"].map(
-              (p) => (
-                <div className="card item" key={p}>
-                  <span className="thumb">
-                    <Lock size={17} />
-                  </span>
-                  <div className="body">
-                    <h3>{p}</h3>
-                    <p>Somente administrador</p>
-                  </div>
-                </div>
-              ),
+            {lowStock.length > 4 && (
+              <Link to="/estoque" className="mt-3 flex items-center justify-center gap-1 text-sm font-extrabold text-primary">
+                Ver estoque <ChevronRight className="size-4" />
+              </Link>
             )}
+          </section>
+        )}
+
+        <section className="grid grid-cols-2 gap-3">
+          <Link to="/codigos" className="flex items-center justify-center gap-2 rounded-2xl border bg-card px-3 py-3 text-sm font-bold shadow-sm">
+            <Plus className="size-4" /> Administração
+          </Link>
+          <div className="flex items-center justify-center gap-2 rounded-2xl border bg-card px-3 py-3 text-sm font-bold text-muted-foreground shadow-sm">
+            <DoorOpen className="size-4" /> {cashOpen ? "Caixa aberto" : "Caixa fechado"}
           </div>
-        </div>
-      </div>
-    </>
+        </section>
+      </main>
+
+      <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto flex max-w-lg border-t bg-card/95 px-2 py-2 backdrop-blur">
+        <BottomLink to="/" label="Início" icon={<Store className="size-5" />} />
+        <BottomLink to="/vender" label="Vender" icon={<ShoppingCart className="size-5" />} />
+        <BottomLink to="/estoque" label="Estoque" icon={<Boxes className="size-5" />} />
+        <BottomLink to="/vendas" label="Vendas" icon={<BarChart3 className="size-5" />} />
+        <BottomLink to="/mais" label="Mais" icon={<Wallet className="size-5" />} />
+      </nav>
+    </div>
   );
 }
 
-/* Dados do estabelecimento */
-function Company({ back }: { back: () => void }) {
-  const fields: [string, string][] = [
-    ["Razão social", "Mercadinho Bom Preço LTDA"],
-    ["Nome fantasia", "Mini Market"],
-    ["CNPJ", "12.345.678/0001-90"],
-    ["Inscrição estadual", "110.042.490.114"],
-    ["Regime tributário", "Simples Nacional"],
-    ["Telefone", "(11) 4002-8922"],
-    ["Endereço", "Rua das Palmeiras, 320 — Centro"],
-  ];
+function BottomLink({
+  to,
+  label,
+  icon,
+}: {
+  to: "/" | "/vender" | "/estoque" | "/vendas" | "/mais";
+  label: string;
+  icon: React.ReactNode;
+}) {
   return (
-    <>
-      <TopBar title="Dados do estabelecimento" onBack={back} />
-      <div className="scroll">
-        <div className="page">
-          <div className="card item" style={{ padding: 14 }}>
-            <span className="thumb" style={{ width: 44, height: 44 }}>
-              <Building2 size={20} />
-            </span>
-            <div className="body">
-              <h3 style={{ fontSize: 15, fontWeight: 850 }}>Mercadinho Bom Preço LTDA</h3>
-              <p>Matriz · 1 caixa ativo</p>
-            </div>
-          </div>
-
-          <p className="sec-title">Cadastro</p>
-          <div className="list">
-            {fields.map(([k, v]) => (
-              <div className="card item" key={k}>
-                <div className="body">
-                  <p style={{ fontSize: 11 }}>{k}</p>
-                  <h3>{v}</h3>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <button className="btn" style={{ marginTop: 16 }} onClick={back}>
-            Salvar dados
-          </button>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* Configuração fiscal */
-function Fiscal({ back }: { back: () => void }) {
-  return (
-    <>
-      <TopBar title="Configuração fiscal" subtitle="NFC-e e NF-e" onBack={back} />
-      <div className="scroll">
-        <div className="page">
-          <div className="card" style={{ padding: 14 }}>
-            <h3 style={{ margin: 0, fontSize: 14, fontWeight: 850 }}>Área em preparação</h3>
-            <p className="muted" style={{ margin: "4px 0 0", fontSize: 12 }}>
-              Emissão fiscal ainda não habilitada neste protótipo. Apenas visualização das
-              configurações previstas.
-            </p>
-          </div>
-
-          <p className="sec-title">Parâmetros fiscais</p>
-          <div className="list">
-            {[
-              ["Emissão de NFC-e", "Não configurado"],
-              ["Emissão de NF-e", "Não configurado"],
-              ["Certificado digital A1", "Não enviado"],
-              ["Série e numeração", "Série 1 · próxima 000000001"],
-              ["Ambiente", "Homologação"],
-              ["CFOP padrão de venda", "5.102"],
-            ].map(([k, v]) => (
-              <div className="card item" key={k}>
-                <span className="thumb">
-                  <Calculator size={17} />
-                </span>
-                <div className="body">
-                  <h3>{k}</h3>
-                  <p>{v}</p>
-                </div>
-                <ChevronRight size={16} className="muted" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* Clientes / crediário */
-function Customers({ back }: { back: () => void }) {
-  const list = [
-    { name: "Padaria do Zé (CNPJ)", doc: "08.554.221/0001-33", due: 340.5 },
-    { name: "Lanchonete Vila Nova", doc: "27.118.440/0001-09", due: 128.0 },
-    { name: "Escola Jardim Azul", doc: "14.902.330/0001-55", due: 0 },
-  ];
-  return (
-    <>
-      <TopBar
-        title="Clientes e crediário"
-        subtitle="Contas a receber"
-        onBack={back}
-        action={
-          <button aria-label="Novo cliente">
-            <Plus size={18} />
-          </button>
-        }
-      />
-      <div className="scroll">
-        <div className="page">
-          <div className="grid2">
-            <div className="card stat">
-              <span>Em aberto</span>
-              <strong>{brl(468.5)}</strong>
-            </div>
-            <div className="card stat">
-              <span>Contas ativas</span>
-              <strong>2</strong>
-            </div>
-          </div>
-
-          <p className="sec-title">Cadastros</p>
-          <div className="list">
-            {list.map((c) => (
-              <div className="card item" key={c.name}>
-                <span className="thumb">
-                  <HandCoins size={17} />
-                </span>
-                <div className="body">
-                  <h3>{c.name}</h3>
-                  <p>CNPJ {c.doc}</p>
-                </div>
-                <strong style={{ fontSize: 13 }}>{brl(c.due)}</strong>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </>
+    <Link
+      to={to}
+      activeOptions={{ exact: to === "/" }}
+      className="flex flex-1 flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[11px] font-bold text-muted-foreground"
+      activeProps={{ className: "flex flex-1 flex-col items-center gap-1 rounded-xl bg-primary/10 px-2 py-1.5 text-[11px] font-extrabold text-primary" }}
+    >
+      {icon}
+      {label}
+    </Link>
   );
 }
