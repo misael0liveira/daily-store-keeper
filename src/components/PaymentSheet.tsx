@@ -1,24 +1,15 @@
 import { Link } from "@tanstack/react-router";
 import { Banknote, Copy, CreditCard, QrCode } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { PixQr } from "@/components/PixQr";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { buildPixPayload } from "@/lib/pix";
-import {
-  PAYMENT_LABELS,
-  formatBRL,
-  useStore,
-  type PaymentMethod,
-} from "@/store/useStore";
+import { PixNotification } from "@/lib/pix-notification";
+import { PAYMENT_LABELS, formatBRL, useStore, type PaymentMethod } from "@/store/useStore";
 
 const methods: { key: PaymentMethod; icon: typeof Banknote }[] = [
   { key: "dinheiro", icon: Banknote },
@@ -36,19 +27,19 @@ export function PaymentSheet({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   total: number;
-  onConfirm: (payload: {
-    method: PaymentMethod;
-    paidAmount?: number;
-    change?: number;
-  }) => void;
+  onConfirm: (payload: { method: PaymentMethod; paidAmount?: number; change?: number }) => void;
 }) {
   const settings = useStore((s) => s.settings);
   const [method, setMethod] = useState<PaymentMethod>("dinheiro");
   const [paidRaw, setPaidRaw] = useState("");
+  const onConfirmRef = useRef(onConfirm);
+
+  useEffect(() => {
+    onConfirmRef.current = onConfirm;
+  }, [onConfirm]);
 
   const paidValue = Number(paidRaw.replace(",", "."));
-  const paid =
-    paidRaw.trim() === "" || Number.isNaN(paidValue) ? null : paidValue;
+  const paid = paidRaw.trim() === "" || Number.isNaN(paidValue) ? null : paidValue;
   const change = paid !== null ? paid - total : null;
   const insufficient = method === "dinheiro" && change !== null && change < 0;
 
@@ -61,6 +52,53 @@ export function PaymentSheet({
         amount: total,
       })
     : "";
+
+  useEffect(() => {
+    if (!open || method !== "pix" || total <= 0) {
+      void PixNotification.clearExpectedAmount().catch(() => undefined);
+      return;
+    }
+
+    let timer: number | undefined;
+    let active = true;
+
+    const startMonitor = async () => {
+      try {
+        await PixNotification.setExpectedAmount({ amount: total });
+        const status = await PixNotification.isNotificationAccessGranted();
+        if (!status.granted || !active) return;
+
+        timer = window.setInterval(async () => {
+          if (!active) return;
+          try {
+            const payment = await PixNotification.getLastPayment();
+            if (!payment.found || payment.amount == null) return;
+
+            if (Math.abs(payment.amount - total) <= 0.009) {
+              active = false;
+              if (timer !== undefined) window.clearInterval(timer);
+              toast.success("Pix identificado!", {
+                description: `${formatBRL(payment.amount)} · ${payment.bank ?? "Banco não identificado"}`,
+              });
+              onConfirmRef.current({ method: "pix" });
+            }
+          } catch {
+            // Native bridge is unavailable in the browser preview.
+          }
+        }, 900);
+      } catch {
+        // Native bridge is unavailable in the browser preview.
+      }
+    };
+
+    void startMonitor();
+
+    return () => {
+      active = false;
+      if (timer !== undefined) window.clearInterval(timer);
+      void PixNotification.clearExpectedAmount().catch(() => undefined);
+    };
+  }, [open, method, total]);
 
   const confirm = () => {
     if (insufficient) {
@@ -94,24 +132,15 @@ export function PaymentSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="bottom"
-        className="max-h-[92dvh] overflow-y-auto rounded-t-3xl"
-      >
+      <SheetContent side="bottom" className="max-h-[92dvh] overflow-y-auto rounded-t-3xl">
         <SheetHeader className="text-left">
-          <SheetTitle className="font-display text-3xl tracking-wide">
-            Pagamento
-          </SheetTitle>
+          <SheetTitle className="font-display text-3xl tracking-wide">Pagamento</SheetTitle>
         </SheetHeader>
 
         <div className="space-y-4 px-4 pb-6">
           <div className="flex items-baseline justify-between rounded-2xl border bg-card p-4">
-            <span className="text-sm font-medium text-muted-foreground">
-              Total a pagar
-            </span>
-            <span className="font-display text-3xl tracking-wide text-primary">
-              {formatBRL(total)}
-            </span>
+            <span className="text-sm font-medium text-muted-foreground">Total a pagar</span>
+            <span className="font-display text-3xl tracking-wide text-primary">{formatBRL(total)}</span>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -141,25 +170,17 @@ export function PaymentSheet({
                   inputMode="decimal"
                   placeholder="R$ 0,00"
                   value={paidRaw}
-                  onChange={(e) =>
-                    setPaidRaw(e.target.value.replace(/[^\d.,]/g, ""))
-                  }
+                  onChange={(e) => setPaidRaw(e.target.value.replace(/[^\d.,]/g, ""))}
                   className="h-12 text-right text-lg font-semibold"
                 />
               </div>
               {paid !== null && (
                 <div className="flex items-baseline justify-between">
-                  <span className="text-sm font-medium text-muted-foreground">
-                    Troco
-                  </span>
-                  <span
-                    className={`font-display text-2xl tracking-wide ${
-                      insufficient ? "text-destructive" : "text-primary"
-                    }`}
-                  >
-                    {insufficient
-                      ? `Faltam ${formatBRL(-(change ?? 0))}`
-                      : formatBRL(change ?? 0)}
+                  <span className="text-sm font-medium text-muted-foreground">Troco</span>
+                  <span className={`font-display text-2xl tracking-wide ${
+                    insufficient ? "text-destructive" : "text-primary"
+                  }`}>
+                    {insufficient ? `Faltam ${formatBRL(-(change ?? 0))}` : formatBRL(change ?? 0)}
                   </span>
                 </div>
               )}
@@ -174,25 +195,19 @@ export function PaymentSheet({
                   <p className="text-center text-sm text-muted-foreground">
                     O cliente escaneia o código para pagar {formatBRL(total)}.
                   </p>
-                  <Button
-                    variant="outline"
-                    className="h-12 w-full gap-2"
-                    onClick={copyPix}
-                  >
+                  <p className="rounded-xl bg-secondary p-3 text-center text-sm font-medium text-secondary-foreground">
+                    Aguardando Pix recebido...
+                  </p>
+                  <Button variant="outline" className="h-12 w-full gap-2" onClick={copyPix}>
                     <Copy className="size-5" />
                     Copiar código Pix
                   </Button>
                 </>
               ) : (
                 <div className="space-y-3 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    Nenhuma chave Pix cadastrada ainda.
-                  </p>
+                  <p className="text-sm text-muted-foreground">Nenhuma chave Pix cadastrada ainda.</p>
                   <Button asChild variant="outline" className="h-12 w-full">
-                    <Link
-                      to="/vendas/configuracoes"
-                      onClick={() => onOpenChange(false)}
-                    >
+                    <Link to="/vendas/configuracoes" onClick={() => onOpenChange(false)}>
                       Cadastrar chave Pix
                     </Link>
                   </Button>
@@ -203,16 +218,11 @@ export function PaymentSheet({
 
           {(method === "debito" || method === "credito") && (
             <p className="rounded-2xl border bg-card p-4 text-sm text-muted-foreground">
-              Passe o cartão na maquininha e confirme abaixo para registrar a
-              venda.
+              Passe o cartão na maquininha e confirme abaixo para registrar a venda.
             </p>
           )}
 
-          <Button
-            className="h-14 w-full text-lg"
-            onClick={confirm}
-            disabled={insufficient || (method === "pix" && !pixReady)}
-          >
+          <Button className="h-14 w-full text-lg" onClick={confirm} disabled={insufficient || (method === "pix" && !pixReady)}>
             Confirmar pagamento
           </Button>
         </div>
