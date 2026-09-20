@@ -93,7 +93,7 @@ function Dashboard() {
 
   return (
     <div className="min-h-dvh bg-background">
-      <header className="bg-primary px-4 pb-5 pt-4 text-primary-foreground">
+      <header className="m3-top-app-bar bg-primary text-primary-foreground">
         <div className="mx-auto flex max-w-lg items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-2xl bg-white/15">
             <ShoppingCart className="size-5" />
