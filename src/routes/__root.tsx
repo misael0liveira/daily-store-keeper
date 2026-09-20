@@ -60,7 +60,7 @@ function BottomNav() {
   const active = (path: string) => path === "/" ? pathname === "/" : pathname.startsWith(path);
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 mx-auto flex h-[76px] max-w-lg items-end border-t bg-card/95 px-2 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 shadow-[0_-6px_24px_rgba(0,0,0,0.06)] backdrop-blur">
+    <nav className="m3-bottom-navigation fixed inset-x-0 bottom-0 z-50 mx-auto flex max-w-lg items-end border-t bg-card/95 px-2 shadow-[0_-6px_24px_rgba(0,0,0,0.06)] backdrop-blur">
       <BottomItem to="/" label="Início" icon={<Store className="size-5" />} active={active("/")} />
       <BottomItem to="/vender" label="Vender" icon={<ShoppingCart className="size-5" />} active={active("/vender")} />
       <Link to="/vender" aria-label="Abrir Caixa" className="-mt-9 mx-1 flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-4 border-background bg-primary text-primary-foreground shadow-[0_8px_22px_rgba(34,93,63,0.32)] transition-transform active:scale-95">
@@ -98,7 +98,7 @@ function RootComponent() {
   return <QueryClientProvider client={queryClient}>
     <AppLock>
       <ThemeApplier />
-      <main className="mx-auto max-w-lg min-h-screen pb-20"><Outlet /></main>
+      <main className="m3-app-content mx-auto max-w-lg"><Outlet /></main>
       <BottomNav />
       <Toaster richColors position="top-center" />
       <AppUpdatePrompt />
