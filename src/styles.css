@@ -19,6 +19,18 @@
 }
 
 :root {
+  /* Material 3 compact/mobile design tokens. The UI is rendered in a WebView, so CSS px are the WebView equivalent of density-independent layout units; native Android code uses dp/sp. */
+  --m3-margin: 16px;
+  --m3-gutter: 16px;
+  --m3-top-app-bar: 64px;
+  --m3-bottom-navigation: 80px;
+  --m3-space-1: 8px;
+  --m3-space-2: 16px;
+  --m3-space-3: 24px;
+  --m3-space-4: 32px;
+  --m3-space-5: 48px;
+  --m3-space-6: 64px;
+  --m3-space-7: 80px;
   --background: oklch(0.982 0.003 145);
   --foreground: oklch(0.24 0.02 155);
   --card: oklch(1 0 0); --card-foreground: oklch(0.24 0.02 155);
@@ -53,12 +65,12 @@ button { cursor: pointer; border: 0; background: transparent; }
 }
 .statusbar { display: flex; align-items: center; justify-content: space-between; padding: 8px 18px 4px; font-size: 11px; font-weight: 700; }
 .scroll { flex: 1; overflow-y: auto; }
-.page { padding: 14px 16px 26px; animation: fade .22s ease-out both; }
+.page { padding: var(--m3-space-2) var(--m3-margin) 26px; animation: fade .22s ease-out both; }
 .page.with-tabs { padding-bottom: 94px; }
 @keyframes fade { from { opacity: 0; transform: translateY(6px); } }
 
 /* ---------------- header ---------------- */
-.topbar { background: var(--primary-deep); color: #fff; padding: 12px 16px 16px; display: flex; align-items: center; gap: 10px; }
+.topbar { background: var(--primary-deep); color: #fff; min-height: var(--m3-top-app-bar); padding: env(safe-area-inset-top) var(--m3-margin) 0; display: flex; align-items: center; gap: 10px; }
 .topbar .statusbar { color: #fff; }
 .phone > .topbar-wrap { background: var(--primary-deep); }
 .topbar h1 { margin: 0; font-size: 16px; font-weight: 800; line-height: 1.2; }
@@ -115,7 +127,7 @@ button { cursor: pointer; border: 0; background: transparent; }
 .shortcut span.ic { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: var(--primary-soft); color: var(--accent-foreground); }
 
 /* bottom bars */
-.tabbar { position: absolute; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(5, 1fr); background: var(--card); border-top: 1px solid var(--border); padding: 7px 4px calc(9px + env(safe-area-inset-bottom)); }
+.tabbar { position: absolute; left: 0; right: 0; bottom: 0; min-height: var(--m3-bottom-navigation); display: grid; grid-template-columns: repeat(5, 1fr); background: var(--card); border-top: 1px solid var(--border); padding: 7px 4px env(safe-area-inset-bottom); }
 .tabbar button { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10px; font-weight: 700; color: var(--muted-foreground); }
 .tabbar button.on { color: var(--primary); }
 .sticky-foot { position: absolute; left: 0; right: 0; bottom: 0; padding: 11px 16px calc(12px + env(safe-area-inset-bottom)); background: var(--card); border-top: 1px solid var(--border); }
@@ -165,3 +177,10 @@ button { cursor: pointer; border: 0; background: transparent; }
 .receipt-line.total { font-size: 16px; font-weight: 850; border-top: 1px dashed var(--border); margin-top: 6px; padding-top: 11px; }
 .check-line { display: flex; align-items: center; gap: 9px; font-size: 13px; padding: 7px 0; }
 .check-line span { width: 20px; height: 20px; border-radius: 50%; background: var(--primary-soft); color: var(--accent-foreground); display: grid; place-items: center; flex: none; }
+/* ---------------- Material 3 compact grid ---------------- */
+.m3-app-content { padding-bottom: calc(var(--m3-bottom-navigation) + env(safe-area-inset-bottom)); }
+.m3-page { padding-inline: var(--m3-margin); }
+.m3-grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: var(--m3-gutter); row-gap: var(--m3-space-2); }
+.m3-top-app-bar { min-height: calc(var(--m3-top-app-bar) + env(safe-area-inset-top)); padding-top: env(safe-area-inset-top); box-sizing: border-box; }
+.m3-bottom-navigation { height: calc(var(--m3-bottom-navigation) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); box-sizing: border-box; }
+@media (max-width: 359px) { .m3-page { padding-inline: var(--m3-margin); } }
