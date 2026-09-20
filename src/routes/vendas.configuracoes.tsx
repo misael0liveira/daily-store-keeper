@@ -2,6 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowLeft, Save } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { PixNotificationSettings } from "@/components/PixNotificationSettings";
 import { PixQr } from "@/components/PixQr";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -78,43 +79,19 @@ function ConfiguracoesPage() {
       <div className="space-y-4 rounded-2xl border bg-card p-4 shadow-sm">
         <div className="space-y-2">
           <Label htmlFor="storeName">Nome do mercado</Label>
-          <Input
-            id="storeName"
-            value={storeName}
-            onChange={(e) => setStoreName(e.target.value)}
-            placeholder="Ex.: Mercado do Bairro"
-            className="h-12 text-base"
-          />
+          <Input id="storeName" value={storeName} onChange={(e) => setStoreName(e.target.value)} placeholder="Ex.: Mercado do Bairro" className="h-12 text-base" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="pixKey">Chave Pix</Label>
-          <Input
-            id="pixKey"
-            value={pixKey}
-            onChange={(e) => setPixKey(e.target.value)}
-            placeholder="CPF/CNPJ, telefone, e-mail ou chave aleatória"
-            className="h-12 text-base"
-          />
+          <Input id="pixKey" value={pixKey} onChange={(e) => setPixKey(e.target.value)} placeholder="CPF/CNPJ, telefone, e-mail ou chave aleatória" className="h-12 text-base" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="merchantName">Nome do recebedor</Label>
-          <Input
-            id="merchantName"
-            value={merchantName}
-            onChange={(e) => setMerchantName(e.target.value)}
-            placeholder="Como aparece no Pix"
-            className="h-12 text-base"
-          />
+          <Input id="merchantName" value={merchantName} onChange={(e) => setMerchantName(e.target.value)} placeholder="Como aparece no Pix" className="h-12 text-base" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="city">Cidade</Label>
-          <Input
-            id="city"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            placeholder="Ex.: Sao Paulo"
-            className="h-12 text-base"
-          />
+          <Input id="city" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Ex.: Sao Paulo" className="h-12 text-base" />
         </div>
         <Button className="h-14 w-full gap-2 text-lg" onClick={save}>
           <Save className="size-5" />
@@ -122,11 +99,11 @@ function ConfiguracoesPage() {
         </Button>
       </div>
 
+      <PixNotificationSettings />
+
       {preview && (
         <div className="space-y-3 rounded-2xl border bg-card p-4 shadow-sm">
-          <p className="text-sm font-medium text-muted-foreground">
-            Prévia do QR Code (sem valor)
-          </p>
+          <p className="text-sm font-medium text-muted-foreground">Prévia do QR Code (sem valor)</p>
           <PixQr payload={preview} size={180} />
           <p className="text-center text-xs text-muted-foreground">
             Teste com o app do seu banco para conferir se a chave está correta.
