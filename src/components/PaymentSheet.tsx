@@ -159,7 +159,7 @@ export function PaymentSheet({
       if (timer !== undefined) window.clearInterval(timer);
       void PixNotification.clearExpectedAmount().catch(() => undefined);
     };
-  }, [open, method, total]);
+  }, [open, method, total, pixSuccess]);
 
   const finishPix = () => {
     const success = pixSuccess;
