@@ -5,7 +5,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Nunito Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Nunito Sans", ui-sans-serif, system-ui, sans-serif;
   --color-background: var(--background); --color-foreground: var(--foreground);
   --color-card: var(--card); --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover); --color-popover-foreground: var(--popover-foreground);
@@ -47,17 +48,26 @@
   --border: oklch(0.92 0.006 150); --input: oklch(0.91 0.008 150); --ring: oklch(0.55 0.12 155);
 }
 
-* { border-color: var(--border); box-sizing: border-box; }
-html { background: oklch(0.93 0.01 150); }
-body { margin: 0; background: var(--background); color: var(--foreground); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
-button, input, select, textarea { font: inherit; color: inherit; }
-button { cursor: pointer; border: 0; background: transparent; }
+/* Base resets must not override Tailwind component utilities. */
+@layer base {
+  * { border-color: var(--border); box-sizing: border-box; }
+  html { background: var(--background); }
+  body { margin: 0; background: var(--background); color: var(--foreground); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; border: 0; background: transparent; }
+}
 
 /* ---------------- shell ---------------- */
 .stage { min-height: 100vh; display: grid; place-items: center; padding: 0; background: linear-gradient(160deg, oklch(0.94 0.02 155), oklch(0.9 0.02 150)); }
 .phone { width: min(100%, 390px); min-height: 100dvh; position: relative; overflow: hidden; display: flex; flex-direction: column; background: var(--background); color: var(--foreground); box-shadow: 0 20px 70px rgba(0,0,0,.18); }
-.phone[data-theme="dark"] {
+:root.dark {
   --background: oklch(0.21 0.015 158); --foreground: oklch(0.97 0.005 150);
+  --card-foreground: oklch(0.97 0.005 150);
+  --popover: oklch(0.26 0.018 158); --popover-foreground: oklch(0.97 0.005 150);
+  --secondary-foreground: oklch(0.97 0.005 150);
+  --input: oklch(0.42 0.015 158); --ring: oklch(0.75 0.12 155);
+  --primary: oklch(0.78 0.14 155); --primary-foreground: oklch(0.20 0.025 155);
+  --accent: oklch(0.31 0.045 157);
   --card: oklch(0.26 0.018 158); --muted: oklch(0.25 0.015 158);
   --muted-foreground: oklch(0.72 0.012 150); --border: oklch(0.32 0.015 158);
   --secondary: oklch(0.28 0.018 158); --primary-soft: oklch(0.31 0.045 157);
@@ -262,7 +272,8 @@ button { cursor: pointer; border: 0; background: transparent; }
   padding-top: env(safe-area-inset-top);
   display: flex;
   align-items: center;
-  background: linear-gradient(135deg, var(--primary-deep), var(--primary));
+  color: white;
+  background: linear-gradient(135deg, var(--primary-deep), var(--primary-darker));
   box-shadow: 0 5px 18px rgba(20, 72, 45, .16);
 }
 .pdv-sell-topbar > div {
@@ -299,6 +310,8 @@ button { cursor: pointer; border: 0; background: transparent; }
   width: min(100%, 512px);
   transform: translateX(-50%);
   bottom: calc(var(--m3-bottom-navigation) + env(safe-area-inset-bottom));
+  /* Reserve space for the raised scanner action above the navigation bar. */
+  padding-bottom: 48px;
   border-radius: 22px 22px 0 0;
   border-inline: 1px solid var(--border);
   box-shadow: 0 -10px 30px rgba(19, 55, 37, .08);
@@ -326,9 +339,10 @@ button { cursor: pointer; border: 0; background: transparent; }
   pointer-events: none;
 }
 .pdv-bottom-nav > :nth-child(1) { grid-column: 1; }
-.pdv-bottom-nav > :nth-child(2) { grid-column: 3; }
-.pdv-bottom-nav > :nth-child(3) { grid-column: 4; }
-.pdv-bottom-nav > :nth-child(4) { grid-column: 5; }
+.pdv-bottom-nav > :nth-child(2) { grid-column: 2; }
+.pdv-bottom-nav > :nth-child(3) { grid-column: 3; }
+.pdv-bottom-nav > :nth-child(4) { grid-column: 4; }
+.pdv-bottom-nav > :nth-child(5) { grid-column: 5; }
 .pdv-bottom-item {
   position: relative;
   z-index: 2;

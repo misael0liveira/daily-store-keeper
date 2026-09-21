@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 
 type Props = {
   onScan: (code: string) => void;
-  onClose: () => void;
+  onClose?: () => void;
 };
 
 function ScannerInner({ onScan, onClose }: Props) {
@@ -108,13 +108,15 @@ function ScannerInner({ onScan, onClose }: Props) {
           </div>
         </div>
       )}
-      <Button
-        variant="outline"
-        className="pdv-scanner-close mt-3 h-12 w-full"
-        onClick={onClose}
-      >
-        Fechar câmera
-      </Button>
+      {onClose && (
+        <Button
+          variant="outline"
+          className="pdv-scanner-close mt-3 h-12 w-full"
+          onClick={onClose}
+        >
+          Fechar câmera
+        </Button>
+      )}
     </div>
   );
 }

@@ -89,13 +89,13 @@ function Dashboard() {
 
   return (
     <div className="min-h-dvh bg-background">
-      <header className="m3-top-app-bar bg-primary text-primary-foreground">
-        <div className="mx-auto flex max-w-lg items-center gap-3">
+      <header className="m3-top-app-bar flex items-center bg-primary px-4 text-primary-foreground">
+        <div className="mx-auto flex w-full max-w-lg items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-2xl bg-white/15">
             <ShoppingCart className="size-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold uppercase tracking-wider text-white/75">Sistema PDV</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary-foreground/75">Sistema PDV</p>
             <h1 className="truncate text-xl font-black">Mini Market</h1>
           </div>
           <button

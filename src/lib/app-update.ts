@@ -24,8 +24,10 @@ function compareVersions(a: string, b: string) {
   const pb = b.replace(/^v/i, "").split(".").map((value) => Number.parseInt(value, 10));
 
   for (let i = 0; i < 3; i += 1) {
-    const av = Number.isFinite(pa[i]) ? pa[i] : 0;
-    const bv = Number.isFinite(pb[i]) ? pb[i] : 0;
+    const avRaw = pa[i] ?? Number.NaN;
+    const bvRaw = pb[i] ?? Number.NaN;
+    const av = Number.isFinite(avRaw) ? avRaw : 0;
+    const bv = Number.isFinite(bvRaw) ? bvRaw : 0;
     if (av !== bv) return av > bv ? 1 : -1;
   }
 
