@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Barcode, Minus, Plus, ScanBarcode, Search, Trash2 } from "lucide-react";
+import { Barcode, Minus, Plus, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/vender")({
 function CaixaPage() {
   const { products, cart, addToCart, changeQty, removeFromCart, checkout } =
     useStore();
-  const [scannerOpen, setScannerOpen] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(true);
   const [payOpen, setPayOpen] = useState(false);
   const [query, setQuery] = useState("");
 
@@ -116,23 +116,13 @@ function CaixaPage() {
   return (
     <div className="flex min-h-dvh flex-col">
       <div className="flex-1 space-y-4 px-4 pb-44 pt-4">
-        {scannerOpen ? (
-          <BarcodeScanner
-            onScan={handleScan}
-            onClose={() => setScannerOpen(false)}
-          />
-        ) : (
-          <Button
-            className="h-14 w-full gap-3 text-lg"
-            onClick={() => {
-              unlockAudio();
-              setScannerOpen(true);
-            }}
-          >
-            <ScanBarcode className="size-6" />
-            Abrir leitor de código
-          </Button>
-        )}
+        <BarcodeScanner
+          onScan={(code) => {
+            unlockAudio();
+            handleScan(code);
+          }}
+          onClose={() => setScannerOpen(false)}
+        />
 
         <form
           className="relative"
