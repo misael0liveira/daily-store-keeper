@@ -202,7 +202,8 @@ export function PaymentSheet({
   };
 
   return (
-    <Sheet open={open && !pixSuccess} onOpenChange={onOpenChange}>
+    <>
+      <Sheet open={open && !pixSuccess} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="max-h-[92dvh] overflow-y-auto rounded-t-3xl">
         <SheetHeader className="text-left">
           <SheetTitle className="font-display text-3xl tracking-wide">Pagamento</SheetTitle>
@@ -298,7 +299,7 @@ export function PaymentSheet({
           </Button>
         </div>
       </SheetContent>
-    </Sheet>
+      </Sheet>
 
       {pixSuccess && (
         <PixPaymentSuccess
@@ -307,5 +308,6 @@ export function PaymentSheet({
           onDone={finishPix}
         />
       )}
+    </>
   );
 }
