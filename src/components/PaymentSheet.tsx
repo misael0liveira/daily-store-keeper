@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Banknote, Copy, CreditCard, QrCode } from "lucide-react";
+import { Banknote, Check, Copy, CreditCard, QrCode } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { PixQr } from "@/components/PixQr";
@@ -18,6 +18,65 @@ const methods: { key: PaymentMethod; icon: typeof Banknote }[] = [
   { key: "credito", icon: CreditCard },
 ];
 
+
+function PixPaymentSuccess({
+  amount,
+  bank,
+  onDone,
+}: {
+  amount: number;
+  bank?: string;
+  onDone: () => void;
+}) {
+  useEffect(() => {
+    const timeout = window.setTimeout(onDone, 2800);
+    return () => window.clearTimeout(timeout);
+  }, [onDone]);
+
+  return (
+    <div className="fixed inset-0 z-[200] flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-[#087B3E] px-6 text-white" role="status" aria-live="assertive" aria-label="Pagamento recebido">
+      <style>{\`
+        @keyframes pixRingIn { 0% { transform: scale(.72); opacity: 0; } 35% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.08); opacity: 0; } }
+        @keyframes pixRingPulse { 0%, 100% { transform: scale(.96); opacity: .2; } 50% { transform: scale(1.04); opacity: .55; } }
+        @keyframes pixCircle { 0% { stroke-dashoffset: 330; } 58% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; } }
+        @keyframes pixCheck { 0% { stroke-dashoffset: 80; opacity: 0; } 55% { stroke-dashoffset: 80; opacity: 0; } 78% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 1; } }
+        @keyframes pixDot { 0% { transform: translateY(12px) scale(.4); opacity: 0; } 35% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-26px) scale(.8); opacity: 0; } }
+        @keyframes pixText { 0%, 45% { opacity: 0; transform: translateY(8px); } 72%, 100% { opacity: 1; transform: translateY(0); } }
+        @keyframes pixGlow { 0%, 35% { opacity: 0; transform: scale(.7); } 70%, 100% { opacity: 1; transform: scale(1); } }
+        .pix-success-ring { animation: pixRingIn 1.15s cubic-bezier(.2,.8,.2,1) both; }
+        .pix-success-pulse { animation: pixRingPulse 1.35s ease-in-out .1s infinite; }
+        .pix-success-circle { stroke-dasharray: 330; stroke-dashoffset: 330; animation: pixCircle 1.25s cubic-bezier(.65,0,.35,1) .05s both; }
+        .pix-success-check { stroke-dasharray: 80; stroke-dashoffset: 80; animation: pixCheck 1.25s cubic-bezier(.65,0,.35,1) .05s both; }
+        .pix-success-dot { animation: pixDot 1.25s ease-out .15s both; }
+        .pix-success-text { animation: pixText 1.35s ease-out .1s both; }
+        .pix-success-glow { animation: pixGlow 1.2s ease-out both; }
+        @media (prefers-reduced-motion: reduce) {
+          .pix-success-ring, .pix-success-pulse, .pix-success-circle, .pix-success-check, .pix-success-dot, .pix-success-text, .pix-success-glow {
+            animation: none !important; opacity: 1 !important; transform: none !important; stroke-dashoffset: 0 !important;
+          }
+        }
+      \`}</style>
+      <div className="relative flex size-[260px] items-center justify-center sm:size-[300px]">
+        <div className="pix-success-glow absolute size-[230px] rounded-full bg-emerald-300/20 blur-3xl sm:size-[270px]" />
+        <div className="pix-success-pulse absolute size-[205px] rounded-full border border-emerald-200/30 sm:size-[245px]" />
+        <div className="pix-success-ring absolute size-[190px] rounded-full border border-emerald-200/20 sm:size-[220px]" />
+        <svg viewBox="0 0 140 140" className="relative size-[190px] drop-shadow-[0_0_28px_rgba(134,239,172,.35)] sm:size-[220px]" aria-hidden="true">
+          <circle cx="70" cy="70" r="52" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.24)" strokeWidth="2" />
+          <circle cx="70" cy="70" r="52" fill="none" stroke="#86EFAC" strokeWidth="8" strokeLinecap="round" className="pix-success-circle" transform="rotate(-90 70 70)" />
+          <path d="M43 71.5 61 89 99 51" fill="none" stroke="#fff" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" className="pix-success-check" />
+        </svg>
+        <span className="pix-success-dot absolute left-1/2 top-1/2 size-3 -translate-x-1/2 rounded-full bg-emerald-200 shadow-[0_0_18px_rgba(167,243,208,.9)]" />
+      </div>
+      <div className="pix-success-text -mt-3 text-center">
+        <p className="text-[30px] font-semibold tracking-tight sm:text-[34px]">Pagamento recebido!</p>
+        <p className="mt-3 text-[28px] font-medium tracking-tight text-emerald-100">{formatBRL(amount)}</p>
+        {bank && <p className="mt-2 text-sm font-medium text-emerald-100/80">{bank}</p>}
+        <div className="mt-7 flex items-center justify-center gap-2 text-sm text-emerald-100/80"><Check className="size-4" />Venda confirmada</div>
+      </div>
+    </div>
+  );
+}
+
 export function PaymentSheet({
   open,
   onOpenChange,
@@ -32,6 +91,7 @@ export function PaymentSheet({
   const settings = useStore((s) => s.settings);
   const [method, setMethod] = useState<PaymentMethod>("dinheiro");
   const [paidRaw, setPaidRaw] = useState("");
+  const [pixSuccess, setPixSuccess] = useState<{ amount: number; bank?: string } | null>(null);
   const onConfirmRef = useRef(onConfirm);
 
   useEffect(() => {
@@ -54,7 +114,7 @@ export function PaymentSheet({
     : "";
 
   useEffect(() => {
-    if (!open || method !== "pix" || total <= 0) {
+    if (!open || method !== "pix" || total <= 0 || pixSuccess) {
       void PixNotification.clearExpectedAmount().catch(() => undefined);
       return;
     }
@@ -77,10 +137,11 @@ export function PaymentSheet({
             if (Math.abs(payment.amount - total) <= 0.009) {
               active = false;
               if (timer !== undefined) window.clearInterval(timer);
-              toast.success("Pix identificado!", {
-                description: `${formatBRL(payment.amount)} · ${payment.bank ?? "Banco não identificado"}`,
+              await PixNotification.clearExpectedAmount().catch(() => undefined);
+              setPixSuccess({
+                amount: payment.amount,
+                bank: payment.bank ?? undefined,
               });
-              onConfirmRef.current({ method: "pix" });
             }
           } catch {
             // Native bridge is unavailable in the browser preview.
@@ -100,6 +161,16 @@ export function PaymentSheet({
     };
   }, [open, method, total]);
 
+  const finishPix = () => {
+    const success = pixSuccess;
+    setPixSuccess(null);
+    onConfirmRef.current({ method: "pix" });
+    if (success) {
+      toast.success("Venda concluída", {
+        description: "${formatBRL(success.amount)} · Pix recebido",
+      });
+    }
+  };
   const confirm = () => {
     if (insufficient) {
       toast.error("Valor pago insuficiente", {
@@ -131,7 +202,7 @@ export function PaymentSheet({
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open && !pixSuccess} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="max-h-[92dvh] overflow-y-auto rounded-t-3xl">
         <SheetHeader className="text-left">
           <SheetTitle className="font-display text-3xl tracking-wide">Pagamento</SheetTitle>
@@ -228,5 +299,13 @@ export function PaymentSheet({
         </div>
       </SheetContent>
     </Sheet>
+
+      {pixSuccess && (
+        <PixPaymentSuccess
+          amount={pixSuccess.amount}
+          bank={pixSuccess.bank}
+          onDone={finishPix}
+        />
+      )}
   );
 }
