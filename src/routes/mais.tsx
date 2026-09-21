@@ -1,6 +1,8 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowRight, FileText, HardDrive, Settings, Wifi, WifiOff } from "lucide-react";
 import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { SYNC_ENABLED, pendingSales, syncPendingSales } from "@/lib/sync";
@@ -22,6 +24,8 @@ export const Route = createFileRoute("/mais")({
 
 function MorePage() {
   const online = useOnlineStatus();
+  const theme = useStore((s) => s.theme);
+  const setTheme = useStore((s) => s.setTheme);
   const sales = useStore((s) => s.sales);
   const products = useStore((s) => s.products);
   const pending = pendingSales(sales).length;
@@ -65,6 +69,14 @@ function MorePage() {
           </Link>
         </Button>
       </div>
+
+      <section className="flex items-center justify-between gap-4 rounded-2xl border bg-card p-4" aria-labelledby="appearance-title">
+        <div>
+          <h2 id="appearance-title" className="font-bold">Aparência</h2>
+          <Label htmlFor="dark-theme" className="text-sm text-muted-foreground">Tema escuro</Label>
+        </div>
+        <Switch id="dark-theme" checked={theme === "dark"} onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")} />
+      </section>
 
       <section aria-labelledby="local-data-title">
         <h2 id="local-data-title" className="mb-3 text-base font-bold">Dados neste aparelho</h2>

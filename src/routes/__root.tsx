@@ -62,6 +62,7 @@ function BottomNav() {
   return (
     <nav className="m3-bottom-navigation pdv-bottom-nav fixed inset-x-0 bottom-0 z-50 mx-auto max-w-lg items-end bg-card/95 px-2 backdrop-blur">
       <BottomItem to="/" label="Início" icon={<Store className="size-5" />} active={active("/")} />
+      <BottomItem to="/vendas" label="Vendas" icon={<ShoppingCart className="size-5" />} active={active("/vendas")} />
       <Link to="/vender" aria-label="Abrir Caixa" className="pdv-scan-action -mt-9 mx-auto flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-4 border-background bg-primary text-primary-foreground transition-transform active:scale-95">
         <ScanBarcode className="size-7" strokeWidth={2.4} />
       </Link>
@@ -71,7 +72,7 @@ function BottomNav() {
   );
 }
 
-function BottomItem({ to, label, icon, active }: { to: "/" | "/vender" | "/estoque" | "/mais"; label: string; icon: ReactNode; active: boolean }) {
+function BottomItem({ to, label, icon, active }: { to: "/" | "/vender" | "/vendas" | "/estoque" | "/mais"; label: string; icon: ReactNode; active: boolean }) {
   return (
     <Link
       to={to}

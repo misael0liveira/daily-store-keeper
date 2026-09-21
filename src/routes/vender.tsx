@@ -38,7 +38,6 @@ export const Route = createFileRoute("/vender")({
 function CaixaPage() {
   const { products, cart, addToCart, changeQty, removeFromCart, checkout } =
     useStore();
-  const [scannerOpen, setScannerOpen] = useState(true);
   const [payOpen, setPayOpen] = useState(false);
   const [query, setQuery] = useState("");
 
@@ -123,13 +122,12 @@ function CaixaPage() {
           </div>
         </div>
       </header>
-      <div className="pdv-sell-content flex-1 space-y-4 px-4 pb-44 pt-4">
+      <div className="pdv-sell-content flex-1 space-y-4 px-4 pb-64 pt-4">
         <BarcodeScanner
           onScan={(code) => {
             unlockAudio();
             handleScan(code);
           }}
-          onClose={() => setScannerOpen(false)}
         />
 
         <form
