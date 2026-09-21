@@ -46,6 +46,18 @@ jobs:
             fi
           done
 
+          # TanStack Start may emit the SPA shell as _shell.html.
+          # GitHub Pages requires the entry point to be named index.html.
+          if [ ! -f ".output/public/index.html" ] && [ -f ".output/public/_shell.html" ]; then
+            cp ".output/public/_shell.html" ".output/public/index.html"
+          fi
+          if [ ! -f "dist/client/index.html" ] && [ -f "dist/client/_shell.html" ]; then
+            cp "dist/client/_shell.html" "dist/client/index.html"
+          fi
+          if [ ! -f "dist/index.html" ] && [ -f "dist/_shell.html" ]; then
+            cp "dist/_shell.html" "dist/index.html"
+          fi
+
           ROOT=""
           if [ -f ".output/public/index.html" ]; then
             ROOT=".output/public"
@@ -67,13 +79,30 @@ jobs:
           mkdir -p dist-pages
           cp -R "$ROOT"/. dist-pages/
 
-          if [ -f "dist/sw.js" ]; then
-            cp dist/sw.js dist-pages/sw.js
-          else
-            echo "ERROR: dist/sw.js was not generated."
+          SW_SOURCE=""
+          for candidate in "$ROOT/sw.js" "dist/sw.js" "dist/client/sw.js" ".output/public/sw.js"; do
+            if [ -f "$candidate" ]; then
+              SW_SOURCE="$candidate"
+              break
+            fi
+          done
+          if [ -z "$SW_SOURCE" ]; then
+            echo "ERROR: no generated service worker was found."
+            find . -maxdepth 4 -type f -name 'sw.js' -print | sort
             exit 1
           fi
-          for file in dist/workbox-*.js; do
+          cp "$SW_SOURCE" dist-pages/sw.js
+
+          if [ ! -f "$ROOT/manifest.webmanifest" ]; then
+            for candidate in "dist/manifest.webmanifest" "dist/client/manifest.webmanifest" ".output/public/manifest.webmanifest"; do
+              if [ -f "$candidate" ]; then
+                cp "$candidate" "$ROOT/manifest.webmanifest"
+                break
+              fi
+            done
+          fi
+
+          for file in "$ROOT"/workbox-*.js dist/workbox-*.js dist/client/workbox-*.js .output/public/workbox-*.js; do
             if [ -f "$file" ]; then
               cp "$file" dist-pages/"$(basename "$file")"
             fi
