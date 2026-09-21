@@ -184,3 +184,26 @@ button { cursor: pointer; border: 0; background: transparent; }
 .m3-top-app-bar { min-height: calc(var(--m3-top-app-bar) + env(safe-area-inset-top)); padding-top: env(safe-area-inset-top); box-sizing: border-box; }
 .m3-bottom-navigation { height: calc(var(--m3-bottom-navigation) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); box-sizing: border-box; }
 @media (max-width: 359px) { .m3-page { padding-inline: var(--m3-margin); } }
+
+
+/* PDV scanner: compact camera window, matching the approved green-frame layout. */
+.barcode-scanner-frame {
+  height: 200px;
+  background: #111;
+}
+.barcode-scanner-region,
+.barcode-scanner-region > div {
+  width: 100% !important;
+  height: 100% !important;
+}
+.barcode-scanner-region video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+.barcode-scanner-region canvas {
+  max-width: 100% !important;
+}
+@media (min-width: 431px) {
+  .barcode-scanner-frame { height: 220px; }
+}
