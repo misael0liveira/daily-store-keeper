@@ -25,7 +25,7 @@ function PixPaymentSuccess({
   onDone,
 }: {
   amount: number;
-  bank?: string;
+  bank: string | undefined;
   onDone: () => void;
 }) {
   useEffect(() => {
@@ -91,7 +91,7 @@ export function PaymentSheet({
   const settings = useStore((s) => s.settings);
   const [method, setMethod] = useState<PaymentMethod>("dinheiro");
   const [paidRaw, setPaidRaw] = useState("");
-  const [pixSuccess, setPixSuccess] = useState<{ amount: number; bank?: string } | null>(null);
+  const [pixSuccess, setPixSuccess] = useState<{ amount: number; bank: string | undefined } | null>(null);
   const onConfirmRef = useRef(onConfirm);
 
   useEffect(() => {
@@ -140,7 +140,7 @@ export function PaymentSheet({
               await PixNotification.clearExpectedAmount().catch(() => undefined);
               setPixSuccess({
                 amount: payment.amount,
-                bank: payment.bank ?? undefined,
+                bank: payment.bank,
               });
             }
           } catch {
