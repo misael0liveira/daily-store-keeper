@@ -5,13 +5,14 @@ import { VitePWA } from "vite-plugin-pwa";
 import tailwindcss from "@tailwindcss/vite";
 import { copyFileSync, existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { cwd } from "node:process";
 
 function copyServiceWorkerToClient() {
   return {
     name: "copy-sw-to-client",
     apply: "build" as const,
     closeBundle() {
-      const dist = join(__dirname, "dist");
+      const dist = join(cwd(), "dist");
       const client = join(dist, "client");
       if (!existsSync(client)) return;
       try {
@@ -90,7 +91,7 @@ export default defineConfig({
           },
           {
             urlPattern: ({ url, request }) =>
-              url.origin === self.location.origin &&
+              url.origin === (globalThis as { location?: { origin?: string } }).location?.origin &&
               (request.destination === "script" || request.destination === "style" ||
                 request.destination === "image" || request.destination === "font"),
             handler: "CacheFirst",
