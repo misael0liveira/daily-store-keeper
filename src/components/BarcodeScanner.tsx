@@ -98,8 +98,8 @@ function ScannerInner({ onScan, onClose }: Props) {
           </div>
         </div>
       ) : (
-        <div className="relative overflow-hidden rounded-xl">
-          <div id="barcode-scanner-region" ref={containerRef} className="w-full" />
+        <div className="barcode-scanner-frame relative overflow-hidden rounded-xl">
+          <div id="barcode-scanner-region" ref={containerRef} className="barcode-scanner-region w-full" />
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <div className="relative h-28 w-64 rounded-lg border-2 border-primary/80">
               <div className="absolute inset-x-4 top-1/2 h-0.5 -translate-y-1/2 bg-destructive/80" />
