@@ -35,7 +35,7 @@ function PixPaymentSuccess({
 
   return (
     <div className="fixed inset-0 z-[200] flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-[#087B3E] px-6 text-white" role="status" aria-live="assertive" aria-label="Pagamento recebido">
-      <style>{\`
+      <style>{`
         @keyframes pixRingIn { 0% { transform: scale(.72); opacity: 0; } 35% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.08); opacity: 0; } }
         @keyframes pixRingPulse { 0%, 100% { transform: scale(.96); opacity: .2; } 50% { transform: scale(1.04); opacity: .55; } }
         @keyframes pixCircle { 0% { stroke-dashoffset: 330; } 58% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; } }
@@ -55,7 +55,7 @@ function PixPaymentSuccess({
             animation: none !important; opacity: 1 !important; transform: none !important; stroke-dashoffset: 0 !important;
           }
         }
-      \`}</style>
+      `}</style>
       <div className="relative flex size-[260px] items-center justify-center sm:size-[300px]">
         <div className="pix-success-glow absolute size-[230px] rounded-full bg-emerald-300/20 blur-3xl sm:size-[270px]" />
         <div className="pix-success-pulse absolute size-[205px] rounded-full border border-emerald-200/30 sm:size-[245px]" />
@@ -167,7 +167,7 @@ export function PaymentSheet({
     onConfirmRef.current({ method: "pix" });
     if (success) {
       toast.success("Venda concluída", {
-        description: "${formatBRL(success.amount)} · Pix recebido",
+        description: formatBRL(success.amount) + " · Pix recebido",
       });
     }
   };
