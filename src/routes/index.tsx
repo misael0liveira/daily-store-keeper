@@ -109,8 +109,8 @@ function Dashboard() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-lg space-y-4 px-4 pt-4">
-        <section className="rounded-2xl border bg-card p-4 shadow-sm">
+      <main className="pdv-home mx-auto max-w-lg space-y-4 px-4 pt-4">
+        <section className="pdv-store-card rounded-2xl border bg-card p-4 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <Store className="size-5" />
@@ -127,7 +127,7 @@ function Dashboard() {
           </div>
         </section>
 
-        <section className="grid grid-cols-2 gap-3">
+        <section className="pdv-home-stats grid grid-cols-2 gap-3">
           <div className="rounded-2xl border bg-card p-4 shadow-sm">
             <p className="text-xs font-semibold text-muted-foreground">Vendas hoje</p>
             <strong className="mt-1 block text-xl font-black text-primary">{formatBRL(todayTotal)}</strong>
@@ -148,7 +148,7 @@ function Dashboard() {
           </div>
         </section>
 
-        <section className="rounded-2xl border bg-card p-4 shadow-sm">
+        <section className="pdv-sale-entry rounded-2xl border bg-card p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Frente de caixa</p>
@@ -208,27 +208,27 @@ function Dashboard() {
           )}
         </section>
 
-        <section>
+        <section className="pdv-quick-access">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="font-black">Acesso rápido</h2>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <Link to="/vender" className="flex min-h-20 items-center gap-3 rounded-2xl border bg-card p-4 shadow-sm">
+            <Link to="/vender" className="pdv-quick-card flex min-h-20 items-center gap-3 rounded-2xl border bg-card p-4 shadow-sm">
               <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><ShoppingCart className="size-5" /></span>
               <span className="font-extrabold">Vender</span>
               <ChevronRight className="ml-auto size-4 text-muted-foreground" />
             </Link>
-            <Link to="/estoque" className="flex min-h-20 items-center gap-3 rounded-2xl border bg-card p-4 shadow-sm">
+            <Link to="/estoque" className="pdv-quick-card flex min-h-20 items-center gap-3 rounded-2xl border bg-card p-4 shadow-sm">
               <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><Boxes className="size-5" /></span>
               <span className="font-extrabold">Estoque</span>
               <ChevronRight className="ml-auto size-4 text-muted-foreground" />
             </Link>
-            <Link to="/vendas" className="flex min-h-20 items-center gap-3 rounded-2xl border bg-card p-4 shadow-sm">
+            <Link to="/vendas" className="pdv-quick-card flex min-h-20 items-center gap-3 rounded-2xl border bg-card p-4 shadow-sm">
               <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><BarChart3 className="size-5" /></span>
               <span className="font-extrabold">Vendas</span>
               <ChevronRight className="ml-auto size-4 text-muted-foreground" />
             </Link>
-            <Link to="/mais" className="flex min-h-20 items-center gap-3 rounded-2xl border bg-card p-4 shadow-sm">
+            <Link to="/mais" className="pdv-quick-card flex min-h-20 items-center gap-3 rounded-2xl border bg-card p-4 shadow-sm">
               <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><Wallet className="size-5" /></span>
               <span className="font-extrabold">Mais</span>
               <ChevronRight className="ml-auto size-4 text-muted-foreground" />

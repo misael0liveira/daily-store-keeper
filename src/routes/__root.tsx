@@ -60,9 +60,9 @@ function BottomNav() {
   const active = (path: string) => path === "/" ? pathname === "/" : pathname.startsWith(path);
 
   return (
-    <nav className="m3-bottom-navigation fixed inset-x-0 bottom-0 z-50 mx-auto flex max-w-lg items-end border-t bg-card/95 px-2 shadow-[0_-6px_24px_rgba(0,0,0,0.06)] backdrop-blur">
+    <nav className="m3-bottom-navigation pdv-bottom-nav fixed inset-x-0 bottom-0 z-50 mx-auto max-w-lg items-end bg-card/95 px-2 backdrop-blur">
       <BottomItem to="/" label="Início" icon={<Store className="size-5" />} active={active("/")} />
-      <Link to="/vender" aria-label="Abrir Caixa" className="-mt-9 mx-1 flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-4 border-background bg-primary text-primary-foreground shadow-[0_8px_22px_rgba(34,93,63,0.32)] transition-transform active:scale-95">
+      <Link to="/vender" aria-label="Abrir Caixa" className="pdv-scan-action -mt-9 mx-auto flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-4 border-background bg-primary text-primary-foreground transition-transform active:scale-95">
         <ScanBarcode className="size-7" strokeWidth={2.4} />
       </Link>
       <BottomItem to="/estoque" label="Estoque" icon={<Boxes className="size-5" />} active={active("/estoque")} />
@@ -76,7 +76,7 @@ function BottomItem({ to, label, icon, active }: { to: "/" | "/vender" | "/estoq
     <Link
       to={to}
       activeOptions={{ exact: to === "/" }}
-      className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-1 py-2 text-[11px] font-bold transition-colors ${active ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}
+      className={`pdv-bottom-item flex min-w-0 flex-col items-center gap-1 rounded-2xl px-1 py-2 text-[11px] font-bold transition-colors ${active ? "is-active bg-primary/10 text-primary" : "text-muted-foreground"}`}
     >
       {icon}
       <span>{label}</span>

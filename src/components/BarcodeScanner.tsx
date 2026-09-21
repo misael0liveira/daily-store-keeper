@@ -78,7 +78,7 @@ function ScannerInner({ onScan, onClose }: Props) {
   };
 
   return (
-    <div className="rounded-2xl border bg-card p-3 shadow-sm">
+    <div className="pdv-scanner-card rounded-2xl border bg-card p-3 shadow-sm">
       {error ? (
         <div className="flex flex-col items-center gap-3 py-6 text-center">
           <CameraOff className="size-10 text-destructive" />
@@ -110,7 +110,7 @@ function ScannerInner({ onScan, onClose }: Props) {
       )}
       <Button
         variant="outline"
-        className="mt-3 h-12 w-full"
+        className="pdv-scanner-close mt-3 h-12 w-full"
         onClick={onClose}
       >
         Fechar câmera

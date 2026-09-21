@@ -114,8 +114,16 @@ function CaixaPage() {
   };
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      <div className="flex-1 space-y-4 px-4 pb-44 pt-4">
+    <div className="pdv-sell-page flex min-h-dvh flex-col">
+      <header className="pdv-sell-topbar bg-primary text-primary-foreground">
+        <div className="mx-auto flex max-w-lg items-center px-4">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-white/75">Frente de caixa</p>
+            <h1 className="text-lg font-black">Vender (Caixa)</h1>
+          </div>
+        </div>
+      </header>
+      <div className="pdv-sell-content flex-1 space-y-4 px-4 pb-44 pt-4">
         <BarcodeScanner
           onScan={(code) => {
             unlockAudio();
@@ -125,7 +133,7 @@ function CaixaPage() {
         />
 
         <form
-          className="relative"
+          className="pdv-product-search relative"
           onSubmit={(e) => {
             e.preventDefault();
             submitQuery();
@@ -178,7 +186,7 @@ function CaixaPage() {
         )}
 
         {cart.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 py-16 text-center">
+          <div className="pdv-empty-cart flex flex-col items-center gap-3 py-16 text-center">
             <Barcode className="size-12 text-muted-foreground" />
             <p className="font-display text-2xl tracking-wide text-muted-foreground">
               Carrinho vazio
@@ -195,7 +203,7 @@ function CaixaPage() {
               return (
                 <li
                   key={item.barcode}
-                  className="flex items-center gap-3 rounded-2xl border bg-card p-3 shadow-sm"
+                  className="pdv-cart-item flex items-center gap-3 rounded-2xl border bg-card p-3 shadow-sm"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{p.name}</p>
@@ -242,7 +250,7 @@ function CaixaPage() {
         )}
       </div>
 
-      <div className="fixed inset-x-0 bottom-16 z-20 border-t bg-card/95 px-4 py-3 backdrop-blur">
+      <div className="pdv-checkout-bar fixed inset-x-0 bottom-16 z-20 border-t bg-card/95 px-4 py-3 backdrop-blur">
         <div className="mb-2 flex items-baseline justify-between">
           <span className="text-sm font-medium text-muted-foreground">
             Total da compra
