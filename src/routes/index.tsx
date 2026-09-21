@@ -6,7 +6,6 @@ import {
   Boxes,
   Bell,
   Package,
-  ScanBarcode,
   Search,
   ShoppingCart,
   Store,
@@ -16,8 +15,7 @@ import {
   DoorOpen,
 } from "lucide-react";
 import { toast } from "sonner";
-import { BarcodeScanner } from "@/components/BarcodeScanner";
-import { beep, unlockAudio, vibrate } from "@/lib/feedback";
+import { beep, vibrate } from "@/lib/feedback";
 import { useStore, formatBRL } from "@/store/useStore";
 
 export const Route = createFileRoute("/")({
@@ -39,7 +37,6 @@ function Dashboard() {
   const cashOpen = useStore((s) => s.cashOpen);
   const settings = useStore((s) => s.settings);
   const addToCart = useStore((s) => s.addToCart);
-  const [scannerOpen, setScannerOpen] = useState(false);
   const [query, setQuery] = useState("");
 
   const productList = useMemo(() => Object.values(products), [products]);
@@ -88,7 +85,6 @@ function Dashboard() {
       description: formatBRL(product.price),
     });
     setQuery("");
-    setScannerOpen(false);
   };
 
   return (
@@ -165,25 +161,6 @@ function Dashboard() {
               Abrir PDV
             </Link>
           </div>
-
-          {scannerOpen ? (
-            <BarcodeScanner
-              onScan={addProduct}
-              onClose={() => setScannerOpen(false)}
-            />
-          ) : (
-            <button
-              type="button"
-              className="flex h-16 w-full items-center justify-center gap-3 rounded-2xl bg-primary px-4 text-base font-extrabold text-primary-foreground shadow-sm active:scale-[0.99]"
-              onClick={() => {
-                unlockAudio();
-                setScannerOpen(true);
-              }}
-            >
-              <ScanBarcode className="size-6" />
-              Ler código de barras
-            </button>
-          )}
 
           <form
             className="relative mt-3"
