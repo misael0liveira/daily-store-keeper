@@ -120,6 +120,26 @@
 }
 
 /* ---------------- shell ---------------- */
+.app-startup {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 32px;
+  background: var(--background);
+}
+.app-startup img {
+  width: min(82vw, 360px);
+  height: auto;
+}
+.app-startup span {
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
 .app-watermark {
   position: fixed;
   inset: 0;

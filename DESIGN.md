@@ -24,7 +24,7 @@ Não colocar números ilustrativos, fotos de câmera ou botões sem função na 
 
 Coluna até 512px; composição destinada a 320–430px. Respeitar safe areas e scroll natural. A barra de status do Android usa ícones escuros sobre o fundo claro e reaplica esse contraste ao voltar da câmera. Nomes longos quebram linha. Ícones de navegação sempre têm rótulos. Modais usam os primitivos Radix com título e descrição. Tema e movimento reduzido devem manter controles acessíveis.
 
-O APK exige biometria, sem oferecer PIN, padrão ou senha do aparelho como alternativa. A tela nativa de abertura mantém o logotipo visível por cerca de quatro segundos somente na inicialização fria.
+O APK exige biometria, sem oferecer PIN, padrão ou senha do aparelho como alternativa. A abertura mantém o logotipo visível por cerca de quatro segundos somente na inicialização fria; a autenticação biométrica é montada depois dessa etapa para não disputar a janela nativa de abertura.
 
 ## Verificação
 

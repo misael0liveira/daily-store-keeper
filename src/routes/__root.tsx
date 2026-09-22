@@ -11,7 +11,7 @@ import {
 import { useEffect, type CSSProperties, type ReactNode } from "react";
 import { Boxes, ScanBarcode, House, ReceiptText, Settings } from "lucide-react";
 import appCss from "../styles.css?url";
-import { AppLock } from "@/components/AppLock";
+import { AppLock, AppStartup } from "@/components/AppLock";
 import { AppUpdatePrompt } from "@/components/AppUpdatePrompt";
 import { Toaster } from "@/components/ui/sonner";
 import { registerPWA } from "@/lib/pwa-register";
@@ -207,14 +207,16 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeApplier />
       <BrandWatermark />
-      <AppLock>
-        <main className="m3-app-content mx-auto max-w-lg">
-          <Outlet />
-        </main>
-        <BottomNav />
-        <Toaster richColors position="top-center" />
-        <AppUpdatePrompt />
-      </AppLock>
+      <AppStartup>
+        <AppLock>
+          <main className="m3-app-content mx-auto max-w-lg">
+            <Outlet />
+          </main>
+          <BottomNav />
+          <Toaster richColors position="top-center" />
+          <AppUpdatePrompt />
+        </AppLock>
+      </AppStartup>
     </QueryClientProvider>
   );
 }
