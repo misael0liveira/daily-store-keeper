@@ -95,11 +95,12 @@ export function AppLock({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-5">
       <div className="w-full max-w-sm rounded-3xl border bg-card p-7 text-center shadow-sm">
-        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-white shadow-sm">
-          <img src="/brand/mercadinho-uniao-mark.svg" alt="" className="h-16 w-16" />
-        </div>
-        <h1 className="mt-5 text-2xl font-extrabold tracking-tight">Mercadinho União</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <img
+          src="/brand/mercadinho-uniao-logo.svg"
+          alt="Mercadinho União"
+          className="mx-auto w-full max-w-[290px]"
+        />
+        <p className="mt-5 text-sm text-muted-foreground">
           Aplicativo bloqueado. Desbloqueie usando a digital ou a senha, PIN ou padrão de bloqueio
           do seu celular.
         </p>
