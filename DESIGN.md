@@ -7,14 +7,14 @@ Reproduzir a proposta visual aprovada pelo usuário em 22/09/2026: interface de 
 ## Tokens e componentes
 
 Fonte canônica: src/styles.css. Roboto com fallback system-ui. Fundo #f5f8f7, ação #087d49, texto #141b25; cartões brancos com borda discreta, raio 14px e margem de tela 16px. Tema escuro usa as variáveis existentes. Sem duplicação de tokens em JavaScript.
-Navegação: __root.tsx. Cinco destinos: Início, Histórico, Caixa, Estoque, Ajustes. Círculo ativo móvel com sombra neutra, folga visível e recorte côncavo de entrada suave na superfície. O ícone ativo fica dentro do círculo e seu rótulo logo abaixo. Configurações pertencem a Ajustes. Movimento horizontal de 240ms; animação reduzida respeitada.
+Navegação: __root.tsx. Cinco destinos: Início, Histórico, Caixa, Estoque, Ajustes. Círculo ativo móvel com sombra neutra, folga visível e recorte côncavo cúbico, estreito e de entrada suave na superfície. O ícone ativo fica dentro do círculo e seu rótulo logo abaixo. Configurações pertencem a Ajustes. Movimento horizontal de 240ms; animação reduzida respeitada.
 Primitivos: Button, Input, Sheet e AlertDialog existentes. Estado: useStore. Feedback: sonner.
 
 ## Composição
 
 Início: nome configurado e um único status; resumo diário com Nova venda; até três produtos de reposição; duas últimas vendas.
 Caixa: título simples, câmera persistente, busca, lista com subtotal e quantidade, pagamento fixo acima da navegação.
-Scanner: uma única guia retangular sobre a imagem e uma linha verde; sem ícone sobre a câmera, linha vermelha ou molduras sobrepostas.
+Scanner: quatro cantos brancos independentes enquadram o código e uma linha verde atravessa a leitura; sem retângulo completo, ícone sobre a câmera, linha vermelha ou molduras sobrepostas.
 Estoque: lista primeiro, busca por nome/código, filtro de saldo <=5; cadastro/edição em Sheet.
 Histórico: cabeçalho e cartões com a mesma densidade das demais rotas; filtros suaves, configurações somente em Ajustes e um único estado vazio por período.
 Não colocar números ilustrativos, fotos de câmera ou botões sem função na produção.

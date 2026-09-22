@@ -1015,7 +1015,7 @@
 .pdv-scanner-card {
   padding: 0;
   overflow: hidden;
-  border-radius: 12px;
+  border-radius: 10px;
   box-shadow: none;
 }
 .pdv-scanner-card:has(.barcode-scanner-frame) {
@@ -1026,6 +1026,7 @@
 }
 .barcode-scanner-frame {
   height: 180px;
+  border-radius: 10px;
   background: #26362e;
 }
 .pdv-scan-guide {
@@ -1034,23 +1035,54 @@
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgb(0 0 0 / 0.08);
+  background: rgb(0 0 0 / 0.06);
 }
-.pdv-scan-guide::before {
-  content: "";
-  width: min(72%, 260px);
-  height: 96px;
-  border: 1px solid rgb(255 255 255 / 0.82);
-  border-radius: 10px;
-  box-shadow: 0 0 0 999px rgb(0 0 0 / 0.12);
+.pdv-scan-corners {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(44%, 176px);
+  height: 92px;
+  transform: translate(-50%, -50%);
+}
+.pdv-scan-corners i {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: rgb(255 255 255 / 0.92);
+  border-style: solid;
+}
+.pdv-scan-corners .is-top-left {
+  left: 0;
+  top: 0;
+  border-width: 3px 0 0 3px;
+  border-radius: 5px 0 0;
+}
+.pdv-scan-corners .is-top-right {
+  right: 0;
+  top: 0;
+  border-width: 3px 3px 0 0;
+  border-radius: 0 5px 0 0;
+}
+.pdv-scan-corners .is-bottom-left {
+  left: 0;
+  bottom: 0;
+  border-width: 0 0 3px 3px;
+  border-radius: 0 0 0 5px;
+}
+.pdv-scan-corners .is-bottom-right {
+  right: 0;
+  bottom: 0;
+  border-width: 0 3px 3px 0;
+  border-radius: 0 0 5px;
 }
 .pdv-scan-guide span {
   position: absolute;
-  left: 18%;
-  right: 18%;
+  width: min(50%, 200px);
+  left: 50%;
   top: 50%;
   height: 2px;
-  transform: translateY(-50%);
+  transform: translate(-50%, -50%);
   border-radius: 999px;
   background: #36c47b;
   box-shadow: 0 0 8px rgb(54 196 123 / 0.5);
@@ -1142,25 +1174,35 @@
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   z-index: 40;
-  filter: drop-shadow(0 -1px 1px rgb(15 40 25 / 0.09));
 }
 .pos-nav-surface {
   position: absolute;
   inset: 0;
   background: var(--card);
   border-radius: 18px 18px 0 0;
-  mask: radial-gradient(circle 53px at var(--tab-center) -18px, transparent 52px, #000 53px);
+  box-shadow: 0 -1px 4px rgb(15 40 25 / 0.08);
+}
+.pos-nav-notch {
+  position: absolute;
+  left: var(--tab-center);
+  top: -1px;
+  width: 84px;
+  height: 38px;
+  color: var(--background);
+  fill: currentColor;
+  transform: translateX(-50%);
+  transition: left 240ms ease;
 }
 .pos-nav-bubble {
   position: absolute;
-  width: 50px;
-  height: 50px;
+  width: 48px;
+  height: 48px;
   left: var(--tab-center);
-  top: -18px;
+  top: -16px;
   transform: translateX(-50%);
   border-radius: 50%;
   background: var(--primary);
-  box-shadow: 0 7px 16px rgb(20 27 37 / 0.22);
+  box-shadow: 0 6px 14px rgb(20 27 37 / 0.18);
   transition: left 240ms ease;
 }
 .pos-nav-item {
@@ -1185,7 +1227,7 @@
 }
 .pos-nav-item.is-active svg {
   color: var(--primary-foreground);
-  transform: translateY(-18px);
+  transform: translateY(-17px);
 }
 
 /* Histórico follows the same compact visual language as Início and Estoque. */
@@ -1379,6 +1421,7 @@ a:focus-visible {
 }
 @media (prefers-reduced-motion: reduce) {
   .pos-nav,
+  .pos-nav-notch,
   .pos-nav-bubble,
   .pos-nav-item svg {
     transition: none;

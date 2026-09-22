@@ -149,6 +149,14 @@ function BottomNav() {
       style={{ "--active-tab": selected } as CSSProperties}
     >
       <div className="pos-nav-surface" aria-hidden="true" />
+      <svg
+        className="pos-nav-notch"
+        viewBox="0 -2 84 38"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <path d="M0-2H84V0C72 0 69 4 63 14C56 27 51 34 42 34C33 34 28 27 21 14C15 4 12 0 0 0Z" />
+      </svg>
       <div className="pos-nav-bubble" aria-hidden="true" />
       {navigation.map(({ to, label, icon: Icon }, index) => (
         <Link

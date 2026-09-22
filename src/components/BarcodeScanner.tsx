@@ -102,6 +102,12 @@ function ScannerInner({ onScan, onClose }: Props) {
             className="barcode-scanner-region w-full"
           />
           <div className="pdv-scan-guide" aria-hidden="true">
+            <div className="pdv-scan-corners">
+              <i className="is-top-left" />
+              <i className="is-top-right" />
+              <i className="is-bottom-left" />
+              <i className="is-bottom-right" />
+            </div>
             <span />
           </div>
         </div>
