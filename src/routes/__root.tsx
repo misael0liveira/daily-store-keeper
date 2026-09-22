@@ -127,7 +127,7 @@ function ThemeApplier() {
 function BrandWatermark() {
   return (
     <div className="app-watermark" aria-hidden="true">
-      <img src="/brand/mercadinho-uniao-logo.svg" alt="" />
+      <img src="/brand/mercadinho-uniao-logo.png" alt="" />
     </div>
   );
 }

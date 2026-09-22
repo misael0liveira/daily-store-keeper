@@ -18,7 +18,7 @@ export function AppStartup({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="app-startup" role="status" aria-label="Abrindo Mercadinho União">
-      <img src="/brand/mercadinho-uniao-logo.svg" alt="Mercadinho União" />
+      <img src="/brand/mercadinho-uniao-logo.png" alt="Mercadinho União" />
       <span>Abrindo…</span>
     </div>
   );
@@ -111,7 +111,7 @@ export function AppLock({ children }: { children: React.ReactNode }) {
     <div className="relative z-[1] flex min-h-screen items-center justify-center bg-background px-5">
       <div className="w-full max-w-sm rounded-3xl border bg-card p-7 text-center shadow-sm">
         <img
-          src="/brand/mercadinho-uniao-logo.svg"
+          src="/brand/mercadinho-uniao-logo.png"
           alt="Mercadinho União"
           className="mx-auto w-full max-w-[290px]"
         />

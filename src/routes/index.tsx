@@ -15,7 +15,7 @@ function Dashboard() {
     <div className="pos-page pos-home">
       <header className="pos-header pos-home-header">
         <img
-          src="/brand/mercadinho-uniao-logo.svg"
+          src="/brand/mercadinho-uniao-logo.png"
           alt={settings.storeName || "Mercadinho União"}
           className="pos-home-logo"
         />
