@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Mini Market POS</string>
-    <string name="title_activity_main">Mini Market POS</string>
+    <string name="app_name">Mercadinho União</string>
+    <string name="title_activity_main">Mercadinho União</string>
     <string name="package_name">app.minimarket.pos</string>
     <string name="custom_url_scheme">app.minimarket.pos</string>
 </resources>

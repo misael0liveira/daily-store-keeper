@@ -39,12 +39,12 @@ import { formatBRL, useStore } from "@/store/useStore";
 export const Route = createFileRoute("/estoque")({
   head: () => ({
     meta: [
-      { title: "Estoque — Mini Mercado PDV" },
+      { title: "Estoque — Mercadinho União" },
       {
         name: "description",
         content: "Cadastre, edite e exclua produtos do estoque do mini mercado.",
       },
-      { property: "og:title", content: "Estoque — Mini Mercado PDV" },
+      { property: "og:title", content: "Estoque — Mercadinho União" },
       {
         property: "og:description",
         content: "Gestão de produtos com leitura de código de barras.",

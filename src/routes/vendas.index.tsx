@@ -22,13 +22,13 @@ import { PAYMENT_LABELS, formatBRL, useStore, type PaymentMethod } from "@/store
 export const Route = createFileRoute("/vendas/")({
   head: () => ({
     meta: [
-      { title: "Histórico — Mini Mercado PDV" },
+      { title: "Histórico — Mercadinho União" },
       {
         name: "description",
         content:
           "Resumo semanal, quinzenal e mensal das vendas do mini mercado, com exportação em PDF.",
       },
-      { property: "og:title", content: "Histórico — Mini Mercado PDV" },
+      { property: "og:title", content: "Histórico — Mercadinho União" },
       {
         property: "og:description",
         content: "Saídas registradas por forma de pagamento e relatório em PDF.",

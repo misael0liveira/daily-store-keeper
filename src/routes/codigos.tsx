@@ -23,9 +23,9 @@ function errorMessage(error: unknown, fallback: string) {
 export const Route = createFileRoute("/codigos")({
   head: () => ({
     meta: [
-      { title: "Códigos de ativação — Mini Market POS" },
-      { name: "description", content: "Gere e gerencie códigos de ativação do Mini Market POS." },
-      { property: "og:title", content: "Códigos de ativação — Mini Market POS" },
+      { title: "Códigos de ativação — Mercadinho União" },
+      { name: "description", content: "Gere e gerencie códigos de ativação do Mercadinho União." },
+      { property: "og:title", content: "Códigos de ativação — Mercadinho União" },
       {
         property: "og:description",
         content: "Crie códigos para liberar o app em novos celulares.",

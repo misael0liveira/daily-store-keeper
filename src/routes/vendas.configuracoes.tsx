@@ -13,14 +13,14 @@ import { useStore } from "@/store/useStore";
 export const Route = createFileRoute("/vendas/configuracoes")({
   head: () => ({
     meta: [
-      { title: "Configurações de vendas — Mini Mercado PDV" },
+      { title: "Configurações de vendas — Mercadinho União" },
       {
         name: "description",
         content: "Cadastre a chave Pix do mini mercado e o nome usado nos relatórios de vendas.",
       },
       {
         property: "og:title",
-        content: "Configurações de vendas — Mini Mercado PDV",
+        content: "Configurações de vendas — Mercadinho União",
       },
       {
         property: "og:description",
@@ -56,7 +56,7 @@ function ConfiguracoesPage() {
       return;
     }
     setSettings({
-      storeName: storeName.trim() || "Mini Mercado",
+      storeName: storeName.trim() || "Mercadinho União",
       pixKey: pixKey.trim(),
       merchantName: merchantName.trim(),
       city: city.trim(),

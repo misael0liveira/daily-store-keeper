@@ -49,7 +49,7 @@ jobs:
           p = Path('android/app/src/main/res/values/strings.xml')
           s = p.read_text()
           import re
-          s = re.sub(r'(<string name="(?:app_name|title_activity_main)">).*?(</string>)', r'\1Mercado União — Teste\2', s)
+          s = re.sub(r'(<string name="(?:app_name|title_activity_main)">).*?(</string>)', r'\1Mercadinho União — Teste\2', s)
           p.write_text(s)
           p = Path('src/routes/__root.tsx')
           s = p.read_text().replace('<AppUpdatePrompt />', '')
@@ -88,16 +88,16 @@ jobs:
         run: |
           APK=android/app/build/outputs/apk/debug/app-debug.apk
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify "$APK"
-          cp "$APK" Mercado-Uniao-Teste.apk
-          sha256sum Mercado-Uniao-Teste.apk > Mercado-Uniao-Teste.sha256
+          cp "$APK" Mercadinho-Uniao-Teste.apk
+          sha256sum Mercadinho-Uniao-Teste.apk > Mercadinho-Uniao-Teste.sha256
 
       - name: Upload test APK
         uses: actions/upload-artifact@v4
         with:
           name: mercado-uniao-layout-teste
           path: |
-            Mercado-Uniao-Teste.apk
-            Mercado-Uniao-Teste.sha256
+            Mercadinho-Uniao-Teste.apk
+            Mercadinho-Uniao-Teste.sha256
           if-no-files-found: error
 
       - name: Publish separate test download
@@ -105,14 +105,14 @@ jobs:
         with:
           tag_name: layout-test-${{ github.run_number }}
           target_commitish: ${{ github.sha }}
-          name: Novo layout — APK de teste
+          name: Mercadinho União — APK de teste
           prerelease: true
           make_latest: false
           body: |
             Versão de teste do layout do PR #11.
-            Instala separadamente como Mercado União — Teste.
+            Instala separadamente como Mercadinho União — Teste.
             Dados locais próprios; não substitui a versão oficial.
             Sem sincronização remota configurada nesta compilação.
           files: |
-            Mercado-Uniao-Teste.apk
-            Mercado-Uniao-Teste.sha256
+            Mercadinho-Uniao-Teste.apk
+            Mercadinho-Uniao-Teste.sha256

@@ -11,9 +11,9 @@ import { useStore } from "@/store/useStore";
 export const Route = createFileRoute("/mais")({
   head: () => ({
     meta: [
-      { title: "Ajustes — Mini Market POS" },
-      { name: "description", content: "Relatórios de vendas e configurações do Mini Market POS." },
-      { property: "og:title", content: "Ajustes — Mini Market POS" },
+      { title: "Ajustes — Mercadinho União" },
+      { name: "description", content: "Relatórios e configurações do Mercadinho União." },
+      { property: "og:title", content: "Ajustes — Mercadinho União" },
       { property: "og:description", content: "Acesse relatórios e configurações do mini mercado." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

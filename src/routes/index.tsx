@@ -14,7 +14,7 @@ function Dashboard() {
   return (
     <div className="pos-page pos-home">
       <header className="pos-header pos-home-header">
-        <h1>{settings.storeName || "Mini Mercado"}</h1>
+        <h1>{settings.storeName || "Mercadinho União"}</h1>
         <span className={`pos-status ${cashOpen ? "is-open" : ""}`}>
           <i />
           Caixa {cashOpen ? "aberto" : "fechado"}

@@ -12,13 +12,13 @@ import { PAYMENT_LABELS, formatBRL, useStore, type PaymentMethod } from "@/store
 export const Route = createFileRoute("/vender")({
   head: () => ({
     meta: [
-      { title: "Vender — Mini Market POS" },
+      { title: "Vender — Mercadinho União" },
       {
         name: "description",
         content:
           "Frente de caixa do mini mercado: leia códigos de barras e finalize vendas rápido.",
       },
-      { property: "og:title", content: "Vender — Mini Market POS" },
+      { property: "og:title", content: "Vender — Mercadinho União" },
       {
         property: "og:description",
         content: "Frente de caixa mobile com leitura de código de barras.",

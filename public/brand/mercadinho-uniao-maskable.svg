@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Ícone adaptável do Mercadinho União</title>
+  <rect width="512" height="512" fill="#FFFFFF"/>
+  <g transform="translate(64 66) scale(.75)">
+    <path d="M82 139h55l49 116" fill="none" stroke="#005BAA" stroke-linecap="round" stroke-linejoin="round" stroke-width="30"/>
+    <path d="M214 122h38v18h8v29c0 10 4 19 11 26v55h-76v-55c7-7 11-16 11-26v-29h8z" fill="#E3062D"/>
+    <path d="M282 151h49l13 18v81h-75v-81zm8 18 8 12h25l8-12z" fill="#005BAA" fill-rule="evenodd"/>
+    <path d="M355 183c11-14 31-16 43-4 17 17 13 54-13 71h-49c-26-17-30-54-13-71 9-9 22-10 32-5 1-13 9-25 22-31 3 17-5 33-22 40z" fill="#E3062D"/>
+    <path d="M170 242h253l-43 130H211z" fill="#005BAA"/>
+    <path d="M231 280h25l9 61h-25zm65 0h25l-3 61h-25zm65 0h25l-15 61h-25z" fill="#FFFFFF"/>
+    <circle cx="237" cy="407" r="25" fill="#005BAA"/>
+    <circle cx="351" cy="407" r="25" fill="#005BAA"/>
+  </g>
+</svg>

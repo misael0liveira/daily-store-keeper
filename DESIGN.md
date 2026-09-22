@@ -1,12 +1,12 @@
-# Mercado — visual aprovado
+# Mercadinho União — visual aprovado
 
 ## Direção
 
-Reproduzir a proposta visual aprovada pelo usuário em 22/09/2026: interface de PDV clara, verde, concisa e legível no celular. A imagem é referência de composição, não fonte de dados.
+Reproduzir a proposta visual aprovada pelo usuário em 22/09/2026: interface de PDV clara, concisa e legível no celular. A identidade aprovada usa azul e vermelho; a imagem de composição é referência de layout, não fonte de dados.
 
 ## Tokens e componentes
 
-Fonte canônica: src/styles.css. Roboto com fallback system-ui. Fundo #f5f8f7, ação #087d49, texto #141b25; cartões brancos com borda discreta, raio 14px e margem de tela 16px. Tema escuro usa as variáveis existentes. Sem duplicação de tokens em JavaScript.
+Fonte canônica: src/styles.css. Roboto com fallback system-ui. Fundo #f5f8fb, ação azul #005BAA, assinatura vermelha #E3062D e texto #141b25; cartões brancos com borda discreta, raio 14px e margem de tela 16px. Azul identifica navegação e ações. Vermelho pertence à marca e à linha do scanner; estados semânticos preservam suas próprias cores. Tema escuro usa as variáveis existentes. Sem duplicação de tokens em JavaScript.
 Navegação: __root.tsx. Cinco destinos: Início, Histórico, Caixa, Estoque, Ajustes. Círculo ativo móvel com sombra neutra, folga visível e recorte côncavo cúbico, estreito e de entrada suave na superfície. O ícone ativo fica dentro do círculo e seu rótulo logo abaixo. Configurações pertencem a Ajustes. Movimento horizontal de 240ms; animação reduzida respeitada.
 Primitivos: Button, Input, Sheet e AlertDialog existentes. Estado: useStore. Feedback: sonner.
 

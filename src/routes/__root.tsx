@@ -74,16 +74,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: "Mini Market PDV" },
+      { title: "Mercadinho União" },
       {
         name: "description",
-        content: "Sistema PDV/ERP mobile para gestão do estabelecimento e CNPJ.",
+        content: "Sistema de caixa e estoque do Mercadinho União.",
       },
-      { name: "theme-color", content: "#087d49" },
+      { name: "theme-color", content: "#005BAA" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
-      { name: "apple-mobile-web-app-title", content: "Mini Market PDV" },
+      { name: "apple-mobile-web-app-title", content: "Mercadinho União" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
