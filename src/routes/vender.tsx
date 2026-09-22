@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Barcode, Minus, Plus, Search } from "lucide-react";
+import { Barcode, Minus, Plus, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
@@ -129,10 +129,20 @@ function CaixaPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Nome ou código"
-            className="pos-search pl-12"
+            className="pos-search pl-12 pr-11"
             inputMode="search"
             aria-label="Digitar código ou nome do produto"
           />
+          {query && (
+            <button
+              type="button"
+              className="pos-search-clear"
+              aria-label="Limpar busca"
+              onClick={() => setQuery("")}
+            >
+              <X size={18} />
+            </button>
+          )}
         </form>
 
         {query.trim() !== "" && (

@@ -16,13 +16,20 @@ type LicenseRow = {
   created_at: string;
 };
 
+function errorMessage(error: unknown, fallback: string) {
+  return error instanceof Error && error.message ? error.message : fallback;
+}
+
 export const Route = createFileRoute("/codigos")({
   head: () => ({
     meta: [
       { title: "Códigos de ativação — Mini Market POS" },
       { name: "description", content: "Gere e gerencie códigos de ativação do Mini Market POS." },
       { property: "og:title", content: "Códigos de ativação — Mini Market POS" },
-      { property: "og:description", content: "Crie códigos para liberar o app em novos celulares." },
+      {
+        property: "og:description",
+        content: "Crie códigos para liberar o app em novos celulares.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -48,8 +55,8 @@ function CodesPage() {
       const data = await list({ data: { password } });
       setRows(data);
       setUnlocked(true);
-    } catch (error: any) {
-      toast.error(error?.message || "Não foi possível abrir a lista de códigos.");
+    } catch (error: unknown) {
+      toast.error(errorMessage(error, "Não foi possível abrir a lista de códigos."));
     } finally {
       setBusy(false);
     }
@@ -62,8 +69,8 @@ function CodesPage() {
       setRows((prev) => [row, ...prev]);
       await copy(row.code);
       toast.success(`Código criado: ${row.code}`, { description: "Já copiado para você enviar." });
-    } catch (error: any) {
-      toast.error(error?.message || "Não foi possível criar o código.");
+    } catch (error: unknown) {
+      toast.error(errorMessage(error, "Não foi possível criar o código."));
     } finally {
       setBusy(false);
     }
@@ -75,8 +82,8 @@ function CodesPage() {
       const row = await update({ data: { password, id, ...payload } });
       setRows((prev) => prev.map((item) => (item.id === row.id ? row : item)));
       toast.success("Código atualizado.");
-    } catch (error: any) {
-      toast.error(error?.message || "Não foi possível atualizar o código.");
+    } catch (error: unknown) {
+      toast.error(errorMessage(error, "Não foi possível atualizar o código."));
     } finally {
       setBusy(false);
     }
@@ -94,13 +101,19 @@ function CodesPage() {
   if (!unlocked) {
     return (
       <div className="px-4 pb-28 pt-8">
-        <form onSubmit={unlock} className="mx-auto w-full max-w-sm space-y-4 rounded-2xl border bg-card p-5 shadow-soft">
+        <form
+          noValidate
+          onSubmit={unlock}
+          className="mx-auto w-full max-w-sm space-y-4 rounded-2xl border bg-card p-5 shadow-soft"
+        >
           <span className="grid size-11 place-items-center rounded-xl bg-secondary">
             <KeyRound className="size-5 text-primary" />
           </span>
           <div>
             <h1 className="text-xl font-extrabold">Códigos de ativação</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Digite a senha de administrador para gerar códigos.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Digite a senha de administrador para gerar códigos.
+            </p>
           </div>
           <Input
             type="password"
@@ -143,8 +156,16 @@ function CodesPage() {
         {rows.map((row) => (
           <div key={row.id} className="rounded-2xl border bg-card p-4 shadow-soft">
             <div className="flex items-center gap-3">
-              <p className="min-w-0 flex-1 truncate text-lg font-extrabold tracking-wider">{row.code}</p>
-              <Button variant="outline" size="icon" className="size-10 rounded-xl bg-card" onClick={() => copy(row.code)} aria-label="Copiar código">
+              <p className="min-w-0 flex-1 truncate text-lg font-extrabold tracking-wider">
+                {row.code}
+              </p>
+              <Button
+                variant="outline"
+                size="icon"
+                className="size-10 rounded-xl bg-card"
+                onClick={() => copy(row.code)}
+                aria-label="Copiar código"
+              >
                 <Copy className="size-4" />
               </Button>
             </div>

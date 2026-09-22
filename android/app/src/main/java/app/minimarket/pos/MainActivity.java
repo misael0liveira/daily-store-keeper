@@ -7,11 +7,7 @@ import androidx.core.view.WindowInsetsControllerCompat;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        registerPlugin(AppUpdaterPlugin.class);
-        registerPlugin(PixNotificationPlugin.class);
-        super.onCreate(savedInstanceState);
+    private void applySystemBars() {
         Window window = getWindow();
         WindowCompat.setDecorFitsSystemWindows(window, false);
         window.setStatusBarColor(android.graphics.Color.TRANSPARENT);
@@ -19,5 +15,19 @@ public class MainActivity extends BridgeActivity {
         WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(window, window.getDecorView());
         controller.setAppearanceLightStatusBars(true);
         controller.setAppearanceLightNavigationBars(true);
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(AppUpdaterPlugin.class);
+        registerPlugin(PixNotificationPlugin.class);
+        super.onCreate(savedInstanceState);
+        applySystemBars();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        applySystemBars();
     }
 }

@@ -1,23 +1,23 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { FileDown, Receipt, Settings, Trash2 } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { ChevronDown, ChevronUp, FileDown, Receipt, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  PERIOD_LABELS,
-  formatDateTime,
-  periodRange,
-  type PeriodKey,
-} from "@/lib/periods";
+import { PERIOD_LABELS, formatDateTime, periodRange, type PeriodKey } from "@/lib/periods";
 import { generateSalesPdf } from "@/lib/salesPdf";
-import {
-  PAYMENT_LABELS,
-  formatBRL,
-  useStore,
-  type PaymentMethod,
-} from "@/store/useStore";
+import { PAYMENT_LABELS, formatBRL, useStore, type PaymentMethod } from "@/store/useStore";
 
 export const Route = createFileRoute("/vendas/")({
   head: () => ({
@@ -51,17 +51,14 @@ function VendasPage() {
   const [to, setTo] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
 
-  const { start, end } = useMemo(
-    () => periodRange(period, from, to),
-    [period, from, to]
-  );
+  const { start, end } = useMemo(() => periodRange(period, from, to), [period, from, to]);
 
   const filtered = useMemo(
     () =>
       sales
         .filter((s) => s.timestamp >= start && s.timestamp <= end)
         .sort((a, b) => b.timestamp - a.timestamp),
-    [sales, start, end]
+    [sales, start, end],
   );
 
   const total = filtered.reduce((sum, s) => sum + s.total, 0);
@@ -90,36 +87,21 @@ function VendasPage() {
   };
 
   return (
-    <div className="space-y-5 px-4 pb-28 pt-4">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl tracking-wide">Histórico</h1>
-        <Button asChild variant="outline" className="h-11 gap-2">
-          <Link to="/vendas/configuracoes">
-            <Settings className="size-5" />
-            Configurações
-          </Link>
-        </Button>
-      </div>
+    <div className="pos-page pos-history">
+      <header className="pos-header">
+        <h1>Histórico</h1>
+      </header>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="pos-periods" aria-label="Período do histórico">
         {periods.map((p) => (
-          <button
-            key={p}
-            type="button"
-            onClick={() => setPeriod(p)}
-            className={`h-11 rounded-full border px-4 text-sm font-medium transition-colors ${
-              period === p
-                ? "border-primary bg-primary text-primary-foreground"
-                : "bg-card text-foreground hover:bg-accent"
-            }`}
-          >
+          <button key={p} type="button" onClick={() => setPeriod(p)} aria-pressed={period === p}>
             {PERIOD_LABELS[p]}
           </button>
         ))}
       </div>
 
       {period === "personalizado" && (
-        <div className="grid grid-cols-2 gap-3 rounded-2xl border bg-card p-4">
+        <div className="pos-card pos-date-range grid grid-cols-2 gap-3">
           <div className="space-y-2">
             <Label htmlFor="from">De</Label>
             <Input
@@ -143,78 +125,71 @@ function VendasPage() {
         </div>
       )}
 
-      <div className="space-y-3 rounded-2xl border bg-card p-4 shadow-sm">
-        <div className="flex items-baseline justify-between">
+      <section className="pos-card pos-history-summary" aria-labelledby="history-total-title">
+        <div className="flex items-baseline justify-between gap-4">
           <span className="text-sm font-medium text-muted-foreground">
-            Total vendido
+            <span id="history-total-title">Total vendido</span>
           </span>
-          <span className="font-display text-4xl tracking-wide text-primary">
-            {formatBRL(total)}
-          </span>
+          <strong className="pos-history-total">{formatBRL(total)}</strong>
         </div>
-        <p className="text-sm text-muted-foreground">
-          {filtered.length} {filtered.length === 1 ? "venda" : "vendas"} no
-          período
-        </p>
-        <div className="grid grid-cols-2 gap-2 pt-1">
-          {(Object.keys(PAYMENT_LABELS) as PaymentMethod[]).map((m) => (
-            <div key={m} className="rounded-xl bg-muted/60 px-3 py-2">
-              <p className="text-xs text-muted-foreground">
-                {PAYMENT_LABELS[m]}
-              </p>
-              <p className="font-semibold">{formatBRL(byMethod[m] ?? 0)}</p>
+        {filtered.length > 0 && (
+          <>
+            <p className="pos-history-count">
+              {filtered.length} {filtered.length === 1 ? "venda" : "vendas"} no período
+            </p>
+            <div className="pos-payment-summary">
+              {(Object.keys(PAYMENT_LABELS) as PaymentMethod[]).map((m) => (
+                <div key={m}>
+                  <p>{PAYMENT_LABELS[m]}</p>
+                  <strong>{formatBRL(byMethod[m] ?? 0)}</strong>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        <Button className="h-12 w-full gap-2" onClick={exportPdf}>
-          <FileDown className="size-5" />
-          Gerar PDF do período
-        </Button>
-      </div>
+            <Button variant="outline" className="pos-history-export" onClick={exportPdf}>
+              <FileDown className="size-5" />
+              Gerar PDF
+            </Button>
+          </>
+        )}
+      </section>
 
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 py-12 text-center">
-          <Receipt className="size-12 text-muted-foreground" />
-          <p className="font-display text-2xl tracking-wide text-muted-foreground">
-            Nenhuma venda no período
-          </p>
-          <p className="max-w-56 text-sm text-muted-foreground">
-            As vendas finalizadas no caixa aparecem aqui automaticamente.
-          </p>
+        <div className="pos-history-empty">
+          <span className="pos-empty-icon">
+            <Receipt aria-hidden="true" />
+          </span>
+          <p>Nenhuma venda no período</p>
+          <span>As vendas finalizadas no caixa aparecem aqui automaticamente.</span>
         </div>
       ) : (
-        <ul className="space-y-2">
+        <ul className="pos-sales-list">
           {filtered.map((sale) => (
-            <li
-              key={sale.id}
-              className="rounded-2xl border bg-card p-3 shadow-sm"
-            >
+            <li key={sale.id} className="pos-sale-card">
               <button
                 type="button"
-                className="flex w-full items-center gap-3 text-left"
-                onClick={() =>
-                  setOpenId(openId === sale.id ? null : sale.id)
-                }
+                className="pos-sale-trigger"
+                aria-expanded={openId === sale.id}
+                onClick={() => setOpenId(openId === sale.id ? null : sale.id)}
               >
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">{formatDateTime(sale.timestamp)}</p>
                   <p className="text-sm text-muted-foreground">
-                    {PAYMENT_LABELS[sale.method]} ·{" "}
-                    {sale.items.reduce((n, i) => n + i.qty, 0)} itens
+                    {PAYMENT_LABELS[sale.method]} · {sale.items.reduce((n, i) => n + i.qty, 0)}{" "}
+                    itens
                   </p>
                 </div>
-                <span className="font-display text-2xl tracking-wide text-primary">
-                  {formatBRL(sale.total)}
-                </span>
+                <span className="pos-sale-value">{formatBRL(sale.total)}</span>
+                {openId === sale.id ? (
+                  <ChevronUp aria-hidden="true" />
+                ) : (
+                  <ChevronDown aria-hidden="true" />
+                )}
               </button>
 
               {openId === sale.id && (
-                <div className="mt-3 space-y-2 border-t pt-3">
+                <div className="pos-sale-details">
                   {sale.items.map((i) => (
-                    <div
-                      key={i.barcode}
-                      className="flex justify-between text-sm"
-                    >
+                    <div key={i.barcode} className="flex justify-between text-sm">
                       <span className="min-w-0 truncate">
                         {i.qty}x {i.name}
                       </span>
@@ -225,23 +200,35 @@ function VendasPage() {
                   ))}
                   {sale.paidAmount != null && (
                     <p className="text-sm text-muted-foreground">
-                      Pago {formatBRL(sale.paidAmount)} · Troco{" "}
-                      {formatBRL(sale.change ?? 0)}
+                      Pago {formatBRL(sale.paidAmount)} · Troco {formatBRL(sale.change ?? 0)}
                     </p>
                   )}
-                  <Button
-                    variant="ghost"
-                    className="h-11 w-full gap-2 text-destructive"
-                    onClick={() => {
-                      if (window.confirm("Excluir este registro de venda?")) {
-                        deleteSale(sale.id);
-                        toast.success("Venda excluída");
-                      }
-                    }}
-                  >
-                    <Trash2 className="size-5" />
-                    Excluir registro
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger className="pos-delete-sale">
+                      <Trash2 className="size-5" />
+                      Excluir registro
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogTitle>Excluir esta venda?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        O registro de {formatBRL(sale.total)} feito em{" "}
+                        {formatDateTime(sale.timestamp)} será removido. Esta ação não pode ser
+                        desfeita.
+                      </AlertDialogDescription>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          onClick={() => {
+                            deleteSale(sale.id);
+                            toast.success("Venda excluída");
+                          }}
+                        >
+                          Excluir venda
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               )}
             </li>

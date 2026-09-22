@@ -1,5 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ChevronRight, Plus, PackageOpen, Save, ScanBarcode, Search, Trash2 } from "lucide-react";
+import {
+  ChevronRight,
+  Plus,
+  PackageOpen,
+  Save,
+  ScanBarcode,
+  Search,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
@@ -193,8 +202,18 @@ function EstoquePage() {
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Nome ou código"
           aria-label="Buscar no estoque"
-          className="pos-search pl-10"
+          className="pos-search pl-10 pr-11"
         />
+        {search && (
+          <button
+            type="button"
+            className="pos-search-clear"
+            aria-label="Limpar busca"
+            onClick={() => setSearch("")}
+          >
+            <X size={18} />
+          </button>
+        )}
       </div>
       <div className="pos-filters" aria-label="Filtrar estoque">
         <button aria-pressed={!lowOnly} onClick={() => setLowOnly(false)}>
@@ -208,14 +227,18 @@ function EstoquePage() {
         <div className="pos-empty py-12 text-center">
           <PackageOpen className="mx-auto mb-3 size-9" />
           <p>
-            {search ? "Nenhum produto encontrado" : lowOnly ? "Estoque em dia" : "Estoque vazio"}
+            {search
+              ? "Nenhum produto encontrado"
+              : Object.keys(products).length === 0
+                ? "Nenhum produto cadastrado"
+                : "Nenhum produto com estoque baixo"}
           </p>
           <p className="text-sm">
             {search
               ? "Tente outro nome ou código."
-              : lowOnly
-                ? "Nenhum produto precisa de reposição."
-                : "Toque em Cadastrar para começar."}
+              : Object.keys(products).length === 0
+                ? "Toque em Cadastrar para começar."
+                : "Nenhum produto precisa de reposição."}
           </p>
         </div>
       ) : (

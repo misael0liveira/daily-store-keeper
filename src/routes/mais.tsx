@@ -48,29 +48,27 @@ function MorePage() {
   };
 
   return (
-    <div className="pos-page space-y-5">
+    <div className="pos-page pos-settings">
       <header className="pos-header">
         <h1>Ajustes</h1>
       </header>
-      <div className="overflow-hidden rounded-2xl border bg-card shadow-soft">
-        <Button asChild variant="ghost" className="h-18 w-full justify-start rounded-none px-4">
-          <Link to="/vendas/configuracoes">
-            <span className="grid size-11 place-items-center rounded-xl bg-secondary">
-              <Settings className="size-5 text-primary" />
+      <div className="pos-card pos-settings-link">
+        <Link className="pos-settings-action" to="/vendas/configuracoes">
+          <span className="grid size-11 place-items-center rounded-xl bg-secondary">
+            <Settings className="size-5 text-primary" />
+          </span>
+          <span className="min-w-0 flex-1 text-left">
+            <strong className="block">Configurações</strong>
+            <span className="block truncate text-xs font-normal text-muted-foreground">
+              Mercado, Pix e recebedor
             </span>
-            <span className="min-w-0 flex-1 text-left">
-              <strong className="block">Configurações</strong>
-              <span className="block truncate text-xs font-normal text-muted-foreground">
-                Mercado, Pix e recebedor
-              </span>
-            </span>
-            <ArrowRight className="size-5 text-muted-foreground" />
-          </Link>
-        </Button>
+          </span>
+          <ArrowRight className="size-5 text-muted-foreground" />
+        </Link>
       </div>
 
       <section
-        className="flex items-center justify-between gap-4 rounded-2xl border bg-card p-4"
+        className="pos-card flex items-center justify-between gap-4"
         aria-labelledby="appearance-title"
       >
         <div>
@@ -88,11 +86,11 @@ function MorePage() {
         />
       </section>
 
-      <section aria-labelledby="local-data-title">
-        <h2 id="local-data-title" className="mb-3 text-base font-bold">
+      <section className="pos-settings-data" aria-labelledby="local-data-title">
+        <h2 id="local-data-title" className="mb-2 text-base font-semibold">
           Dados neste aparelho
         </h2>
-        <div className="rounded-2xl border bg-card p-4 shadow-soft">
+        <div className="pos-card">
           <div className="flex items-center gap-3">
             <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-secondary">
               <HardDrive className="size-5 text-primary" />

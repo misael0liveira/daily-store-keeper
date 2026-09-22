@@ -8,7 +8,8 @@ function Dashboard() {
   const start = new Date();
   start.setHours(0, 0, 0, 0);
   const today = sales.filter((s) => s.timestamp >= start.getTime());
-  const lowStock = Object.values(products).filter((p) => p.stock <= 5);
+  const productList = Object.values(products);
+  const lowStock = productList.filter((p) => p.stock <= 5);
   const recent = [...sales].sort((a, b) => b.timestamp - a.timestamp).slice(0, 2);
   return (
     <div className="pos-page pos-home">
@@ -45,7 +46,11 @@ function Dashboard() {
             ))}
           </ul>
         ) : (
-          <p className="pos-empty">Estoque em dia.</p>
+          <p className="pos-empty">
+            {productList.length === 0
+              ? "Nenhum produto cadastrado. Cadastre o primeiro item no estoque."
+              : "Nenhum produto precisa de reposição."}
+          </p>
         )}
       </section>
       <section className="pos-card">

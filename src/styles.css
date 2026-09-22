@@ -75,6 +75,8 @@
   * {
     border-color: var(--border);
     box-sizing: border-box;
+    scrollbar-color: color-mix(in srgb, var(--muted-foreground) 45%, transparent) transparent;
+    scrollbar-width: thin;
   }
   html {
     background: var(--background);
@@ -97,6 +99,22 @@
     cursor: pointer;
     border: 0;
     background: transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--muted-foreground) 45%, transparent);
+    background-clip: padding-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in srgb, var(--muted-foreground) 65%, transparent);
   }
 }
 
@@ -816,8 +834,8 @@
   border-radius: 50%;
 }
 .pos-status.is-open {
-  background: var(--primary-soft);
-  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, var(--card));
+  color: var(--primary-deep);
 }
 .pos-card {
   background: var(--card);
@@ -911,6 +929,23 @@
   border-radius: 12px;
   font-size: 16px;
   background: var(--muted);
+  box-shadow: none;
+}
+.pos-search-clear {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  width: 36px;
+  height: 36px;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--muted-foreground);
+}
+.pos-search-clear:hover {
+  background: var(--card);
+  color: var(--foreground);
 }
 .pos-filters {
   display: flex;
@@ -992,6 +1027,33 @@
 .barcode-scanner-frame {
   height: 180px;
   background: #26362e;
+}
+.pdv-scan-guide {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 0.08);
+}
+.pdv-scan-guide::before {
+  content: "";
+  width: min(72%, 260px);
+  height: 96px;
+  border: 1px solid rgb(255 255 255 / 0.82);
+  border-radius: 10px;
+  box-shadow: 0 0 0 999px rgb(0 0 0 / 0.12);
+}
+.pdv-scan-guide span {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: #36c47b;
+  box-shadow: 0 0 8px rgb(54 196 123 / 0.5);
 }
 .pdv-empty-cart {
   min-height: 150px;
@@ -1087,7 +1149,7 @@
   inset: 0;
   background: var(--card);
   border-radius: 18px 18px 0 0;
-  mask: radial-gradient(circle 32px at var(--tab-center) 7px, transparent 31px, #000 32px);
+  mask: radial-gradient(circle 53px at var(--tab-center) -18px, transparent 52px, #000 53px);
 }
 .pos-nav-bubble {
   position: absolute;
@@ -1098,6 +1160,7 @@
   transform: translateX(-50%);
   border-radius: 50%;
   background: var(--primary);
+  box-shadow: 0 7px 16px rgb(20 27 37 / 0.22);
   transition: left 240ms ease;
 }
 .pos-nav-item {
@@ -1123,6 +1186,190 @@
 .pos-nav-item.is-active svg {
   color: var(--primary-foreground);
   transform: translateY(-18px);
+}
+
+/* Histórico follows the same compact visual language as Início and Estoque. */
+.pos-history {
+  padding-bottom: 24px;
+}
+.pos-periods {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+  padding: 1px 1px 5px;
+  scroll-snap-type: x proximity;
+}
+.pos-periods button {
+  min-height: 40px;
+  flex: none;
+  scroll-snap-align: start;
+  padding: 7px 15px;
+  border-radius: 999px;
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-size: 13px;
+  font-weight: 600;
+  transition:
+    background 160ms ease,
+    color 160ms ease;
+}
+.pos-periods button[aria-pressed="true"] {
+  background: var(--primary-soft);
+  color: var(--primary-deep);
+}
+.pos-date-range {
+  margin-bottom: 12px;
+}
+.pos-history-summary {
+  display: grid;
+  gap: 12px;
+}
+.pos-history-total {
+  color: var(--primary);
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+}
+.pos-history-count {
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
+.pos-payment-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px 12px;
+  border-block: 1px solid var(--border);
+  padding: 6px 0;
+}
+.pos-payment-summary > div {
+  padding: 7px 0;
+}
+.pos-payment-summary p {
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+.pos-payment-summary strong {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.pos-history-export {
+  min-height: 44px;
+  width: 100%;
+  gap: 8px;
+  border-radius: 11px;
+  background: var(--card);
+  box-shadow: none;
+}
+.pos-history-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 18px 20px;
+  text-align: center;
+}
+.pos-empty-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.pos-empty-icon svg {
+  width: 23px;
+  height: 23px;
+}
+.pos-history-empty > p {
+  margin-top: 13px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.pos-history-empty > span:last-child {
+  max-width: 270px;
+  margin-top: 5px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.pos-sales-list {
+  display: grid;
+  gap: 8px;
+}
+.pos-sale-card {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+}
+.pos-sale-trigger {
+  width: 100%;
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  text-align: left;
+}
+.pos-sale-trigger:hover {
+  background: var(--muted);
+}
+.pos-sale-trigger > svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  color: var(--muted-foreground);
+}
+.pos-sale-value {
+  flex: none;
+  color: var(--primary);
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.pos-sale-details {
+  display: grid;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+  padding: 12px 14px;
+}
+.pos-settings > .pos-card,
+.pos-settings > .pos-settings-link {
+  margin-bottom: 12px;
+}
+.pos-settings-link {
+  padding-block: 0;
+}
+.pos-settings-action {
+  min-height: 64px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  border-radius: 12px;
+}
+.pos-settings-action:hover {
+  background: var(--muted);
+}
+.pos-settings-data .pos-card {
+  margin-bottom: 0;
+}
+.pos-delete-sale {
+  min-height: 44px;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px;
+  color: var(--destructive);
+  font-size: 14px;
+  font-weight: 600;
+}
+.pos-delete-sale:hover {
+  background: color-mix(in srgb, var(--destructive) 8%, transparent);
 }
 .pos-nav-item:focus-visible,
 button:focus-visible,

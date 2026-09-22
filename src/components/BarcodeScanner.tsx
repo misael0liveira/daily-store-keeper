@@ -1,5 +1,5 @@
 import { ClientOnly } from "@tanstack/react-router";
-import { CameraOff, ScanLine } from "lucide-react";
+import { CameraOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,19 +27,16 @@ function ScannerInner({ onScan, onClose }: Props) {
       try {
         await scanner.start(
           { facingMode: "environment" },
-          { fps: 10, qrbox: { width: 260, height: 150 } },
+          { fps: 10 },
           (decodedText) => {
             const now = Date.now();
-            if (
-              decodedText === lastScanRef.current.code &&
-              now - lastScanRef.current.at < 1500
-            ) {
+            if (decodedText === lastScanRef.current.code && now - lastScanRef.current.at < 1500) {
               return;
             }
             lastScanRef.current = { code: decodedText, at: now };
             onScan(decodedText);
           },
-          () => {}
+          () => {},
         );
       } catch (err) {
         if (cancelled) return;
@@ -50,7 +47,7 @@ function ScannerInner({ onScan, onClose }: Props) {
         setError(
           name === "NotAllowedError"
             ? "Permissão da câmera negada. Digite o código de barras manualmente."
-            : "Não foi possível abrir a câmera. Digite o código manualmente."
+            : "Não foi possível abrir a câmera. Digite o código manualmente.",
         );
       }
     };
@@ -99,21 +96,18 @@ function ScannerInner({ onScan, onClose }: Props) {
         </div>
       ) : (
         <div className="barcode-scanner-frame relative overflow-hidden rounded-xl">
-          <div id="barcode-scanner-region" ref={containerRef} className="barcode-scanner-region w-full" />
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <div className="relative h-28 w-64 rounded-lg border-2 border-primary/80">
-              <div className="absolute inset-x-4 top-1/2 h-0.5 -translate-y-1/2 bg-destructive/80" />
-              <ScanLine className="absolute -top-6 left-1/2 size-5 -translate-x-1/2 text-primary-foreground drop-shadow" />
-            </div>
+          <div
+            id="barcode-scanner-region"
+            ref={containerRef}
+            className="barcode-scanner-region w-full"
+          />
+          <div className="pdv-scan-guide" aria-hidden="true">
+            <span />
           </div>
         </div>
       )}
       {onClose && (
-        <Button
-          variant="outline"
-          className="pdv-scanner-close mt-3 h-12 w-full"
-          onClick={onClose}
-        >
+        <Button variant="outline" className="pdv-scanner-close mt-3 h-12 w-full" onClick={onClose}>
           Fechar câmera
         </Button>
       )}
