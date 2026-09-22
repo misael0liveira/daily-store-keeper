@@ -22,13 +22,13 @@ import {
 export const Route = createFileRoute("/vendas/")({
   head: () => ({
     meta: [
-      { title: "Vendas — Mini Mercado PDV" },
+      { title: "Histórico — Mini Mercado PDV" },
       {
         name: "description",
         content:
           "Resumo semanal, quinzenal e mensal das vendas do mini mercado, com exportação em PDF.",
       },
-      { property: "og:title", content: "Vendas — Mini Mercado PDV" },
+      { property: "og:title", content: "Histórico — Mini Mercado PDV" },
       {
         property: "og:description",
         content: "Saídas registradas por forma de pagamento e relatório em PDF.",
@@ -92,7 +92,7 @@ function VendasPage() {
   return (
     <div className="space-y-5 px-4 pb-28 pt-4">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl tracking-wide">Vendas</h1>
+        <h1 className="font-display text-3xl tracking-wide">Histórico</h1>
         <Button asChild variant="outline" className="h-11 gap-2">
           <Link to="/vendas/configuracoes">
             <Settings className="size-5" />

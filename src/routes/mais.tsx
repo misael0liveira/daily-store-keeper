@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowRight, FileText, HardDrive, Settings, Wifi, WifiOff } from "lucide-react";
+import { ArrowRight, HardDrive, Settings, Wifi, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -11,9 +11,9 @@ import { useStore } from "@/store/useStore";
 export const Route = createFileRoute("/mais")({
   head: () => ({
     meta: [
-      { title: "Mais — Mini Market POS" },
+      { title: "Ajustes — Mini Market POS" },
       { name: "description", content: "Relatórios de vendas e configurações do Mini Market POS." },
-      { property: "og:title", content: "Mais — Mini Market POS" },
+      { property: "og:title", content: "Ajustes — Mini Market POS" },
       { property: "og:description", content: "Acesse relatórios e configurações do mini mercado." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -48,38 +48,50 @@ function MorePage() {
   };
 
   return (
-    <div className="space-y-5 px-4 pb-28 pt-5">
-      <div>
-        <p className="text-xs font-bold uppercase text-muted-foreground">Operação</p>
-        <h1 className="mt-1 text-2xl font-extrabold">Mais</h1>
-      </div>
+    <div className="pos-page space-y-5">
+      <header className="pos-header">
+        <h1>Ajustes</h1>
+      </header>
       <div className="overflow-hidden rounded-2xl border bg-card shadow-soft">
         <Button asChild variant="ghost" className="h-18 w-full justify-start rounded-none px-4">
-          <Link to="/vendas">
-            <span className="grid size-11 place-items-center rounded-xl bg-secondary"><FileText className="size-5 text-primary" /></span>
-            <span className="min-w-0 flex-1 text-left"><strong className="block">Vendas e relatórios</strong><span className="block truncate text-xs font-normal text-muted-foreground">Histórico, períodos e PDF</span></span>
-            <ArrowRight className="size-5 text-muted-foreground" />
-          </Link>
-        </Button>
-        <Button asChild variant="ghost" className="h-18 w-full justify-start rounded-none border-t px-4">
           <Link to="/vendas/configuracoes">
-            <span className="grid size-11 place-items-center rounded-xl bg-secondary"><Settings className="size-5 text-primary" /></span>
-            <span className="min-w-0 flex-1 text-left"><strong className="block">Configurações</strong><span className="block truncate text-xs font-normal text-muted-foreground">Mercado, Pix e recebedor</span></span>
+            <span className="grid size-11 place-items-center rounded-xl bg-secondary">
+              <Settings className="size-5 text-primary" />
+            </span>
+            <span className="min-w-0 flex-1 text-left">
+              <strong className="block">Configurações</strong>
+              <span className="block truncate text-xs font-normal text-muted-foreground">
+                Mercado, Pix e recebedor
+              </span>
+            </span>
             <ArrowRight className="size-5 text-muted-foreground" />
           </Link>
         </Button>
       </div>
 
-      <section className="flex items-center justify-between gap-4 rounded-2xl border bg-card p-4" aria-labelledby="appearance-title">
+      <section
+        className="flex items-center justify-between gap-4 rounded-2xl border bg-card p-4"
+        aria-labelledby="appearance-title"
+      >
         <div>
-          <h2 id="appearance-title" className="font-bold">Aparência</h2>
-          <Label htmlFor="dark-theme" className="text-sm text-muted-foreground">Tema escuro</Label>
+          <h2 id="appearance-title" className="font-bold">
+            Aparência
+          </h2>
+          <Label htmlFor="dark-theme" className="text-sm text-muted-foreground">
+            Tema escuro
+          </Label>
         </div>
-        <Switch id="dark-theme" checked={theme === "dark"} onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")} />
+        <Switch
+          id="dark-theme"
+          checked={theme === "dark"}
+          onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+        />
       </section>
 
       <section aria-labelledby="local-data-title">
-        <h2 id="local-data-title" className="mb-3 text-base font-bold">Dados neste aparelho</h2>
+        <h2 id="local-data-title" className="mb-3 text-base font-bold">
+          Dados neste aparelho
+        </h2>
         <div className="rounded-2xl border bg-card p-4 shadow-soft">
           <div className="flex items-center gap-3">
             <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-secondary">
@@ -104,7 +116,9 @@ function MorePage() {
             ) : (
               <>
                 <WifiOff className="size-4 text-warning-foreground" />
-                <span className="text-warning-foreground">Offline — o caixa continua funcionando</span>
+                <span className="text-warning-foreground">
+                  Offline — o caixa continua funcionando
+                </span>
               </>
             )}
           </div>
