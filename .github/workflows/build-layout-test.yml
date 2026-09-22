@@ -1,0 +1,118 @@
+name: APK de teste do novo layout
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/layout-proposta-visual]
+    paths:
+      - "src/**"
+      - "public/**"
+      - "android/**"
+      - "package.json"
+      - "bun.lock"
+      - "vite.config.ts"
+      - "capacitor.config.ts"
+      - ".github/workflows/build-layout-test.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --no-frozen-lockfile
+
+      - name: Isolate preview app
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('android/app/build.gradle')
+          s = p.read_text().replace('applicationId "app.minimarket.pos"', 'applicationId "app.minimarket.pos.layouttest"')
+          p.write_text(s)
+          p = Path('android/app/src/main/res/values/strings.xml')
+          s = p.read_text()
+          import re
+          s = re.sub(r'(<string name="(?:app_name|title_activity_main)">).*?(</string>)', r'\1Mercadinho União — Teste\2', s)
+          p.write_text(s)
+          p = Path('src/routes/__root.tsx')
+          s = p.read_text().replace('<AppUpdatePrompt />', '')
+          p.write_text(s)
+          PY
+
+      - name: Build web app
+        run: bun run build
+
+      - name: Prepare Capacitor web assets
+        run: |
+          # TanStack Start SPA already writes the client output to dist/client.
+          # Do not remove dist after the web build, otherwise the generated shell is destroyed.
+          test -d dist/client
+          if [ ! -f dist/client/index.html ] && [ -f dist/client/_shell.html ]; then
+            cp dist/client/_shell.html dist/client/index.html
+          fi
+          test -f dist/client/index.html
+
+      - name: Sync Capacitor Android
+        run: bunx cap sync android
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: ""
+
+      - name: Install Android SDK 36
+        run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Build installable test APK
+        working-directory: android
+        run: ./gradlew assembleDebug -PappVersionCode=${GITHUB_RUN_NUMBER} -PappVersionName=layout-test.${GITHUB_RUN_NUMBER} --no-daemon
+
+      - name: Verify and package APK
+        run: |
+          APK=android/app/build/outputs/apk/debug/app-debug.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify "$APK"
+          cp "$APK" Mercadinho-Uniao-Teste.apk
+          sha256sum Mercadinho-Uniao-Teste.apk > Mercadinho-Uniao-Teste.sha256
+
+      - name: Upload test APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: mercado-uniao-layout-teste
+          path: |
+            Mercadinho-Uniao-Teste.apk
+            Mercadinho-Uniao-Teste.sha256
+          if-no-files-found: error
+
+      - name: Publish separate test download
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: layout-test-${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          name: Mercadinho União — APK de teste
+          prerelease: true
+          make_latest: false
+          body: |
+            Versão de teste do layout do PR #11.
+            Instala separadamente como Mercadinho União — Teste.
+            Dados locais próprios; não substitui a versão oficial.
+            Sem sincronização remota configurada nesta compilação.
+          files: |
+            Mercadinho-Uniao-Teste.apk
+            Mercadinho-Uniao-Teste.sha256

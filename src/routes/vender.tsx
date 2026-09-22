@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Barcode, Minus, Plus, Search, Trash2 } from "lucide-react";
+import { Barcode, Minus, Plus, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
@@ -7,23 +7,18 @@ import { PaymentSheet } from "@/components/PaymentSheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { beep, unlockAudio, vibrate } from "@/lib/feedback";
-import {
-  PAYMENT_LABELS,
-  formatBRL,
-  useStore,
-  type PaymentMethod,
-} from "@/store/useStore";
+import { PAYMENT_LABELS, formatBRL, useStore, type PaymentMethod } from "@/store/useStore";
 
 export const Route = createFileRoute("/vender")({
   head: () => ({
     meta: [
-      { title: "Vender — Mini Market POS" },
+      { title: "Vender — Mercadinho União" },
       {
         name: "description",
         content:
           "Frente de caixa do mini mercado: leia códigos de barras e finalize vendas rápido.",
       },
-      { property: "og:title", content: "Vender — Mini Market POS" },
+      { property: "og:title", content: "Vender — Mercadinho União" },
       {
         property: "og:description",
         content: "Frente de caixa mobile com leitura de código de barras.",
@@ -36,8 +31,7 @@ export const Route = createFileRoute("/vender")({
 });
 
 function CaixaPage() {
-  const { products, cart, addToCart, changeQty, removeFromCart, checkout } =
-    useStore();
+  const { products, cart, addToCart, changeQty, checkout } = useStore();
   const [payOpen, setPayOpen] = useState(false);
   const [query, setQuery] = useState("");
 
@@ -67,10 +61,7 @@ function CaixaPage() {
     const q = query.trim().toLowerCase();
     if (!q) return [];
     return Object.entries(products)
-      .filter(
-        ([code, p]) =>
-          code.toLowerCase().includes(q) || p.name.toLowerCase().includes(q),
-      )
+      .filter(([code, p]) => code.toLowerCase().includes(q) || p.name.toLowerCase().includes(q))
       .slice(0, 6);
   }, [query, products]);
 
@@ -113,24 +104,20 @@ function CaixaPage() {
   };
 
   return (
-    <div className="pdv-sell-page flex min-h-dvh flex-col">
-      <header className="pdv-sell-topbar bg-primary text-primary-foreground">
-        <div className="mx-auto flex max-w-lg items-center px-4">
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-white/75">Frente de caixa</p>
-            <h1 className="text-lg font-black">Vender (Caixa)</h1>
-          </div>
-        </div>
+    <div className="pdv-sell-page">
+      <header className="pos-header">
+        <h1>Caixa</h1>
       </header>
-      <div className="pdv-sell-content flex-1 space-y-4 px-4 pb-64 pt-4">
+      <div className="pdv-sell-content space-y-3 px-4">
         <BarcodeScanner
           onScan={(code) => {
             unlockAudio();
-            handleScan(code);
+            if (!payOpen) handleScan(code);
           }}
         />
 
         <form
+          noValidate
           className="pdv-product-search relative"
           onSubmit={(e) => {
             e.preventDefault();
@@ -141,19 +128,27 @@ function CaixaPage() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Digitar código ou nome do produto"
-            className="h-13 rounded-2xl pl-12 text-base"
+            placeholder="Nome ou código"
+            className="pos-search pl-12 pr-11"
             inputMode="search"
             aria-label="Digitar código ou nome do produto"
           />
+          {query && (
+            <button
+              type="button"
+              className="pos-search-clear"
+              aria-label="Limpar busca"
+              onClick={() => setQuery("")}
+            >
+              <X size={18} />
+            </button>
+          )}
         </form>
 
         {query.trim() !== "" && (
           <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
             {suggestions.length === 0 ? (
-              <p className="px-4 py-3 text-sm text-muted-foreground">
-                Nenhum produto encontrado.
-              </p>
+              <p className="px-4 py-3 text-sm text-muted-foreground">Nenhum produto encontrado.</p>
             ) : (
               <ul className="divide-y">
                 {suggestions.map(([code, p]) => (
@@ -168,9 +163,7 @@ function CaixaPage() {
                     >
                       <div className="min-w-0">
                         <p className="truncate font-medium">{p.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Cód. {code}
-                        </p>
+                        <p className="text-xs text-muted-foreground">Cód. {code}</p>
                       </div>
                       <span className="shrink-0 text-sm font-semibold text-primary">
                         {formatBRL(p.price)}
@@ -184,7 +177,7 @@ function CaixaPage() {
         )}
 
         {cart.length === 0 ? (
-          <div className="pdv-empty-cart flex flex-col items-center gap-3 py-16 text-center">
+          <div className="pdv-empty-cart flex flex-col items-center gap-3 py-8 text-center">
             <Barcode className="size-12 text-muted-foreground" />
             <p className="font-display text-2xl tracking-wide text-muted-foreground">
               Carrinho vazio
@@ -194,75 +187,61 @@ function CaixaPage() {
             </p>
           </div>
         ) : (
-          <ul className="space-y-2">
-            {cart.map((item) => {
-              const p = products[item.barcode];
-              if (!p) return null;
-              return (
-                <li
-                  key={item.barcode}
-                  className="pdv-cart-item flex items-center gap-3 rounded-2xl border bg-card p-3 shadow-sm"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{p.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {formatBRL(p.price)} un.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="size-11"
-                      onClick={() => changeQty(item.barcode, -1)}
-                      aria-label="Diminuir quantidade"
-                    >
-                      <Minus className="size-5" />
-                    </Button>
-                    <span className="w-8 text-center text-lg font-semibold">
-                      {item.qty}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="size-11"
-                      onClick={() => changeQty(item.barcode, 1)}
-                      aria-label="Aumentar quantidade"
-                    >
-                      <Plus className="size-5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-11 text-destructive"
-                      onClick={() => removeFromCart(item.barcode)}
-                      aria-label={`Remover ${p.name}`}
-                    >
-                      <Trash2 className="size-5" />
-                    </Button>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+          <section aria-label="Produtos da venda">
+            <h2 className="mb-2 text-sm font-semibold">
+              {cart.length} {cart.length === 1 ? "produto" : "produtos"}
+            </h2>
+            <ul className="pos-cart-list">
+              {cart.map((item) => {
+                const p = products[item.barcode];
+                if (!p) return null;
+                return (
+                  <li key={item.barcode} className="pos-cart-row">
+                    <div>
+                      <p>{p.name}</p>
+                      <span className="text-sm text-muted-foreground">
+                        {formatBRL(p.price)} / un.
+                      </span>
+                    </div>
+                    <div className="pos-cart-amount">
+                      <strong>{formatBRL(p.price * item.qty)}</strong>
+                      <div className="pos-quantity">
+                        <button
+                          type="button"
+                          onClick={() => changeQty(item.barcode, -1)}
+                          aria-label={item.qty === 1 ? `Remover ${p.name}` : `Diminuir ${p.name}`}
+                        >
+                          <Minus size={16} />
+                        </button>
+                        <span aria-live="polite">{item.qty}</span>
+                        <button
+                          type="button"
+                          onClick={() => changeQty(item.barcode, 1)}
+                          aria-label={`Aumentar ${p.name}`}
+                        >
+                          <Plus size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
         )}
       </div>
 
-      <div className="pdv-checkout-bar fixed inset-x-0 bottom-16 z-20 border-t bg-card/95 px-4 py-3 backdrop-blur">
+      <div className="pdv-checkout-bar">
         <div className="mb-2 flex items-baseline justify-between">
-          <span className="text-sm font-medium text-muted-foreground">
-            Total da compra
-          </span>
-          <span className="font-display text-3xl tracking-wide text-primary">
-            {formatBRL(total)}
-          </span>
+          <span className="text-sm font-medium text-muted-foreground">Total</span>
+          <span className="font-display text-2xl font-bold text-primary">{formatBRL(total)}</span>
         </div>
         <Button
-          className="h-14 w-full text-lg"
+          className="pos-primary w-full"
           disabled={cart.length === 0}
           onClick={() => setPayOpen(true)}
         >
-          Finalizar Compra
+          Ir para pagamento
         </Button>
       </div>
 

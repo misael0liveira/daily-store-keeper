@@ -57,7 +57,8 @@ export function AppUpdatePrompt() {
     } catch (error) {
       console.error(error);
       toast.error("Não foi possível iniciar a atualização.", {
-        description: "Verifique a permissão de instalação de fontes desconhecidas e tente novamente.",
+        description:
+          "Verifique a permissão de instalação de fontes desconhecidas e tente novamente.",
       });
     } finally {
       setInstalling(false);
@@ -76,7 +77,7 @@ export function AppUpdatePrompt() {
             <div>
               <p className="text-sm font-black">Nova versão disponível</p>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                Mini Market PDV · versão {update.version}
+                Mercadinho União · versão {update.version}
               </p>
             </div>
 

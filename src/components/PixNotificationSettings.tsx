@@ -29,7 +29,7 @@ export function PixNotificationSettings() {
   const openSettings = async () => {
     try {
       await PixNotification.openNotificationSettings();
-      toast.info("Ative o acesso às notificações do Mini Market", {
+      toast.info("Ative o acesso às notificações do Mercadinho União", {
         description: "Depois volte para o app. O status será atualizado automaticamente.",
       });
     } catch {
@@ -46,8 +46,8 @@ export function PixNotificationSettings() {
         <div className="min-w-0 flex-1">
           <h2 className="font-bold">Pix por notificação</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Detecta automaticamente notificações de Pix recebido de qualquer banco
-            que mostre o valor na notificação.
+            Detecta automaticamente notificações de Pix recebido de qualquer banco que mostre o
+            valor na notificação.
           </p>
         </div>
       </div>
@@ -77,10 +77,10 @@ export function PixNotificationSettings() {
       </Button>
 
       <p className="text-xs leading-relaxed text-muted-foreground">
-        O PDV só considera uma notificação quando ela contém indicação de Pix
-        recebido e o valor é igual ao valor esperado da venda. O Android pode
-        ocultar conteúdos considerados sensíveis em algumas notificações, então
-        esta é uma confirmação por notificação, não uma confirmação bancária via API.
+        O PDV só considera uma notificação quando ela contém indicação de Pix recebido e o valor é
+        igual ao valor esperado da venda. O Android pode ocultar conteúdos considerados sensíveis em
+        algumas notificações, então esta é uma confirmação por notificação, não uma confirmação
+        bancária via API.
       </p>
     </section>
   );

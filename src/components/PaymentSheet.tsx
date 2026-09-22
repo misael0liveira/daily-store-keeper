@@ -3,7 +3,7 @@ import { Banknote, Check, Copy, CreditCard, QrCode } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { PixQr } from "@/components/PixQr";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -17,7 +17,6 @@ const methods: { key: PaymentMethod; icon: typeof Banknote }[] = [
   { key: "debito", icon: CreditCard },
   { key: "credito", icon: CreditCard },
 ];
-
 
 function PixPaymentSuccess({
   amount,
@@ -34,7 +33,12 @@ function PixPaymentSuccess({
   }, [onDone]);
 
   return (
-    <div className="fixed inset-0 z-[200] flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-[#087B3E] px-6 text-white" role="status" aria-live="assertive" aria-label="Pagamento recebido">
+    <div
+      className="fixed inset-0 z-[200] flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-[#087B3E] px-6 text-white"
+      role="status"
+      aria-live="assertive"
+      aria-label="Pagamento recebido"
+    >
       <style>{`
         @keyframes pixRingIn { 0% { transform: scale(.72); opacity: 0; } 35% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.08); opacity: 0; } }
         @keyframes pixRingPulse { 0%, 100% { transform: scale(.96); opacity: .2; } 50% { transform: scale(1.04); opacity: .55; } }
@@ -60,18 +64,54 @@ function PixPaymentSuccess({
         <div className="pix-success-glow absolute size-[230px] rounded-full bg-emerald-300/20 blur-3xl sm:size-[270px]" />
         <div className="pix-success-pulse absolute size-[205px] rounded-full border border-emerald-200/30 sm:size-[245px]" />
         <div className="pix-success-ring absolute size-[190px] rounded-full border border-emerald-200/20 sm:size-[220px]" />
-        <svg viewBox="0 0 140 140" className="relative size-[190px] drop-shadow-[0_0_28px_rgba(134,239,172,.35)] sm:size-[220px]" aria-hidden="true">
-          <circle cx="70" cy="70" r="52" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.24)" strokeWidth="2" />
-          <circle cx="70" cy="70" r="52" fill="none" stroke="#86EFAC" strokeWidth="8" strokeLinecap="round" className="pix-success-circle" transform="rotate(-90 70 70)" />
-          <path d="M43 71.5 61 89 99 51" fill="none" stroke="#fff" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" className="pix-success-check" />
+        <svg
+          viewBox="0 0 140 140"
+          className="relative size-[190px] drop-shadow-[0_0_28px_rgba(134,239,172,.35)] sm:size-[220px]"
+          aria-hidden="true"
+        >
+          <circle
+            cx="70"
+            cy="70"
+            r="52"
+            fill="rgba(255,255,255,.08)"
+            stroke="rgba(255,255,255,.24)"
+            strokeWidth="2"
+          />
+          <circle
+            cx="70"
+            cy="70"
+            r="52"
+            fill="none"
+            stroke="#86EFAC"
+            strokeWidth="8"
+            strokeLinecap="round"
+            className="pix-success-circle"
+            transform="rotate(-90 70 70)"
+          />
+          <path
+            d="M43 71.5 61 89 99 51"
+            fill="none"
+            stroke="#fff"
+            strokeWidth="10"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="pix-success-check"
+          />
         </svg>
         <span className="pix-success-dot absolute left-1/2 top-1/2 size-3 -translate-x-1/2 rounded-full bg-emerald-200 shadow-[0_0_18px_rgba(167,243,208,.9)]" />
       </div>
       <div className="pix-success-text -mt-3 text-center">
-        <p className="text-[30px] font-semibold tracking-tight sm:text-[34px]">Pagamento recebido!</p>
-        <p className="mt-3 text-[28px] font-medium tracking-tight text-emerald-100">{formatBRL(amount)}</p>
+        <p className="text-[30px] font-semibold tracking-tight sm:text-[34px]">
+          Pagamento recebido!
+        </p>
+        <p className="mt-3 text-[28px] font-medium tracking-tight text-emerald-100">
+          {formatBRL(amount)}
+        </p>
         {bank && <p className="mt-2 text-sm font-medium text-emerald-100/80">{bank}</p>}
-        <div className="mt-7 flex items-center justify-center gap-2 text-sm text-emerald-100/80"><Check className="size-4" />Venda confirmada</div>
+        <div className="mt-7 flex items-center justify-center gap-2 text-sm text-emerald-100/80">
+          <Check className="size-4" />
+          Venda confirmada
+        </div>
       </div>
     </div>
   );
@@ -91,7 +131,9 @@ export function PaymentSheet({
   const settings = useStore((s) => s.settings);
   const [method, setMethod] = useState<PaymentMethod>("dinheiro");
   const [paidRaw, setPaidRaw] = useState("");
-  const [pixSuccess, setPixSuccess] = useState<{ amount: number; bank: string | undefined } | null>(null);
+  const [pixSuccess, setPixSuccess] = useState<{ amount: number; bank: string | undefined } | null>(
+    null,
+  );
   const onConfirmRef = useRef(onConfirm);
 
   useEffect(() => {
@@ -184,9 +226,7 @@ export function PaymentSheet({
     }
     onConfirm({
       method,
-      ...(method === "dinheiro" && paid !== null
-        ? { paidAmount: paid, change: change ?? 0 }
-        : {}),
+      ...(method === "dinheiro" && paid !== null ? { paidAmount: paid, change: change ?? 0 } : {}),
     });
     setPaidRaw("");
     setMethod("dinheiro");
@@ -204,109 +244,119 @@ export function PaymentSheet({
   return (
     <>
       <Sheet open={open && !pixSuccess} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="max-h-[92dvh] overflow-y-auto rounded-t-3xl">
-        <SheetHeader className="text-left">
-          <SheetTitle className="font-display text-3xl tracking-wide">Pagamento</SheetTitle>
-        </SheetHeader>
+        <SheetContent side="bottom" className="max-h-[92dvh] overflow-y-auto rounded-t-3xl">
+          <SheetHeader className="text-left">
+            <SheetTitle className="font-display text-3xl tracking-wide">Pagamento</SheetTitle>
+          </SheetHeader>
 
-        <div className="space-y-4 px-4 pb-6">
-          <div className="flex items-baseline justify-between rounded-2xl border bg-card p-4">
-            <span className="text-sm font-medium text-muted-foreground">Total a pagar</span>
-            <span className="font-display text-3xl tracking-wide text-primary">{formatBRL(total)}</span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            {methods.map(({ key, icon: Icon }) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setMethod(key)}
-                className={`flex h-20 flex-col items-center justify-center gap-1 rounded-2xl border text-sm font-medium transition-colors ${
-                  method === key
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "bg-card text-foreground hover:bg-accent"
-                }`}
-              >
-                <Icon className="size-6" />
-                {PAYMENT_LABELS[key]}
-              </button>
-            ))}
-          </div>
-
-          {method === "dinheiro" && (
-            <div className="space-y-3 rounded-2xl border bg-card p-4">
-              <div className="space-y-2">
-                <Label htmlFor="paid">Valor pago pelo cliente</Label>
-                <Input
-                  id="paid"
-                  inputMode="decimal"
-                  placeholder="R$ 0,00"
-                  value={paidRaw}
-                  onChange={(e) => setPaidRaw(e.target.value.replace(/[^\d.,]/g, ""))}
-                  className="h-12 text-right text-lg font-semibold"
-                />
-              </div>
-              {paid !== null && (
-                <div className="flex items-baseline justify-between">
-                  <span className="text-sm font-medium text-muted-foreground">Troco</span>
-                  <span className={`font-display text-2xl tracking-wide ${
-                    insufficient ? "text-destructive" : "text-primary"
-                  }`}>
-                    {insufficient ? `Faltam ${formatBRL(-(change ?? 0))}` : formatBRL(change ?? 0)}
-                  </span>
-                </div>
-              )}
+          <div className="space-y-4 px-4 pb-6">
+            <div className="flex items-baseline justify-between rounded-2xl border bg-card p-4">
+              <span className="text-sm font-medium text-muted-foreground">Total a pagar</span>
+              <span className="font-display text-3xl tracking-wide text-primary">
+                {formatBRL(total)}
+              </span>
             </div>
-          )}
 
-          {method === "pix" && (
-            <div className="space-y-3 rounded-2xl border bg-card p-4">
-              {pixReady ? (
-                <>
-                  <PixQr payload={pixPayload} />
-                  <p className="text-center text-sm text-muted-foreground">
-                    O cliente escaneia o código para pagar {formatBRL(total)}.
-                  </p>
-                  <p className="rounded-xl bg-secondary p-3 text-center text-sm font-medium text-secondary-foreground">
-                    Aguardando Pix recebido...
-                  </p>
-                  <Button variant="outline" className="h-12 w-full gap-2" onClick={copyPix}>
-                    <Copy className="size-5" />
-                    Copiar código Pix
-                  </Button>
-                </>
-              ) : (
-                <div className="space-y-3 text-center">
-                  <p className="text-sm text-muted-foreground">Nenhuma chave Pix cadastrada ainda.</p>
-                  <Button asChild variant="outline" className="h-12 w-full">
-                    <Link to="/vendas/configuracoes" onClick={() => onOpenChange(false)}>
+            <div className="grid grid-cols-2 gap-3">
+              {methods.map(({ key, icon: Icon }) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setMethod(key)}
+                  className={`flex h-20 flex-col items-center justify-center gap-1 rounded-2xl border text-sm font-medium transition-colors ${
+                    method === key
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "bg-card text-foreground hover:bg-accent"
+                  }`}
+                >
+                  <Icon className="size-6" />
+                  {PAYMENT_LABELS[key]}
+                </button>
+              ))}
+            </div>
+
+            {method === "dinheiro" && (
+              <div className="space-y-3 rounded-2xl border bg-card p-4">
+                <div className="space-y-2">
+                  <Label htmlFor="paid">Valor pago pelo cliente</Label>
+                  <Input
+                    id="paid"
+                    inputMode="decimal"
+                    placeholder="R$ 0,00"
+                    value={paidRaw}
+                    onChange={(e) => setPaidRaw(e.target.value.replace(/[^\d.,]/g, ""))}
+                    className="h-12 text-right text-lg font-semibold"
+                  />
+                </div>
+                {paid !== null && (
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-sm font-medium text-muted-foreground">Troco</span>
+                    <span
+                      className={`font-display text-2xl tracking-wide ${
+                        insufficient ? "text-destructive" : "text-primary"
+                      }`}
+                    >
+                      {insufficient
+                        ? `Faltam ${formatBRL(-(change ?? 0))}`
+                        : formatBRL(change ?? 0)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {method === "pix" && (
+              <div className="space-y-3 rounded-2xl border bg-card p-4">
+                {pixReady ? (
+                  <>
+                    <PixQr payload={pixPayload} />
+                    <p className="text-center text-sm text-muted-foreground">
+                      O cliente escaneia o código para pagar {formatBRL(total)}.
+                    </p>
+                    <p className="rounded-xl bg-secondary p-3 text-center text-sm font-medium text-secondary-foreground">
+                      Aguardando Pix recebido...
+                    </p>
+                    <Button variant="outline" className="h-12 w-full gap-2" onClick={copyPix}>
+                      <Copy className="size-5" />
+                      Copiar código Pix
+                    </Button>
+                  </>
+                ) : (
+                  <div className="space-y-3 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      Nenhuma chave Pix cadastrada ainda.
+                    </p>
+                    <Link
+                      to="/vendas/configuracoes"
+                      className={buttonVariants({ variant: "outline", className: "h-12 w-full" })}
+                      onClick={() => onOpenChange(false)}
+                    >
                       Cadastrar chave Pix
                     </Link>
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
+                  </div>
+                )}
+              </div>
+            )}
 
-          {(method === "debito" || method === "credito") && (
-            <p className="rounded-2xl border bg-card p-4 text-sm text-muted-foreground">
-              Passe o cartão na maquininha e confirme abaixo para registrar a venda.
-            </p>
-          )}
+            {(method === "debito" || method === "credito") && (
+              <p className="rounded-2xl border bg-card p-4 text-sm text-muted-foreground">
+                Passe o cartão na maquininha e confirme abaixo para registrar a venda.
+              </p>
+            )}
 
-          <Button className="h-14 w-full text-lg" onClick={confirm} disabled={insufficient || (method === "pix" && !pixReady)}>
-            Confirmar pagamento
-          </Button>
-        </div>
-      </SheetContent>
+            <Button
+              className="h-14 w-full text-lg"
+              onClick={confirm}
+              disabled={insufficient || (method === "pix" && !pixReady)}
+            >
+              Confirmar pagamento
+            </Button>
+          </div>
+        </SheetContent>
       </Sheet>
 
       {pixSuccess && (
-        <PixPaymentSuccess
-          amount={pixSuccess.amount}
-          bank={pixSuccess.bank}
-          onDone={finishPix}
-        />
+        <PixPaymentSuccess amount={pixSuccess.amount} bank={pixSuccess.bank} onDone={finishPix} />
       )}
     </>
   );

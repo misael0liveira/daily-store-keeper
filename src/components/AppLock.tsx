@@ -1,18 +1,39 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { BiometricAuth } from "@aparajita/capacitor-biometric-auth";
-import { Fingerprint, LockKeyhole, ShieldCheck } from "lucide-react";
+import { Fingerprint, LockKeyhole } from "lucide-react";
 import { App as CapacitorApp } from "@capacitor/app";
 
 const isNativeApp = typeof window !== "undefined" && window.location.protocol === "capacitor:";
+
+export function AppStartup({ children }: { children: React.ReactNode }) {
+  const [ready, setReady] = useState(!isNativeApp);
+
+  useEffect(() => {
+    if (!isNativeApp) return;
+    const timer = window.setTimeout(() => setReady(true), 4000);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  if (ready) return <>{children}</>;
+
+  return (
+    <div className="app-startup" role="status" aria-label="Abrindo Mercadinho União">
+      <img src="/brand/mercadinho-uniao-logo.png" alt="Mercadinho União" />
+      <span>Abrindo…</span>
+    </div>
+  );
+}
 
 export function AppLock({ children }: { children: React.ReactNode }) {
   const [unlocked, setUnlocked] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const busyRef = useRef(false);
   const listenerRef = useRef<{ remove: () => Promise<void> } | null>(null);
 
-  async function unlock() {
-    if (busy) return;
+  const unlock = useCallback(async () => {
+    if (busyRef.current) return;
+    busyRef.current = true;
     setBusy(true);
     setError("");
     try {
@@ -22,27 +43,28 @@ export function AppLock({ children }: { children: React.ReactNode }) {
       }
 
       const info = await BiometricAuth.checkBiometry();
-      if (!info.isAvailable && !info.deviceIsSecure) {
-        setError("Configure a digital, PIN, padrão ou senha no bloqueio do seu celular para desbloquear o aplicativo.");
+      if (!info.isAvailable) {
+        setError("Cadastre uma biometria no Android para desbloquear o aplicativo.");
         return;
       }
 
       await BiometricAuth.authenticate({
-        reason: "Desbloqueie o Mini Market PDV para acessar o estabelecimento.",
-        androidTitle: "Desbloquear Mini Market PDV",
-        androidSubtitle: "Use sua digital ou o bloqueio de tela do celular",
+        reason: "Desbloqueie o Mercadinho União para acessar o estabelecimento.",
+        androidTitle: "Desbloquear Mercadinho União",
+        androidSubtitle: "Use sua biometria",
         androidConfirmationRequired: false,
-        allowDeviceCredential: true,
+        allowDeviceCredential: false,
       });
 
       setUnlocked(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.warn("[App lock]", err);
-      setError("Não foi possível desbloquear. Tente novamente com sua digital ou com o PIN, padrão ou senha do celular.");
+      setError("Não foi possível desbloquear. Tente novamente usando sua biometria.");
     } finally {
+      busyRef.current = false;
       setBusy(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -71,7 +93,7 @@ export function AppLock({ children }: { children: React.ReactNode }) {
       void listenerRef.current?.remove();
       listenerRef.current = null;
     };
-  }, []);
+  }, [unlock]);
 
   useEffect(() => {
     if (!isNativeApp) return;
@@ -86,14 +108,15 @@ export function AppLock({ children }: { children: React.ReactNode }) {
   if (unlocked) return <>{children}</>;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-5">
+    <div className="relative z-[1] flex min-h-screen items-center justify-center bg-background px-5">
       <div className="w-full max-w-sm rounded-3xl border bg-card p-7 text-center shadow-sm">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-          <ShieldCheck size={32} />
-        </div>
-        <h1 className="mt-5 text-2xl font-extrabold tracking-tight">Mini Market PDV</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Aplicativo bloqueado. Desbloqueie usando a digital ou a senha, PIN ou padrão de bloqueio do seu celular.
+        <img
+          src="/brand/mercadinho-uniao-logo.png"
+          alt="Mercadinho União"
+          className="mx-auto w-full max-w-[290px]"
+        />
+        <p className="mt-5 text-sm text-muted-foreground">
+          Aplicativo bloqueado. Use a biometria cadastrada no seu celular para continuar.
         </p>
 
         <button
@@ -108,7 +131,7 @@ export function AppLock({ children }: { children: React.ReactNode }) {
 
         <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
           <LockKeyhole size={14} />
-          Protegido pelo bloqueio de tela do Android
+          Protegido pela biometria do Android
         </div>
 
         {error && (

@@ -22,19 +22,11 @@ export async function generateSalesPdf({
   const total = ordered.reduce((sum, s) => sum + s.total, 0);
 
   doc.setFontSize(18);
-  doc.text(storeName || "Mini Mercado", 40, 48);
+  doc.text(storeName || "Mercadinho União", 40, 48);
   doc.setFontSize(11);
   doc.text(`Relatório de vendas — ${periodLabel}`, 40, 68);
-  doc.text(
-    `Período: ${start ? formatDate(start) : "início"} a ${formatDate(end)}`,
-    40,
-    84
-  );
-  doc.text(
-    `Vendas: ${ordered.length}    Total: ${formatBRL(total)}`,
-    40,
-    100
-  );
+  doc.text(`Período: ${start ? formatDate(start) : "início"} a ${formatDate(end)}`, 40, 84);
+  doc.text(`Vendas: ${ordered.length}    Total: ${formatBRL(total)}`, 40, 100);
 
   const byMethod = ordered.reduce<Record<string, number>>((acc, s) => {
     acc[s.method] = (acc[s.method] ?? 0) + s.total;

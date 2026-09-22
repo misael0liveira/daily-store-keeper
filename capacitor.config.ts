@@ -2,13 +2,13 @@ import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
   appId: "app.minimarket.pos",
-  appName: "Mini Market POS",
+  appName: "Mercadinho União",
   // Static output of `bun run build` (client assets + prerendered HTML).
   webDir: "dist/client",
-  backgroundColor: "#fafbfc",
+  backgroundColor: "#f5f8fb",
   android: {
     allowMixedContent: false,
-    backgroundColor: "#fafbfc",
+    backgroundColor: "#f5f8fb",
   },
   plugins: {
     BarcodeScanning: {
