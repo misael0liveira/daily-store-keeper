@@ -124,6 +124,14 @@ function ThemeApplier() {
   return null;
 }
 
+function BrandWatermark() {
+  return (
+    <div className="app-watermark" aria-hidden="true">
+      <img src="/brand/mercadinho-uniao-logo.svg" alt="" />
+    </div>
+  );
+}
+
 const navigation = [
   { to: "/", label: "Início", icon: House },
   { to: "/vendas", label: "Histórico", icon: ReceiptText },
@@ -185,6 +193,7 @@ function RootComponent() {
     return (
       <QueryClientProvider client={queryClient}>
         <ThemeApplier />
+        <BrandWatermark />
         <main className="mx-auto max-w-lg">
           <Outlet />
         </main>
@@ -196,8 +205,9 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <ThemeApplier />
+      <BrandWatermark />
       <AppLock>
-        <ThemeApplier />
         <main className="m3-app-content mx-auto max-w-lg">
           <Outlet />
         </main>

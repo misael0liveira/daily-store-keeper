@@ -7,13 +7,13 @@ Reproduzir a proposta visual aprovada pelo usuário em 22/09/2026: interface de 
 ## Tokens e componentes
 
 Fonte canônica: src/styles.css. Roboto com fallback system-ui. Fundo #f5f8fb, ação azul #005BAA, assinatura vermelha #E3062D e texto #141b25; cartões brancos com borda discreta, raio 14px e margem de tela 16px. Azul identifica navegação e ações. Vermelho pertence à marca e à linha do scanner; estados semânticos preservam suas próprias cores. Tema escuro usa as variáveis existentes. Sem duplicação de tokens em JavaScript.
-Logotipo oficial: carrinho bicolor à esquerda, “MERCADINHO” em vermelho e “UNIÃO” em vermelho com assinatura azul. A composição completa aparece na abertura e na autenticação; em ícones pequenos, usar somente o símbolo compacto para preservar a leitura.
+Logotipo oficial: carrinho bicolor à esquerda, “MERCADINHO” em vermelho e “UNIÃO” em vermelho com assinatura azul. A composição completa aparece na abertura, na autenticação e no cabeçalho do Início; em ícones pequenos, usar somente o símbolo compacto para preservar a leitura. Uma marca-d’água central com opacidade mínima pode aparecer atrás das telas, sem competir com dados ou controles.
 Navegação: __root.tsx. Cinco destinos: Início, Histórico, Caixa, Estoque, Ajustes. Círculo ativo móvel com sombra neutra, folga visível e recorte côncavo cúbico, estreito e de entrada suave na superfície. O ícone ativo fica dentro do círculo e seu rótulo logo abaixo. Configurações pertencem a Ajustes. Movimento horizontal de 240ms; animação reduzida respeitada.
 Primitivos: Button, Input, Sheet e AlertDialog existentes. Estado: useStore. Feedback: sonner.
 
 ## Composição
 
-Início: nome configurado e um único status; resumo diário com Nova venda; até três produtos de reposição; duas últimas vendas.
+Início: logotipo oficial e um único status; resumo diário com Nova venda; até três produtos de reposição; duas últimas vendas.
 Caixa: título simples, câmera persistente, busca, lista com subtotal e quantidade, pagamento fixo acima da navegação.
 Scanner: quatro cantos brancos independentes enquadram o código e uma linha verde atravessa a leitura; sem retângulo completo, ícone sobre a câmera, linha vermelha ou molduras sobrepostas.
 Estoque: lista primeiro, busca por nome/código, filtro de saldo <=5; cadastro/edição em Sheet.
@@ -23,6 +23,8 @@ Não colocar números ilustrativos, fotos de câmera ou botões sem função na 
 ## Responsividade e acessibilidade
 
 Coluna até 512px; composição destinada a 320–430px. Respeitar safe areas e scroll natural. A barra de status do Android usa ícones escuros sobre o fundo claro e reaplica esse contraste ao voltar da câmera. Nomes longos quebram linha. Ícones de navegação sempre têm rótulos. Modais usam os primitivos Radix com título e descrição. Tema e movimento reduzido devem manter controles acessíveis.
+
+O APK exige biometria, sem oferecer PIN, padrão ou senha do aparelho como alternativa. A tela nativa de abertura mantém o logotipo visível por cerca de quatro segundos somente na inicialização fria.
 
 ## Verificação
 

@@ -120,6 +120,30 @@
 }
 
 /* ---------------- shell ---------------- */
+.app-watermark {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+.app-watermark img {
+  width: min(78vw, 380px);
+  height: auto;
+  opacity: 0.035;
+  filter: grayscale(0.15);
+}
+.dark .app-watermark img {
+  opacity: 0.055;
+}
+.m3-app-content,
+.app-watermark + main {
+  position: relative;
+  z-index: 1;
+}
 .stage {
   min-height: 100vh;
   display: grid;
@@ -820,6 +844,11 @@
   flex-direction: column;
   gap: 9px;
   padding-bottom: 18px;
+}
+.pos-home-logo {
+  display: block;
+  width: min(100%, 295px);
+  height: auto;
 }
 .pos-status {
   display: inline-flex;

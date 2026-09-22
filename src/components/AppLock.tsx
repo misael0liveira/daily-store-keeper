@@ -24,27 +24,23 @@ export function AppLock({ children }: { children: React.ReactNode }) {
       }
 
       const info = await BiometricAuth.checkBiometry();
-      if (!info.isAvailable && !info.deviceIsSecure) {
-        setError(
-          "Configure a digital, PIN, padrão ou senha no bloqueio do seu celular para desbloquear o aplicativo.",
-        );
+      if (!info.isAvailable) {
+        setError("Cadastre uma biometria no Android para desbloquear o aplicativo.");
         return;
       }
 
       await BiometricAuth.authenticate({
         reason: "Desbloqueie o Mercadinho União para acessar o estabelecimento.",
         androidTitle: "Desbloquear Mercadinho União",
-        androidSubtitle: "Use sua digital ou o bloqueio de tela do celular",
+        androidSubtitle: "Use sua biometria",
         androidConfirmationRequired: false,
-        allowDeviceCredential: true,
+        allowDeviceCredential: false,
       });
 
       setUnlocked(true);
     } catch (err: unknown) {
       console.warn("[App lock]", err);
-      setError(
-        "Não foi possível desbloquear. Tente novamente com sua digital ou com o PIN, padrão ou senha do celular.",
-      );
+      setError("Não foi possível desbloquear. Tente novamente usando sua biometria.");
     } finally {
       busyRef.current = false;
       setBusy(false);
@@ -93,7 +89,7 @@ export function AppLock({ children }: { children: React.ReactNode }) {
   if (unlocked) return <>{children}</>;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-5">
+    <div className="relative z-[1] flex min-h-screen items-center justify-center bg-background px-5">
       <div className="w-full max-w-sm rounded-3xl border bg-card p-7 text-center shadow-sm">
         <img
           src="/brand/mercadinho-uniao-logo.svg"
@@ -101,8 +97,7 @@ export function AppLock({ children }: { children: React.ReactNode }) {
           className="mx-auto w-full max-w-[290px]"
         />
         <p className="mt-5 text-sm text-muted-foreground">
-          Aplicativo bloqueado. Desbloqueie usando a digital ou a senha, PIN ou padrão de bloqueio
-          do seu celular.
+          Aplicativo bloqueado. Use a biometria cadastrada no seu celular para continuar.
         </p>
 
         <button
@@ -117,7 +112,7 @@ export function AppLock({ children }: { children: React.ReactNode }) {
 
         <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
           <LockKeyhole size={14} />
-          Protegido pelo bloqueio de tela do Android
+          Protegido pela biometria do Android
         </div>
 
         {error && (

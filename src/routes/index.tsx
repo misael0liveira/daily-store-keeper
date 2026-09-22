@@ -14,7 +14,11 @@ function Dashboard() {
   return (
     <div className="pos-page pos-home">
       <header className="pos-header pos-home-header">
-        <h1>{settings.storeName || "Mercadinho União"}</h1>
+        <img
+          src="/brand/mercadinho-uniao-logo.svg"
+          alt={settings.storeName || "Mercadinho União"}
+          className="pos-home-logo"
+        />
         <span className={`pos-status ${cashOpen ? "is-open" : ""}`}>
           <i />
           Caixa {cashOpen ? "aberto" : "fechado"}
