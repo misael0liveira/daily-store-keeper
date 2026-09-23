@@ -2,6 +2,7 @@ package app.minimarket.pos;
 
 import android.os.Bundle;
 import android.view.Window;
+import androidx.core.splashscreen.SplashScreen;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import com.getcapacitor.BridgeActivity;
@@ -19,6 +20,7 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        SplashScreen.installSplashScreen(this);
         registerPlugin(AppUpdaterPlugin.class);
         registerPlugin(PixNotificationPlugin.class);
         super.onCreate(savedInstanceState);
