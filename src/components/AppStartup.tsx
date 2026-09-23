@@ -15,7 +15,7 @@ export function AppStartup({ children }: { children: ReactNode }) {
 
   return (
     <div className="app-startup" role="status" aria-label="Abrindo Mercadinho União">
-      <img src="/brand/mercadinho-uniao-logo.png" alt="Mercadinho União" />
+      <img src="/brand/mercadinho-uniao-startup.png" alt="Mercadinho União" />
       <span>Abrindo…</span>
     </div>
   );
