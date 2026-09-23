@@ -130,14 +130,20 @@
   justify-content: center;
   gap: 24px;
   padding: 32px;
-  background: var(--background);
+  background: #f5f8fb;
+  color-scheme: light;
 }
 .app-startup img {
-  width: min(82vw, 360px);
+  width: min(68vw, 280px);
   height: auto;
+  object-fit: contain;
+  opacity: 1;
+  filter: none;
+  mix-blend-mode: normal;
+  image-rendering: auto;
 }
 .app-startup span {
-  color: var(--muted-foreground);
+  color: #5f6b7a;
   font-size: 13px;
 }
 .app-watermark {
@@ -867,8 +873,9 @@
 }
 .pos-home-logo {
   display: block;
-  width: min(100%, 295px);
+  width: min(72vw, 235px);
   height: auto;
+  image-rendering: auto;
 }
 .pos-status {
   display: inline-flex;

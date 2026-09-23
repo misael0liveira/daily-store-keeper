@@ -3,7 +3,7 @@ name: APK de teste do novo layout
 on:
   workflow_dispatch:
   push:
-    branches: [feat/layout-proposta-visual]
+    branches: ["feat/**"]
     paths:
       - "src/**"
       - "public/**"

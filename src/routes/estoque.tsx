@@ -33,7 +33,6 @@ import {
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { beep, unlockAudio, vibrate } from "@/lib/feedback";
-import { syncPendingSales } from "@/lib/sync";
 import { formatBRL, useStore } from "@/store/useStore";
 
 export const Route = createFileRoute("/estoque")({
@@ -97,10 +96,9 @@ function EstoquePage() {
     }
     beep(true);
     vibrate(60);
-    setScannerOpen(false);
   };
 
-  const save = async () => {
+  const save = () => {
     if (saving) return;
     const code = barcode.trim();
     const priceNum = Number(String(price).replace(",", "."));
@@ -121,25 +119,9 @@ function EstoquePage() {
     setSaving(true);
     try {
       upsertProduct({ barcode: code, name: name.trim(), price: priceNum, stock: stockNum });
-
-      // Persistimos localmente primeiro e, logo depois, enviamos o estado atualizado para o Supabase.
-      const state = useStore.getState();
-      const result = await syncPendingSales(state.sales, state.products);
-      if (result.status === "error") {
-        toast.warning("Produto salvo neste aparelho", {
-          description:
-            "Não foi possível sincronizar agora. Tentaremos novamente quando houver conexão.",
-        });
-      } else if (result.status === "offline") {
-        toast.info("Produto salvo offline", {
-          description: "Será sincronizado quando a conexão voltar.",
-        });
-      } else {
-        toast.success(
-          existing ? "Produto atualizado e sincronizado!" : "Produto cadastrado e sincronizado!",
-          { description: name.trim() },
-        );
-      }
+      toast.success(existing ? "Produto atualizado" : "Produto cadastrado", {
+        description: `${name.trim()} foi salvo neste aparelho.`,
+      });
 
       setEditorOpen(false);
       setScannerOpen(false);
@@ -148,7 +130,7 @@ function EstoquePage() {
       setPrice("");
       setStock("");
     } catch {
-      toast.error("Não foi possível concluir o envio", {
+      toast.error("Não foi possível salvar o produto", {
         description: "Confira os dados salvos neste aparelho antes de tentar novamente.",
       });
     } finally {
@@ -188,6 +170,8 @@ function EstoquePage() {
             setName("");
             setPrice("");
             setStock("");
+            unlockAudio();
+            setScannerOpen(true);
             setEditorOpen(true);
           }}
         >
@@ -274,7 +258,7 @@ function EstoquePage() {
             <SheetDescription>Informe o código, preço e quantidade em estoque.</SheetDescription>
           </SheetHeader>
           {scannerOpen ? (
-            <BarcodeScanner onScan={handleScan} onClose={() => setScannerOpen(false)} />
+            <BarcodeScanner onScan={handleScan} />
           ) : (
             <Button
               variant="outline"
