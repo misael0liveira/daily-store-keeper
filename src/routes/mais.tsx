@@ -1,11 +1,12 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowRight, HardDrive, Settings, Wifi, WifiOff } from "lucide-react";
+import { ArrowRight, Download, RefreshCw, Settings } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
-import { SYNC_ENABLED, pendingSales, syncPendingSales } from "@/lib/sync";
+import { checkForAppUpdate, installAppUpdate, type UpdateInfo } from "@/lib/app-update";
 import { useStore } from "@/store/useStore";
 
 export const Route = createFileRoute("/mais")({
@@ -26,24 +27,54 @@ function MorePage() {
   const online = useOnlineStatus();
   const theme = useStore((s) => s.theme);
   const setTheme = useStore((s) => s.setTheme);
-  const sales = useStore((s) => s.sales);
-  const products = useStore((s) => s.products);
-  const pending = pendingSales(sales).length;
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [installingUpdate, setInstallingUpdate] = useState(false);
+  const [availableUpdate, setAvailableUpdate] = useState<UpdateInfo | null>(null);
 
-  const check = async () => {
-    const result = await syncPendingSales(sales);
-    if (result.status === "no-backend") {
-      toast.info("Ainda não existe servidor configurado", {
-        description: `${result.pending} ${result.pending === 1 ? "venda" : "vendas"} guardadas somente neste aparelho.`,
-      });
-    } else if (result.status === "offline") {
+  const checkUpdate = async () => {
+    if (!online) {
       toast.warning("Sem internet agora", {
-        description: "Tente novamente quando a conexão voltar.",
+        description: "Conecte-se somente para verificar se existe uma nova versão.",
       });
-    } else {
-      toast.success("Sincronização concluída", {
-        description: `${result.synced.length} enviadas · ${result.failed.length} pendentes`,
+      return;
+    }
+
+    setCheckingUpdate(true);
+    try {
+      const update = await checkForAppUpdate();
+      setAvailableUpdate(update);
+      if (update) {
+        toast.info(`Versão ${update.version} disponível`, {
+          description: "Toque em Atualizar agora para baixar e instalar.",
+        });
+      } else {
+        toast.success("Aplicativo atualizado", {
+          description: "Você já está usando a versão mais recente.",
+        });
+      }
+    } catch {
+      toast.error("Não foi possível verificar a atualização", {
+        description: "Confira a conexão e tente novamente.",
       });
+    } finally {
+      setCheckingUpdate(false);
+    }
+  };
+
+  const installUpdate = async () => {
+    if (!availableUpdate || installingUpdate) return;
+    setInstallingUpdate(true);
+    try {
+      const result = await installAppUpdate(availableUpdate.downloadUrl);
+      if (result.needsPermission) {
+        toast.info("Permita instalações deste aplicativo e toque em Atualizar agora novamente.");
+      }
+    } catch {
+      toast.error("Não foi possível iniciar a atualização", {
+        description: "Confira a conexão e a permissão para instalar aplicativos.",
+      });
+    } finally {
+      setInstallingUpdate(false);
     }
   };
 
@@ -86,50 +117,45 @@ function MorePage() {
         />
       </section>
 
-      <section className="pos-settings-data" aria-labelledby="local-data-title">
-        <h2 id="local-data-title" className="mb-2 text-base font-semibold">
-          Dados neste aparelho
+      <section className="pos-settings-data" aria-labelledby="update-title">
+        <h2 id="update-title" className="mb-2 text-base font-semibold">
+          Atualizações
         </h2>
         <div className="pos-card">
           <div className="flex items-center gap-3">
             <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-secondary">
-              <HardDrive className="size-5 text-primary" />
+              <RefreshCw className="size-5 text-primary" />
             </span>
             <div className="min-w-0">
-              <p className="text-sm font-semibold">
-                {Object.keys(products).length} produtos · {sales.length} vendas
-              </p>
+              <p className="text-sm font-semibold">Verificar nova versão</p>
               <p className="text-xs text-muted-foreground">
-                Tudo salvo no próprio celular, sem depender de internet.
+                Apenas a atualização usa internet. Caixa, estoque e histórico funcionam offline.
               </p>
             </div>
           </div>
 
-          <div className="mt-4 flex items-center gap-2 border-t pt-4 text-xs font-semibold">
-            {online ? (
-              <>
-                <Wifi className="size-4 text-success" />
-                <span className="text-success">Online</span>
-              </>
-            ) : (
-              <>
-                <WifiOff className="size-4 text-warning-foreground" />
-                <span className="text-warning-foreground">
-                  Offline — o caixa continua funcionando
-                </span>
-              </>
-            )}
-          </div>
-
-          <p className="mt-3 text-xs text-muted-foreground">
-            {SYNC_ENABLED
-              ? `${pending} ${pending === 1 ? "venda" : "vendas"} aguardando envio ao servidor.`
-              : `Nenhum servidor está conectado, então ${pending === 1 ? "1 venda ainda não foi enviada" : `${pending} vendas ainda não foram enviadas`} para fora do aparelho. Faça cópias pelo relatório em PDF.`}
-          </p>
-
-          <Button variant="outline" className="mt-3 h-12 w-full rounded-xl bg-card" onClick={check}>
-            Verificar envio dos dados
-          </Button>
+          {availableUpdate ? (
+            <Button
+              className="mt-4 h-12 w-full gap-2 rounded-xl"
+              disabled={installingUpdate}
+              onClick={() => void installUpdate()}
+            >
+              <Download className="size-4" />
+              {installingUpdate
+                ? "Baixando atualização…"
+                : `Atualizar para ${availableUpdate.version}`}
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              className="mt-4 h-12 w-full gap-2 rounded-xl bg-card"
+              disabled={checkingUpdate}
+              onClick={() => void checkUpdate()}
+            >
+              <RefreshCw className={`size-4 ${checkingUpdate ? "animate-spin" : ""}`} />
+              {checkingUpdate ? "Verificando…" : "Verificar atualização"}
+            </Button>
+          )}
         </div>
       </section>
     </div>

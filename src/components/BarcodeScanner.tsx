@@ -6,10 +6,9 @@ import { Input } from "@/components/ui/input";
 
 type Props = {
   onScan: (code: string) => void;
-  onClose?: () => void;
 };
 
-function ScannerInner({ onScan, onClose }: Props) {
+function ScannerInner({ onScan }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [manualCode, setManualCode] = useState("");
@@ -84,7 +83,7 @@ function ScannerInner({ onScan, onClose }: Props) {
             <Input
               value={manualCode}
               onChange={(e) => setManualCode(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && submitManual()}
+              onKeyDown={(e) => e.key === "Enter" && !e.nativeEvent.isComposing && submitManual()}
               placeholder="Digite o código de barras"
               inputMode="numeric"
               className="h-12 text-base"
@@ -111,11 +110,6 @@ function ScannerInner({ onScan, onClose }: Props) {
             <span />
           </div>
         </div>
-      )}
-      {onClose && (
-        <Button variant="outline" className="pdv-scanner-close mt-3 h-12 w-full" onClick={onClose}>
-          Fechar câmera
-        </Button>
       )}
     </div>
   );

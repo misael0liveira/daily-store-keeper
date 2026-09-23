@@ -133,8 +133,9 @@
   background: var(--background);
 }
 .app-startup img {
-  width: min(82vw, 360px);
+  width: min(68vw, 280px);
   height: auto;
+  image-rendering: auto;
 }
 .app-startup span {
   color: var(--muted-foreground);
@@ -867,8 +868,9 @@
 }
 .pos-home-logo {
   display: block;
-  width: min(100%, 295px);
+  width: min(72vw, 235px);
   height: auto;
+  image-rendering: auto;
 }
 .pos-status {
   display: inline-flex;

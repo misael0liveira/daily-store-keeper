@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 
 type Props = {
   onScan: (code: string) => void;
-  onClose: () => void;
 };
 
 /**
@@ -15,7 +14,7 @@ type Props = {
  * faster, handles EAN/UPC reliably and asks for the Android camera permission
  * through the system dialog. Manual typing stays available as a fallback.
  */
-export function NativeBarcodeScanner({ onScan, onClose }: Props) {
+export function NativeBarcodeScanner({ onScan }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [manualCode, setManualCode] = useState("");
@@ -26,9 +25,7 @@ export function NativeBarcodeScanner({ onScan, onClose }: Props) {
     setError(null);
     setScanning(true);
     try {
-      const { BarcodeScanner } = await import(
-        "@capacitor-mlkit/barcode-scanning"
-      );
+      const { BarcodeScanner } = await import("@capacitor-mlkit/barcode-scanning");
 
       const permission = await BarcodeScanner.checkPermissions();
       let granted = permission.camera === "granted";
@@ -39,7 +36,7 @@ export function NativeBarcodeScanner({ onScan, onClose }: Props) {
       if (!granted) {
         if (activeRef.current) {
           setError(
-            "Permissão da câmera negada. Libere a câmera nas configurações do app ou digite o código abaixo."
+            "Permissão da câmera negada. Libere a câmera nas configurações do app ou digite o código abaixo.",
           );
         }
         return;
@@ -48,9 +45,7 @@ export function NativeBarcodeScanner({ onScan, onClose }: Props) {
       const supported = await BarcodeScanner.isSupported();
       if (!supported.supported) {
         if (activeRef.current) {
-          setError(
-            "Este aparelho não suporta a leitura por câmera. Digite o código abaixo."
-          );
+          setError("Este aparelho não suporta a leitura por câmera. Digite o código abaixo.");
         }
         return;
       }
@@ -113,7 +108,7 @@ export function NativeBarcodeScanner({ onScan, onClose }: Props) {
           <Input
             value={manualCode}
             onChange={(e) => setManualCode(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && submitManual()}
+            onKeyDown={(e) => e.key === "Enter" && !e.nativeEvent.isComposing && submitManual()}
             placeholder="Digite o código de barras"
             inputMode="numeric"
             className="h-12 text-base"
@@ -123,9 +118,6 @@ export function NativeBarcodeScanner({ onScan, onClose }: Props) {
           </Button>
         </div>
       </div>
-      <Button variant="outline" className="mt-1 h-12 w-full" onClick={onClose}>
-        Fechar câmera
-      </Button>
     </div>
   );
 }

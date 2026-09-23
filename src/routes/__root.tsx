@@ -11,7 +11,7 @@ import {
 import { useEffect, type CSSProperties, type ReactNode } from "react";
 import { Boxes, ScanBarcode, House, ReceiptText, Settings } from "lucide-react";
 import appCss from "../styles.css?url";
-import { AppLock, AppStartup } from "@/components/AppLock";
+import { AppStartup } from "@/components/AppStartup";
 import { AppUpdatePrompt } from "@/components/AppUpdatePrompt";
 import { Toaster } from "@/components/ui/sonner";
 import { registerPWA } from "@/lib/pwa-register";
@@ -87,12 +87,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800&display=swap",
-      },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
     ],
   }),
@@ -208,14 +202,12 @@ function RootComponent() {
       <ThemeApplier />
       <BrandWatermark />
       <AppStartup>
-        <AppLock>
-          <main className="m3-app-content mx-auto max-w-lg">
-            <Outlet />
-          </main>
-          <BottomNav />
-          <Toaster richColors position="top-center" />
-          <AppUpdatePrompt />
-        </AppLock>
+        <main className="m3-app-content mx-auto max-w-lg">
+          <Outlet />
+        </main>
+        <BottomNav />
+        <Toaster richColors position="top-center" />
+        <AppUpdatePrompt />
       </AppStartup>
     </QueryClientProvider>
   );

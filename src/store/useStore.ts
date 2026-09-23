@@ -1,6 +1,19 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { getDeviceId } from "@/lib/sync";
+
+function getDeviceId(): string {
+  if (typeof window === "undefined") return "server";
+  const key = "pdv-device-id";
+  const id = `dev-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  try {
+    const stored = window.localStorage.getItem(key);
+    if (stored) return stored;
+    window.localStorage.setItem(key, id);
+  } catch {
+    // Storage can be unavailable in hardened browser modes; sales still remain usable in memory.
+  }
+  return id;
+}
 
 export type Product = { barcode: string; name: string; price: number; stock: number };
 export type CartItem = { barcode: string; qty: number };
