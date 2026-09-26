@@ -109,10 +109,10 @@ jobs:
           prerelease: true
           make_latest: false
           body: |
-            Versão de teste do layout do PR #11.
+            Versão de teste do recurso de consulta de produtos por código de barras.
             Instala separadamente como Mercadinho União — Teste.
             Dados locais próprios; não substitui a versão oficial.
-            Sem sincronização remota configurada nesta compilação.
+            Estoque e vendas permanecem locais; esta versão adiciona consulta opcional ao catálogo Open Food Facts.
           files: |
             Mercadinho-Uniao-Teste.apk
             Mercadinho-Uniao-Teste.sha256

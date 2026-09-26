@@ -15,7 +15,15 @@ function getDeviceId(): string {
   return id;
 }
 
-export type Product = { barcode: string; name: string; price: number; stock: number };
+export type Product = {
+  barcode: string;
+  name: string;
+  price: number;
+  stock: number;
+  brand?: string;
+  packageSize?: string;
+  catalogSource?: "open-food-facts";
+};
 export type CartItem = { barcode: string; qty: number };
 export type PaymentMethod = "dinheiro" | "debito" | "credito" | "pix";
 export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
