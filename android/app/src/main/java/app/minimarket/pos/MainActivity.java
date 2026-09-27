@@ -23,6 +23,7 @@ public class MainActivity extends BridgeActivity {
         SplashScreen.installSplashScreen(this);
         registerPlugin(AppUpdaterPlugin.class);
         registerPlugin(PixNotificationPlugin.class);
+        registerPlugin(OfflineOcrPlugin.class);
         super.onCreate(savedInstanceState);
         applySystemBars();
     }

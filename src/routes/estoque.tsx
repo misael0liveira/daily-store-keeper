@@ -9,6 +9,7 @@ import {
   PackageOpen,
   Save,
   ScanBarcode,
+  ScanText,
   Search,
   Trash2,
   X,
@@ -38,6 +39,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { beep, unlockAudio, vibrate } from "@/lib/feedback";
 import { lookupFoodProductByBarcode } from "@/lib/openFoodFacts";
+import { readTextFromStockCamera, suggestProductFieldsFromText } from "@/lib/offlineOcr";
 import { formatBRL, useStore } from "@/store/useStore";
 
 export const Route = createFileRoute("/estoque")({
@@ -76,7 +78,12 @@ function EstoquePage() {
   const [lookupStatus, setLookupStatus] = useState<
     "idle" | "loading" | "found" | "not-found" | "error"
   >("idle");
+  const [ocrStatus, setOcrStatus] = useState<"idle" | "loading" | "found" | "empty" | "error">(
+    "idle",
+  );
+  const [ocrError, setOcrError] = useState("");
   const lookupRequestRef = useRef(0);
+  const ocrRequestRef = useRef(0);
   const lastScanRef = useRef<string | null>(null);
 
   const existing = barcode.trim() ? products[barcode.trim()] : undefined;
@@ -117,10 +124,48 @@ function EstoquePage() {
     }
   }, []);
 
+  const readPackageText = useCallback(async () => {
+    lookupRequestRef.current += 1;
+    setLookupStatus("idle");
+    const requestId = ++ocrRequestRef.current;
+    setOcrStatus("loading");
+    setOcrError("");
+    try {
+      const text = await readTextFromStockCamera();
+      if (requestId !== ocrRequestRef.current) return;
+      if (!text) {
+        setOcrStatus("empty");
+        return;
+      }
+
+      const suggestions = suggestProductFieldsFromText(text);
+      if (suggestions.name) setName(suggestions.name);
+      if (suggestions.packageSize) setPackageSize(suggestions.packageSize);
+      if (!suggestions.name && !suggestions.packageSize) {
+        setOcrStatus("empty");
+        return;
+      }
+
+      setOcrStatus("found");
+      toast.success("Texto lido", { description: "Confira as sugestões antes de salvar." });
+    } catch (error) {
+      if (requestId !== ocrRequestRef.current) return;
+      setOcrError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível ler o texto. Tente novamente ou continue manualmente.",
+      );
+      setOcrStatus("error");
+    }
+  }, []);
+
   const handleScan = useCallback(
     (code: string) => {
       if (lastScanRef.current === code) return;
       lastScanRef.current = code;
+      ocrRequestRef.current += 1;
+      setOcrStatus("idle");
+      setOcrError("");
       lookupRequestRef.current += 1;
       setLookupStatus("idle");
       setBarcode(code);
@@ -136,6 +181,8 @@ function EstoquePage() {
           description: "Os dados atuais foram carregados para edição.",
         });
       } else {
+        setOcrStatus("idle");
+        setOcrError("");
         setName("");
         setBrand("");
         setPackageSize("");
@@ -194,7 +241,10 @@ function EstoquePage() {
       setPrice("");
       setStock("");
       setLookupStatus("idle");
+      setOcrStatus("idle");
+      setOcrError("");
       lookupRequestRef.current += 1;
+      ocrRequestRef.current += 1;
       lastScanRef.current = null;
     } catch {
       toast.error("Não foi possível salvar o produto", {
@@ -244,7 +294,10 @@ function EstoquePage() {
             setPrice("");
             setStock("");
             setLookupStatus("idle");
+            setOcrStatus("idle");
+            setOcrError("");
             lookupRequestRef.current += 1;
+            ocrRequestRef.current += 1;
             lastScanRef.current = null;
             unlockAudio();
             setScannerOpen(true);
@@ -337,6 +390,7 @@ function EstoquePage() {
             if (!open) setScannerOpen(false);
             if (!open) {
               lookupRequestRef.current += 1;
+              ocrRequestRef.current += 1;
               lastScanRef.current = null;
             }
           }
@@ -346,7 +400,8 @@ function EstoquePage() {
           <SheetHeader>
             <SheetTitle>{existing ? "Editar produto" : "Cadastrar produto"}</SheetTitle>
             <SheetDescription>
-              Escaneie para buscar nome, marca e embalagem. Preço e quantidade continuam manuais.
+              Escaneie o código e, se quiser, leia nome e embalagem pela câmera. Preço e quantidade
+              continuam manuais.
             </SheetDescription>
           </SheetHeader>
           {scannerOpen ? (
@@ -364,6 +419,39 @@ function EstoquePage() {
               Ler produto com a câmera
             </Button>
           )}
+          {scannerOpen && !existing && (
+            <div className="space-y-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 w-full gap-2"
+                disabled={ocrStatus === "loading"}
+                onClick={() => void readPackageText()}
+                aria-busy={ocrStatus === "loading"}
+              >
+                {ocrStatus === "loading" ? (
+                  <LoaderCircle className="size-4 animate-spin" />
+                ) : (
+                  <ScanText className="size-4" />
+                )}
+                {ocrStatus === "loading" ? "Lendo texto no aparelho…" : "Ler nome e embalagem"}
+              </Button>
+              <div aria-live="polite" role={ocrStatus === "error" ? "alert" : "status"}>
+                {ocrStatus === "found" && (
+                  <p className="text-sm text-muted-foreground">
+                    Sugestões preenchidas pela câmera. Confira e corrija antes de salvar.
+                  </p>
+                )}
+                {ocrStatus === "empty" && (
+                  <p className="text-sm text-muted-foreground">
+                    Não encontramos texto legível. Aproxime o nome e o peso da câmera e tente
+                    novamente.
+                  </p>
+                )}
+                {ocrStatus === "error" && <p className="text-sm text-destructive">{ocrError}</p>}
+              </div>
+            </div>
+          )}
           <div className="space-y-4 rounded-2xl border bg-card p-4 shadow-sm">
             <div className="space-y-2">
               <Label htmlFor="barcode">Código de barras</Label>
@@ -376,6 +464,9 @@ function EstoquePage() {
                   lookupRequestRef.current += 1;
                   lastScanRef.current = null;
                   setLookupStatus("idle");
+                  setOcrStatus("idle");
+                  setOcrError("");
+                  ocrRequestRef.current += 1;
                   const p = products[code.trim()];
                   if (p) {
                     setName(p.name);
@@ -442,7 +533,12 @@ function EstoquePage() {
               <Input
                 id="name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  ocrRequestRef.current += 1;
+                  setOcrStatus("idle");
+                  setOcrError("");
+                  setName(e.target.value);
+                }}
                 placeholder="Ex.: Arroz 5kg"
                 className="h-12 text-base"
               />
@@ -463,7 +559,12 @@ function EstoquePage() {
                 <Input
                   id="packageSize"
                   value={packageSize}
-                  onChange={(e) => setPackageSize(e.target.value)}
+                  onChange={(e) => {
+                    ocrRequestRef.current += 1;
+                    setOcrStatus("idle");
+                    setOcrError("");
+                    setPackageSize(e.target.value);
+                  }}
                   placeholder="Ex.: 1 kg"
                   className="h-12 text-base"
                 />
