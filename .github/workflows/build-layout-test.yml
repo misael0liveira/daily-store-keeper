@@ -44,12 +44,12 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           p = Path('android/app/build.gradle')
-          s = p.read_text().replace('applicationId "app.minimarket.pos"', 'applicationId "app.minimarket.pos.layouttest"')
+          s = p.read_text().replace('applicationId "app.minimarket.pos"', 'applicationId "app.minimarket.pos.visiontest"')
           p.write_text(s)
           p = Path('android/app/src/main/res/values/strings.xml')
           s = p.read_text()
           import re
-          s = re.sub(r'(<string name="(?:app_name|title_activity_main)">).*?(</string>)', r'\1Mercadinho União — Teste\2', s)
+          s = re.sub(r'(<string name="(?:app_name|title_activity_main)">).*?(</string>)', r'\1Mercadinho União — IA Teste\2', s)
           p.write_text(s)
           p = Path('src/routes/__root.tsx')
           s = p.read_text().replace('<AppUpdatePrompt />', '')
@@ -82,6 +82,12 @@ jobs:
 
       - name: Install Android SDK 36
         run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Reuse signing key for future vision tests
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: mercadinho-vision-test-signing-v1
 
       - name: Build installable test APK
         working-directory: android
@@ -118,7 +124,7 @@ jobs:
             Recomenda-se 8 GB de RAM. O desempenho e a câmera precisam ser testados no aparelho.
             Leitura de código de barras e OCR executados no aparelho; não consulta catálogo externo.
             A prévia da câmera tem controle de lanterna quando o aparelho oferece suporte.
-            Instala separadamente como Mercadinho União — Teste.
+            Instala separadamente como Mercadinho União — IA Teste.
             Dados locais próprios; não substitui a versão oficial.
             Estoque e vendas permanecem locais.
           files: |
