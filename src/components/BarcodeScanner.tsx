@@ -1,6 +1,7 @@
 import { ClientOnly } from "@tanstack/react-router";
-import { CameraOff } from "lucide-react";
+import { CameraOff, Flashlight, FlashlightOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -10,7 +11,11 @@ type Props = {
 
 function ScannerInner({ onScan }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const scannerRef = useRef<import("html5-qrcode").Html5Qrcode | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [flashSupported, setFlashSupported] = useState(false);
+  const [flashOn, setFlashOn] = useState(false);
+  const [flashBusy, setFlashBusy] = useState(false);
   const [manualCode, setManualCode] = useState("");
   const lastScanRef = useRef<{ code: string; at: number }>({ code: "", at: 0 });
 
@@ -23,6 +28,7 @@ function ScannerInner({ onScan }: Props) {
       if (cancelled || !containerRef.current) return;
       const id = containerRef.current.id;
       scanner = new Html5Qrcode(id);
+      scannerRef.current = scanner;
       try {
         await scanner.start(
           { facingMode: "environment" },
@@ -37,6 +43,14 @@ function ScannerInner({ onScan }: Props) {
           },
           () => {},
         );
+        if (cancelled) return;
+        try {
+          const torch = scanner.getRunningTrackCameraCapabilities().torchFeature();
+          setFlashSupported(torch.isSupported());
+          setFlashOn(torch.value() === true);
+        } catch {
+          setFlashSupported(false);
+        }
       } catch (err) {
         if (cancelled) return;
         const name =
@@ -55,6 +69,7 @@ function ScannerInner({ onScan }: Props) {
 
     return () => {
       cancelled = true;
+      scannerRef.current = null;
       if (scanner) {
         void scanner
           .stop()
@@ -70,6 +85,27 @@ function ScannerInner({ onScan }: Props) {
     if (code) {
       onScan(code);
       setManualCode("");
+    }
+  };
+
+  const toggleFlash = async () => {
+    const activeScanner = scannerRef.current;
+    if (!activeScanner || flashBusy) return;
+
+    setFlashBusy(true);
+    try {
+      const torch = activeScanner.getRunningTrackCameraCapabilities().torchFeature();
+      if (!torch.isSupported()) {
+        setFlashSupported(false);
+        return;
+      }
+      const next = !flashOn;
+      await torch.apply(next);
+      setFlashOn(next);
+    } catch {
+      toast.error("Não foi possível alterar a lanterna da câmera.");
+    } finally {
+      setFlashBusy(false);
     }
   };
 
@@ -100,6 +136,19 @@ function ScannerInner({ onScan }: Props) {
             ref={containerRef}
             className="barcode-scanner-region w-full"
           />
+          {flashSupported && (
+            <button
+              type="button"
+              className="barcode-scanner-flash"
+              onClick={() => void toggleFlash()}
+              disabled={flashBusy}
+              aria-label={flashOn ? "Desligar lanterna" : "Ligar lanterna"}
+              aria-pressed={flashOn}
+              title={flashOn ? "Desligar lanterna" : "Ligar lanterna"}
+            >
+              {flashOn ? <FlashlightOff size={16} /> : <Flashlight size={16} />}
+            </button>
+          )}
           <div className="pdv-scan-guide" aria-hidden="true">
             <div className="pdv-scan-corners">
               <i className="is-top-left" />

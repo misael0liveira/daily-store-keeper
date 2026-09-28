@@ -841,6 +841,34 @@
 .barcode-scanner-region canvas {
   max-width: 100% !important;
 }
+.barcode-scanner-flash {
+  position: absolute;
+  z-index: 3;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 0.3);
+  border-radius: 999px;
+  color: white;
+  background: rgb(16 24 21 / 0.64);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+}
+.barcode-scanner-flash[aria-pressed="true"] {
+  color: #facc15;
+  background: rgb(16 24 21 / 0.82);
+}
+.barcode-scanner-flash:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+.barcode-scanner-flash:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
 @media (min-width: 431px) {
   .barcode-scanner-frame {
     height: 220px;

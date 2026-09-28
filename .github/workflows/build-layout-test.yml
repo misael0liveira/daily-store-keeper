@@ -111,6 +111,7 @@ jobs:
           body: |
             Versão de teste com OCR local para sugerir nome e embalagem a partir do texto da embalagem, sem internet.
             Leitura de código de barras e OCR executados no aparelho; não consulta catálogo externo.
+            A prévia da câmera tem controle de lanterna quando o aparelho oferece suporte.
             Instala separadamente como Mercadinho União — Teste.
             Dados locais próprios; não substitui a versão oficial.
             Estoque e vendas permanecem locais.
