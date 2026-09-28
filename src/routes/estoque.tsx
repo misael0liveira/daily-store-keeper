@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { ProductVisionAssistant } from "@/components/ProductVisionAssistant";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -397,6 +398,21 @@ function EstoquePage() {
                 {ocrStatus === "error" && <p className="text-sm text-destructive">{ocrError}</p>}
               </div>
             </div>
+          )}
+          {scannerOpen && !existing && (
+            <ProductVisionAssistant
+              key={barcode}
+              onApply={(suggestion) => {
+                ocrRequestRef.current += 1;
+                setOcrStatus("idle");
+                if (suggestion.name) setName(suggestion.name);
+                if (suggestion.brand) setBrand(suggestion.brand);
+                if (suggestion.packageSize) setPackageSize(suggestion.packageSize);
+                toast.success("Sugestões aplicadas", {
+                  description: "Confira os campos antes de salvar.",
+                });
+              }}
+            />
           )}
           <div className="space-y-4 rounded-2xl border bg-card p-4 shadow-sm">
             <div className="space-y-2">

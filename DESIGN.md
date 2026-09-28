@@ -28,7 +28,7 @@ Coluna até 512px; composição destinada a 320–430px. Respeitar safe areas e 
 
 O aplicativo abre sem senha, PIN, padrão ou biometria. Na inicialização fria do APK, o logotipo permanece visível por cerca de quatro segundos antes da interface. A marca usa o arquivo limpo em tamanho contido para preservar nitidez.
 
-O funcionamento operacional é local: produtos, estoque, carrinho, vendas, configurações e relatórios não dependem de internet nem enviam dados para a nuvem. A conexão é usada apenas para verificar e baixar uma atualização solicitada pelo usuário em Ajustes ou anunciada pelo verificador do aplicativo.
+O funcionamento operacional é local: produtos, estoque, carrinho, vendas, configurações e relatórios não dependem de internet nem enviam dados para a nuvem. A conexão é usada para atualizações e, no APK de teste, para o download opcional e único da IA visual solicitado no cadastro. A análise das fotos ocorre localmente; o painel de revisão reutiliza Button, Input, Label e os tokens existentes.
 
 ## Verificação
 

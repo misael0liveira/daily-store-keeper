@@ -6,10 +6,10 @@ type OfflineOcrPlugin = {
 
 const OfflineOcr = registerPlugin<OfflineOcrPlugin>("OfflineOcr");
 
-/** Captures one frame from the already-running stock camera and reads its text locally on Android. */
-export async function readTextFromStockCamera(): Promise<string> {
+/** Captures one frame from the already-running stock camera. */
+export async function captureStockCameraFrame(): Promise<string> {
   if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android") {
-    throw new Error("A leitura de texto está disponível no APK Android.");
+    throw new Error("A leitura pela câmera está disponível no APK Android.");
   }
 
   const video = document.querySelector<HTMLVideoElement>("#barcode-scanner-region video");
@@ -24,7 +24,7 @@ export async function readTextFromStockCamera(): Promise<string> {
   }
 
   const maxWidth = 1280;
-  const scale = Math.min(1, maxWidth / sourceWidth);
+  const scale = Math.min(1, maxWidth / Math.max(sourceWidth, sourceHeight));
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(sourceWidth * scale);
   canvas.height = Math.round(sourceHeight * scale);
@@ -36,6 +36,12 @@ export async function readTextFromStockCamera(): Promise<string> {
   const imageBase64 = canvas.toDataURL("image/jpeg", 0.84).split(",", 2)[1];
   if (!imageBase64) throw new Error("Não foi possível preparar a imagem da câmera.");
 
+  return imageBase64;
+}
+
+/** Reads text locally on Android. */
+export async function readTextFromStockCamera(): Promise<string> {
+  const imageBase64 = await captureStockCameraFrame();
   const result = await OfflineOcr.recognizeText({ imageBase64 });
   return result.text.trim();
 }

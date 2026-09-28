@@ -18,27 +18,28 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
 @CapacitorPlugin(name = "OfflineOcr")
 public class OfflineOcrPlugin extends Plugin {
-    @PluginMethod
-    public void recognizeText(PluginCall call) {
+    private Bitmap decodeImage(PluginCall call) {
         String imageBase64 = call.getString("imageBase64");
         if (imageBase64 == null || imageBase64.isEmpty()) {
             call.reject("A imagem da câmera não foi recebida.");
-            return;
+            return null;
         }
 
-        final byte[] imageBytes;
         try {
-            imageBytes = Base64.decode(imageBase64, Base64.DEFAULT);
+            byte[] imageBytes = Base64.decode(imageBase64, Base64.DEFAULT);
+            Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+            if (bitmap == null) call.reject("A imagem da câmera está inválida.");
+            return bitmap;
         } catch (IllegalArgumentException error) {
             call.reject("Não foi possível ler a imagem da câmera.");
-            return;
+            return null;
         }
+    }
 
-        final Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-        if (bitmap == null) {
-            call.reject("A imagem da câmera está inválida.");
-            return;
-        }
+    @PluginMethod
+    public void recognizeText(PluginCall call) {
+        final Bitmap bitmap = decodeImage(call);
+        if (bitmap == null) return;
 
         final TextRecognizer recognizer =
                 TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
@@ -57,4 +58,5 @@ public class OfflineOcrPlugin extends Plugin {
                         call.reject("Não foi possível ler o texto da embalagem."))
                 .addOnCompleteListener(cleanup);
     }
+
 }

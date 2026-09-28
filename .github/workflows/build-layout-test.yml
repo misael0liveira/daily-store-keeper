@@ -56,6 +56,9 @@ jobs:
           p.write_text(s)
           PY
 
+      - name: Verify vision suggestions
+        run: node --test tests/product-vision.test.mjs
+
       - name: Build web app
         run: bun run build
 
@@ -110,6 +113,9 @@ jobs:
           make_latest: false
           body: |
             Versão de teste com OCR local para sugerir nome e embalagem a partir do texto da embalagem, sem internet.
+            IA visual local Gemma 4 E2B: analisa a foto diretamente e sugere nome, marca e peso para revisão.
+            Instalação opcional do modelo: 2,6 GB por Wi-Fi; depois funciona offline e sem cobrança por chamada.
+            Recomenda-se 8 GB de RAM. O desempenho e a câmera precisam ser testados no aparelho.
             Leitura de código de barras e OCR executados no aparelho; não consulta catálogo externo.
             A prévia da câmera tem controle de lanterna quando o aparelho oferece suporte.
             Instala separadamente como Mercadinho União — Teste.
