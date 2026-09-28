@@ -110,7 +110,7 @@ jobs:
           make_latest: false
           body: |
             Versão de teste com OCR local para sugerir nome e embalagem a partir do texto da embalagem, sem internet.
-            A consulta Open Food Facts por código de barras continua opcional e exige internet.
+            Leitura de código de barras e OCR executados no aparelho; não consulta catálogo externo.
             Instala separadamente como Mercadinho União — Teste.
             Dados locais próprios; não substitui a versão oficial.
             Estoque e vendas permanecem locais.

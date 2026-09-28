@@ -1,8 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  CircleAlert,
-  CircleCheck,
-  CircleHelp,
   ChevronRight,
   LoaderCircle,
   Plus,
@@ -38,7 +35,6 @@ import {
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { beep, unlockAudio, vibrate } from "@/lib/feedback";
-import { lookupFoodProductByBarcode } from "@/lib/openFoodFacts";
 import { readTextFromStockCamera, suggestProductFieldsFromText } from "@/lib/offlineOcr";
 import { formatBRL, useStore } from "@/store/useStore";
 
@@ -75,14 +71,10 @@ function EstoquePage() {
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [search, setSearch] = useState("");
-  const [lookupStatus, setLookupStatus] = useState<
-    "idle" | "loading" | "found" | "not-found" | "error"
-  >("idle");
   const [ocrStatus, setOcrStatus] = useState<"idle" | "loading" | "found" | "empty" | "error">(
     "idle",
   );
   const [ocrError, setOcrError] = useState("");
-  const lookupRequestRef = useRef(0);
   const ocrRequestRef = useRef(0);
   const lastScanRef = useRef<string | null>(null);
 
@@ -97,36 +89,7 @@ function EstoquePage() {
     );
   }, [products, search, lowOnly]);
 
-  const lookupProduct = useCallback(async (rawCode: string) => {
-    const code = rawCode.trim();
-    if (!code) {
-      setLookupStatus("error");
-      return;
-    }
-
-    const requestId = ++lookupRequestRef.current;
-    setLookupStatus("loading");
-
-    try {
-      const result = await lookupFoodProductByBarcode(code);
-      if (requestId !== lookupRequestRef.current) return;
-      if (!result) {
-        setLookupStatus("not-found");
-        return;
-      }
-
-      setName(result.name);
-      setBrand(result.brand ?? "");
-      setPackageSize(result.packageSize ?? "");
-      setLookupStatus("found");
-    } catch {
-      if (requestId === lookupRequestRef.current) setLookupStatus("error");
-    }
-  }, []);
-
   const readPackageText = useCallback(async () => {
-    lookupRequestRef.current += 1;
-    setLookupStatus("idle");
     const requestId = ++ocrRequestRef.current;
     setOcrStatus("loading");
     setOcrError("");
@@ -166,8 +129,6 @@ function EstoquePage() {
       ocrRequestRef.current += 1;
       setOcrStatus("idle");
       setOcrError("");
-      lookupRequestRef.current += 1;
-      setLookupStatus("idle");
       setBarcode(code);
       const p = products[code];
       if (p) {
@@ -176,7 +137,6 @@ function EstoquePage() {
         setPackageSize(p.packageSize ?? "");
         setPrice(String(p.price));
         setStock(String(p.stock));
-        setLookupStatus("idle");
         toast.info("Produto já cadastrado", {
           description: "Os dados atuais foram carregados para edição.",
         });
@@ -188,13 +148,14 @@ function EstoquePage() {
         setPackageSize("");
         setPrice("");
         setStock("");
-        toast.success("Novo código lido", { description: code });
-        void lookupProduct(code);
+        toast.success("Código lido", {
+          description: "Leia o nome e a embalagem pela câmera ou preencha os dados manualmente.",
+        });
       }
       beep(true);
       vibrate(60);
     },
-    [lookupProduct, products],
+    [products],
   );
 
   const save = () => {
@@ -224,9 +185,6 @@ function EstoquePage() {
         stock: stockNum,
         ...(brand.trim() ? { brand: brand.trim() } : {}),
         ...(packageSize.trim() ? { packageSize: packageSize.trim() } : {}),
-        ...(lookupStatus === "found" || existing?.catalogSource === "open-food-facts"
-          ? { catalogSource: "open-food-facts" as const }
-          : {}),
       });
       toast.success(existing ? "Produto atualizado" : "Produto cadastrado", {
         description: `${name.trim()} foi salvo neste aparelho.`,
@@ -240,10 +198,8 @@ function EstoquePage() {
       setPackageSize("");
       setPrice("");
       setStock("");
-      setLookupStatus("idle");
       setOcrStatus("idle");
       setOcrError("");
-      lookupRequestRef.current += 1;
       ocrRequestRef.current += 1;
       lastScanRef.current = null;
     } catch {
@@ -262,7 +218,6 @@ function EstoquePage() {
       toast.success("Produto excluído", { description: existing.name });
       setEditorOpen(false);
       setScannerOpen(false);
-      lookupRequestRef.current += 1;
     }
   };
 
@@ -275,7 +230,6 @@ function EstoquePage() {
     setPackageSize(p.packageSize ?? "");
     setPrice(String(p.price));
     setStock(String(p.stock));
-    setLookupStatus("idle");
     setEditorOpen(true);
   };
 
@@ -293,10 +247,8 @@ function EstoquePage() {
             setPackageSize("");
             setPrice("");
             setStock("");
-            setLookupStatus("idle");
             setOcrStatus("idle");
             setOcrError("");
-            lookupRequestRef.current += 1;
             ocrRequestRef.current += 1;
             lastScanRef.current = null;
             unlockAudio();
@@ -370,11 +322,6 @@ function EstoquePage() {
                       {[p.brand, p.packageSize].filter(Boolean).join(" · ")}
                     </span>
                   )}
-                  {p.catalogSource === "open-food-facts" && (
-                    <span className="mt-1 block text-[11px] text-muted-foreground">
-                      Dados: Open Food Facts
-                    </span>
-                  )}
                 </span>
                 <ChevronRight size={19} className="text-muted-foreground shrink-0" />
               </button>
@@ -389,7 +336,6 @@ function EstoquePage() {
             setEditorOpen(open);
             if (!open) setScannerOpen(false);
             if (!open) {
-              lookupRequestRef.current += 1;
               ocrRequestRef.current += 1;
               lastScanRef.current = null;
             }
@@ -461,9 +407,7 @@ function EstoquePage() {
                 onChange={(e) => {
                   const code = e.target.value;
                   setBarcode(code);
-                  lookupRequestRef.current += 1;
                   lastScanRef.current = null;
-                  setLookupStatus("idle");
                   setOcrStatus("idle");
                   setOcrError("");
                   ocrRequestRef.current += 1;
@@ -486,47 +430,6 @@ function EstoquePage() {
                 inputMode="numeric"
                 className="h-12 text-base"
               />
-              <Button
-                type="button"
-                variant="outline"
-                className="h-11 w-full gap-2"
-                disabled={!barcode.trim() || lookupStatus === "loading"}
-                onClick={() => void lookupProduct(barcode)}
-              >
-                {lookupStatus === "loading" ? (
-                  <LoaderCircle className="size-4 animate-spin" />
-                ) : (
-                  <Search className="size-4" />
-                )}
-                {lookupStatus === "loading"
-                  ? "Consultando produto…"
-                  : lookupStatus === "not-found" || lookupStatus === "error"
-                    ? "Buscar novamente"
-                    : "Buscar dados online"}
-              </Button>
-              <div aria-live="polite" role={lookupStatus === "error" ? "alert" : "status"}>
-                {lookupStatus === "found" && (
-                  <p className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <CircleCheck className="mt-0.5 size-4 shrink-0 text-primary" />
-                    <span>
-                      Dados encontrados. Confira nome, marca e embalagem antes de salvar. Fonte:
-                      Open Food Facts.
-                    </span>
-                  </p>
-                )}
-                {lookupStatus === "not-found" && (
-                  <p className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <CircleHelp className="mt-0.5 size-4 shrink-0" />
-                    Produto não encontrado. Você pode preencher os dados manualmente.
-                  </p>
-                )}
-                {lookupStatus === "error" && (
-                  <p className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <CircleAlert className="mt-0.5 size-4 shrink-0 text-destructive" />
-                    Não foi possível consultar. Confira a conexão ou continue manualmente.
-                  </p>
-                )}
-              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="name">Nome do produto</Label>
