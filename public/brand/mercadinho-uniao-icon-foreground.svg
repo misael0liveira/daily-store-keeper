@@ -1,6 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
-  <title id="title">Ícone do Mercadinho União</title>
-  <rect x="12" y="12" width="488" height="488" rx="112" fill="#FFFFFF"/>
+  <title id="title">Carrinho e nome União para ícone adaptável</title>
   <g transform="translate(29 -10) scale(.9)">
     <path d="M82 139h55l49 116" fill="none" stroke="#005BAA" stroke-linecap="round" stroke-linejoin="round" stroke-width="30"/>
     <path d="M214 122h38v18h8v29c0 10 4 19 11 26v55h-76v-55c7-7 11-16 11-26v-29h8z" fill="#E3062D"/>

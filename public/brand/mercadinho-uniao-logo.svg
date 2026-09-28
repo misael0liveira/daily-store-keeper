@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 360" role="img" aria-labelledby="title description" focusable="false">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 520" role="img" aria-labelledby="title description" focusable="false">
   <title id="title">Mercadinho União</title>
-  <desc id="description">Carrinho de compras azul e vermelho ao lado do nome Mercadinho União.</desc>
-  <g transform="translate(10 -44) scale(.84)">
+  <desc id="description">MERCADINHO em vermelho acima de UNIÃO; o carrinho azul fica ao lado de MERCADINHO.</desc>
+  <g transform="translate(740 -80) scale(.88)">
     <path d="M82 139h55l49 116" fill="none" stroke="#005BAA" stroke-linecap="round" stroke-linejoin="round" stroke-width="30"/>
     <path d="M214 122h38v18h8v29c0 10 4 19 11 26v55h-76v-55c7-7 11-16 11-26v-29h8z" fill="#E3062D"/>
     <path d="M282 151h49l13 18v81h-75v-81zm8 18 8 12h25l8-12z" fill="#005BAA" fill-rule="evenodd"/>
@@ -11,9 +11,9 @@
     <circle cx="237" cy="407" r="25" fill="#005BAA"/>
     <circle cx="351" cy="407" r="25" fill="#005BAA"/>
   </g>
-  <g font-family="Roboto, Arial, sans-serif" font-weight="900">
-    <text x="397" y="137" fill="#E3062D" font-size="83" letter-spacing="2">MERCADINHO</text>
-    <text x="382" y="314" fill="#005BAA" font-size="181" letter-spacing="-5">UNIÃO</text>
-    <text x="389" y="307" fill="#E3062D" font-size="181" letter-spacing="-5">UNIÃO</text>
+  <g font-family="DejaVu Sans Condensed, Arial Narrow, sans-serif" font-weight="900">
+    <text x="18" y="175" fill="#E3062D" font-size="104" letter-spacing="1" textLength="690" lengthAdjust="spacingAndGlyphs">MERCADINHO</text>
+    <text x="8" y="492" fill="#005BAA" font-size="238" letter-spacing="-6" textLength="790" lengthAdjust="spacingAndGlyphs">UNIÃO</text>
+    <text x="0" y="480" fill="#E3062D" font-size="238" letter-spacing="-6" textLength="790" lengthAdjust="spacingAndGlyphs">UNIÃO</text>
   </g>
 </svg>
