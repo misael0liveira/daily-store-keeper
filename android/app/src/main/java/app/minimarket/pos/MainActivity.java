@@ -24,7 +24,6 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(AppUpdaterPlugin.class);
         registerPlugin(PixNotificationPlugin.class);
         registerPlugin(OfflineOcrPlugin.class);
-        registerPlugin(ProductVisionPlugin.class);
         super.onCreate(savedInstanceState);
         applySystemBars();
     }

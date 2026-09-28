@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ProductVisionAssistant } from "@/components/ProductVisionAssistant";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -142,7 +141,7 @@ function EstoquePage() {
           description: "Os dados atuais foram carregados para edição.",
         });
       } else {
-        setOcrStatus("idle");
+        setOcrStatus("loading");
         setOcrError("");
         setName("");
         setBrand("");
@@ -150,13 +149,18 @@ function EstoquePage() {
         setPrice("");
         setStock("");
         toast.success("Código lido", {
-          description: "Leia o nome e a embalagem pela câmera ou preencha os dados manualmente.",
+          description:
+            "A câmera vai tentar ler o nome e o peso. Confira as sugestões antes de salvar.",
         });
+        const requestId = ocrRequestRef.current;
+        window.setTimeout(() => {
+          if (requestId === ocrRequestRef.current) void readPackageText();
+        }, 700);
       }
       beep(true);
       vibrate(60);
     },
-    [products],
+    [products, readPackageText],
   );
 
   const save = () => {
@@ -347,8 +351,8 @@ function EstoquePage() {
           <SheetHeader>
             <SheetTitle>{existing ? "Editar produto" : "Cadastrar produto"}</SheetTitle>
             <SheetDescription>
-              Escaneie o código e, se quiser, leia nome e embalagem pela câmera. Preço e quantidade
-              continuam manuais.
+              Escaneie o código para tentar ler o nome e o peso da embalagem. Confira o resultado;
+              preço e quantidade continuam manuais.
             </SheetDescription>
           </SheetHeader>
           {scannerOpen ? (
@@ -381,7 +385,7 @@ function EstoquePage() {
                 ) : (
                   <ScanText className="size-4" />
                 )}
-                {ocrStatus === "loading" ? "Lendo texto no aparelho…" : "Ler nome e embalagem"}
+                {ocrStatus === "loading" ? "Lendo texto no aparelho…" : "Ler novamente"}
               </Button>
               <div aria-live="polite" role={ocrStatus === "error" ? "alert" : "status"}>
                 {ocrStatus === "found" && (
@@ -398,21 +402,6 @@ function EstoquePage() {
                 {ocrStatus === "error" && <p className="text-sm text-destructive">{ocrError}</p>}
               </div>
             </div>
-          )}
-          {scannerOpen && !existing && (
-            <ProductVisionAssistant
-              key={barcode}
-              onApply={(suggestion) => {
-                ocrRequestRef.current += 1;
-                setOcrStatus("idle");
-                if (suggestion.name) setName(suggestion.name);
-                if (suggestion.brand) setBrand(suggestion.brand);
-                if (suggestion.packageSize) setPackageSize(suggestion.packageSize);
-                toast.success("Sugestões aplicadas", {
-                  description: "Confira os campos antes de salvar.",
-                });
-              }}
-            />
           )}
           <div className="space-y-4 rounded-2xl border bg-card p-4 shadow-sm">
             <div className="space-y-2">
