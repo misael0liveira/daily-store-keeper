@@ -40,7 +40,7 @@ jobs:
         run: bun install --no-frozen-lockfile
 
       - name: Verify checkout and camera regressions
-        run: node --test tests/pdv-regressions.test.mjs
+        run: node --test tests/pdv-regressions.test.mjs tests/product-photos.test.mjs
 
       - name: Isolate preview app
         run: |

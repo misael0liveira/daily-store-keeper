@@ -33,3 +33,5 @@ O funcionamento operacional é local: produtos, estoque, carrinho, vendas, confi
 ## Verificação
 
 TypeScript e build web passam. Verificação visual no navegador e execução Android permanecem pendentes: navegador remoto recusou localhost e não há dispositivo Android conectado. Não declarar fidelidade pixel a pixel ou publicar como versão final sem essa validação.
+
+Fotos opcionais no Estoque usam miniaturas contidas de 48 px nas linhas e 80 px no editor. As ações de foto reutilizam Button; o seletor de arquivos e o navegador externo pertencem ao sistema operacional.

@@ -11,13 +11,14 @@ AGENTS.md: preservar dados, fluxo offline, scanner e atualização Android. Apro
 - Estoque: lista → Cadastrar ou produto → Sheet → salvar → lista, mantendo busca/filtro. No cadastro, a câmera abre junto com o editor, permanece aberta após a leitura e termina somente ao fechar o Sheet. Fechar cancela a edição visível; dados persistidos não mudam antes de salvar. Salvamento bloqueia envios simultâneos.
 - Câmera: Caixa e Estoque reutilizam o mesmo componente de prévia e leitura. Quando a câmera informa suporte à lanterna, um controle compacto no canto superior direito da imagem alterna flash ligado/desligado; aparelhos sem suporte não exibem controle inutilizável.
 - OCR assistido no estoque: durante o cadastro, uma captura do vídeo já aberto pode ser lida pelo ML Kit OCR com modelo latino incluído no APK. A imagem é processada somente no aparelho e descartada; nenhum texto ou imagem vai para a nuvem. O app sugere nome e embalagem com regras locais, mantém os campos editáveis e deixa preço/quantidade manuais. Sem texto legível, o cadastro manual continua disponível. O código de barras é lido localmente e nenhum serviço de catálogo é consultado.
+- Foto opcional no estoque: captura do vídeo ou seleção de JPG/PNG/WebP (até 12 MB), preparada localmente em JPEG de até 960 px. O produto guarda apenas uma referência; a imagem fica no IndexedDB do aparelho. Cancelar preserva a foto anterior; salvar substitui ou remove a foto. A lista mostra miniaturas locais mesmo offline. A busca abre o navegador com código, nome, marca e embalagem como texto, sem API de catálogo e sem enviar a foto. O usuário salva a imagem no navegador e a anexa em Escolher foto.
 - Excluir: confirmação nomeia produto e consequência; cancelar mantém editor. Exclusão permanece a do store; não adiciona exclusão remota.
 - Histórico mantém períodos, relatórios e ações existentes. A exclusão usa AlertDialog, identifica o valor e a data da venda e mantém o registro ao cancelar. Ajustes mantém configuração, tema e verificação manual de atualização; histórico acessível pela navegação.
 - Estados vazios comunicam como começar; nenhum dado de demonstração é persistido automaticamente.
 
 ## Funcionamento local
 
-O aplicativo operacional não exige autenticação e não envia produtos, vendas ou configurações para a nuvem. Todos esses dados permanecem no armazenamento local. A internet é usada somente para consultar e baixar novas versões; falha ou ausência de conexão não bloqueia nenhuma operação do PDV.
+O aplicativo operacional não exige autenticação e não envia produtos, vendas ou configurações para a nuvem. Todos esses dados permanecem no armazenamento local. A internet é usada para consultar e baixar novas versões e, por ação explícita do usuário, pesquisar fotos de produtos no navegador; falha ou ausência de conexão não bloqueia nenhuma operação do PDV.
 
 Não há mudança em assinatura ou permissões Android. Conferência em dispositivo e comparação visual são gates pendentes antes da integração final. Reverter a alteração de apresentação não requer migração de dados.
 

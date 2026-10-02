@@ -14,6 +14,9 @@ import {
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
+import { ProductPhoto } from "@/components/ProductPhoto";
+import { ProductPhotoEditor } from "@/components/ProductPhotoEditor";
+import { deleteProductPhoto, saveProductPhoto } from "@/lib/productPhotos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -63,6 +66,9 @@ function EstoquePage() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [lowOnly, setLowOnly] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [photoDraft, setPhotoDraft] = useState<Blob | null | undefined>(undefined);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const savingRef = useRef(false);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [barcode, setBarcode] = useState("");
   const [name, setName] = useState("");
@@ -124,7 +130,9 @@ function EstoquePage() {
 
   const handleScan = useCallback(
     (code: string) => {
-      if (lastScanRef.current === code) return;
+      if (savingRef.current || lastScanRef.current === code) return;
+      setPhotoDraft(undefined);
+      setPhotoBusy(false);
       lastScanRef.current = code;
       ocrRequestRef.current += 1;
       setOcrStatus("idle");
@@ -163,8 +171,8 @@ function EstoquePage() {
     [products, readPackageText],
   );
 
-  const save = () => {
-    if (saving) return;
+  const save = async () => {
+    if (savingRef.current || photoBusy) return;
     const code = barcode.trim();
     const priceNum = Number(String(price).replace(",", "."));
     const stockNum = Number(stock);
@@ -181,16 +189,31 @@ function EstoquePage() {
       return;
     }
 
+    savingRef.current = true;
     setSaving(true);
+    ocrRequestRef.current += 1;
+    let newPhotoId: string | undefined;
     try {
+      const photoId =
+        photoDraft instanceof Blob
+          ? (newPhotoId = await saveProductPhoto(photoDraft))
+          : photoDraft === null
+            ? undefined
+            : existing?.photoId;
       upsertProduct({
         barcode: code,
         name: name.trim(),
         price: priceNum,
         stock: stockNum,
+        ...(photoId ? { photoId } : {}),
         ...(brand.trim() ? { brand: brand.trim() } : {}),
         ...(packageSize.trim() ? { packageSize: packageSize.trim() } : {}),
       });
+      if (existing?.photoId && existing.photoId !== photoId) {
+        void deleteProductPhoto(existing.photoId).catch(() => {});
+      }
+      setPhotoDraft(undefined);
+      setPhotoBusy(false);
       toast.success(existing ? "Produto atualizado" : "Produto cadastrado", {
         description: `${name.trim()} foi salvo neste aparelho.`,
       });
@@ -207,11 +230,16 @@ function EstoquePage() {
       setOcrError("");
       ocrRequestRef.current += 1;
       lastScanRef.current = null;
-    } catch {
+    } catch (error) {
+      if (newPhotoId && useStore.getState().products[code]?.photoId !== newPhotoId) {
+        void deleteProductPhoto(newPhotoId).catch(() => {});
+      }
       toast.error("Não foi possível salvar o produto", {
-        description: "Confira os dados salvos neste aparelho antes de tentar novamente.",
+        description:
+          error instanceof Error ? error.message : "Confira o espaço livre e tente novamente.",
       });
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   };
@@ -220,6 +248,9 @@ function EstoquePage() {
     if (!existing) return;
     {
       deleteProduct(existing.barcode);
+      if (existing.photoId) void deleteProductPhoto(existing.photoId).catch(() => {});
+      setPhotoDraft(undefined);
+      setPhotoBusy(false);
       toast.success("Produto excluído", { description: existing.name });
       setEditorOpen(false);
       setScannerOpen(false);
@@ -229,6 +260,8 @@ function EstoquePage() {
   const loadProduct = (code: string) => {
     const p = products[code];
     if (!p) return;
+    setPhotoDraft(undefined);
+    setPhotoBusy(false);
     setBarcode(p.barcode);
     setName(p.name);
     setBrand(p.brand ?? "");
@@ -246,6 +279,8 @@ function EstoquePage() {
           variant="ghost"
           className="text-primary px-0"
           onClick={() => {
+            setPhotoDraft(undefined);
+            setPhotoBusy(false);
             setBarcode("");
             setName("");
             setBrand("");
@@ -315,8 +350,9 @@ function EstoquePage() {
         <ul className="pos-stock-list">
           {list.map((p) => (
             <li key={p.barcode}>
-              <button onClick={() => loadProduct(p.barcode)}>
-                <span>
+              <button onClick={() => loadProduct(p.barcode)} className="gap-3">
+                {p.photoId && <ProductPhoto photoId={p.photoId} />}
+                <span className="min-w-0 flex-1">
                   <strong>{p.name}</strong>
                   <span className="pos-stock-detail">
                     {formatBRL(p.price)} ·{" "}
@@ -337,10 +373,12 @@ function EstoquePage() {
       <Sheet
         open={editorOpen}
         onOpenChange={(open) => {
-          if (!saving) {
+          if (!savingRef.current) {
             setEditorOpen(open);
             if (!open) setScannerOpen(false);
             if (!open) {
+              setPhotoDraft(undefined);
+              setPhotoBusy(false);
               ocrRequestRef.current += 1;
               lastScanRef.current = null;
             }
@@ -376,7 +414,7 @@ function EstoquePage() {
                 type="button"
                 variant="outline"
                 className="h-11 w-full gap-2"
-                disabled={ocrStatus === "loading"}
+                disabled={saving || ocrStatus === "loading"}
                 onClick={() => void readPackageText()}
                 aria-busy={ocrStatus === "loading"}
               >
@@ -403,7 +441,10 @@ function EstoquePage() {
               </div>
             </div>
           )}
-          <div className="space-y-4 rounded-2xl border bg-card p-4 shadow-sm">
+          <fieldset
+            disabled={saving}
+            className="space-y-4 rounded-2xl border bg-card p-4 shadow-sm"
+          >
             <div className="space-y-2">
               <Label htmlFor="barcode">Código de barras</Label>
               <Input
@@ -411,6 +452,8 @@ function EstoquePage() {
                 value={barcode}
                 onChange={(e) => {
                   const code = e.target.value;
+                  setPhotoDraft(undefined);
+                  setPhotoBusy(false);
                   setBarcode(code);
                   lastScanRef.current = null;
                   setOcrStatus("idle");
@@ -502,7 +545,24 @@ function EstoquePage() {
                 />
               </div>
             </div>
-            <Button className="h-14 w-full gap-2 text-lg" disabled={saving} onClick={save}>
+            <ProductPhotoEditor
+              key={barcode}
+              barcode={barcode}
+              name={name}
+              brand={brand}
+              packageSize={packageSize}
+              photoId={existing?.photoId}
+              value={photoDraft}
+              onChange={setPhotoDraft}
+              onBusyChange={setPhotoBusy}
+              disabled={saving}
+              scannerOpen={scannerOpen}
+            />
+            <Button
+              className="h-14 w-full gap-2 text-lg"
+              disabled={saving || photoBusy}
+              onClick={() => void save()}
+            >
               <Save className="size-5" />
               {saving ? "Salvando…" : existing ? "Atualizar produto" : "Cadastrar produto"}
             </Button>
@@ -527,7 +587,7 @@ function EstoquePage() {
                 </AlertDialogContent>
               </AlertDialog>
             )}
-          </div>
+          </fieldset>
         </SheetContent>
       </Sheet>
     </div>

@@ -22,6 +22,7 @@ export type Product = {
   stock: number;
   brand?: string;
   packageSize?: string;
+  photoId?: string;
 };
 export type CartItem = { barcode: string; qty: number };
 export type PaymentMethod = "dinheiro" | "debito" | "credito" | "pix";
