@@ -20,10 +20,12 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        SplashScreen.installSplashScreen(this);
+        SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
         registerPlugin(AppUpdaterPlugin.class);
         registerPlugin(PixNotificationPlugin.class);
         super.onCreate(savedInstanceState);
+        // The branded opening lives in AppStartup; avoid a second native logo or exit fade.
+        splashScreen.setOnExitAnimationListener(provider -> provider.remove());
         applySystemBars();
     }
 

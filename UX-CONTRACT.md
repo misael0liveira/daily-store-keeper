@@ -6,7 +6,7 @@ AGENTS.md: preservar dados, fluxo offline, scanner e atualização Android. Apro
 
 ## Fluxos
 
-- Abertura: Android 12+ usa splash nativo claro com o logotipo completo contido na área segura da máscara do sistema; depois, a interface de abertura do app mantém a marca por cerca de quatro segundos na inicialização fria.
+- Abertura: o splash obrigatório do Android é branco, com ícone transparente e saída imediata, sem exibir outra marca. A única abertura com logo é AppStartup, que mantém “Abrindo…” por cerca de quatro segundos na inicialização fria. O Início usa a logo com canal alfa, sem fundo branco.
 - Venda: Início → Caixa → PaymentSheet existente → registro local existente. Diminuir quantidade de 1 remove a linha, conforme changeQty. Câmera montada, leituras não alteram carrinho durante pagamento.
 - Estoque: lista → Cadastrar ou produto → Sheet → salvar → lista, mantendo busca/filtro. No cadastro, a câmera abre junto com o editor, permanece aberta após a leitura e termina somente ao fechar o Sheet. Fechar cancela a edição visível; dados persistidos não mudam antes de salvar. Salvamento bloqueia envios simultâneos.
 - Excluir: confirmação nomeia produto e consequência; cancelar mantém editor. Exclusão permanece a do store; não adiciona exclusão remota.
