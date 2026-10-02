@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
   <title id="title">Ícone do Mercadinho União</title>
-  <rect x="12" y="12" width="488" height="488" rx="112" fill="#FFFFFF"/>
-  <g transform="translate(29 -10) scale(.9)">
+  <rect x="24" y="24" width="464" height="464" rx="104" fill="#FFFFFF"/>
+  <g transform="translate(18 20) scale(.93)">
     <path d="M82 139h55l49 116" fill="none" stroke="#005BAA" stroke-linecap="round" stroke-linejoin="round" stroke-width="30"/>
     <path d="M214 122h38v18h8v29c0 10 4 19 11 26v55h-76v-55c7-7 11-16 11-26v-29h8z" fill="#E3062D"/>
     <path d="M282 151h49l13 18v81h-75v-81zm8 18 8 12h25l8-12z" fill="#005BAA" fill-rule="evenodd"/>
@@ -11,5 +11,4 @@
     <circle cx="237" cy="407" r="25" fill="#005BAA"/>
     <circle cx="351" cy="407" r="25" fill="#005BAA"/>
   </g>
-  <text x="256" y="458" text-anchor="middle" fill="#E3062D" font-family="DejaVu Sans Condensed, Arial Narrow, sans-serif" font-size="64" font-weight="900" letter-spacing="1.5" textLength="348" lengthAdjust="spacingAndGlyphs">UNIÃO</text>
 </svg>

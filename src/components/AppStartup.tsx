@@ -23,7 +23,12 @@ function StartupGate({ children }: { children: ReactNode }) {
 
   return (
     <div className="app-startup" role="status" aria-label="Abrindo Mercadinho União">
-      <img src="/brand/mercadinho-uniao-startup.png" alt="Mercadinho União" />
+      <img
+        src="/brand/mercadinho-uniao-approved.jpg"
+        alt="Mercadinho União"
+        width={1536}
+        height={847}
+      />
       <span>Abrindo…</span>
     </div>
   );

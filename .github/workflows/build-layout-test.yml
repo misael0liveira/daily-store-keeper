@@ -40,7 +40,9 @@ jobs:
         run: bun install --no-frozen-lockfile
 
       - name: Verify checkout and camera regressions
-        run: node --test tests/pdv-regressions.test.mjs
+        run: |
+          bunx tsc --noEmit
+          node --test tests/pdv-regressions.test.mjs
 
       - name: Isolate preview app
         run: |
@@ -89,14 +91,31 @@ jobs:
           path: ~/.android/debug.keystore
           key: mercadinho-vision-test-signing-v1
 
-      - name: Build installable test APK
+      - name: Require existing test signing key
+        run: test -s "$HOME/.android/debug.keystore"
+
+      - name: Build installable test APK with release packaging
         working-directory: android
-        run: ./gradlew assembleDebug -PappVersionCode=${GITHUB_RUN_NUMBER} -PappVersionName=layout-test.${GITHUB_RUN_NUMBER} --no-daemon
+        run: |
+          ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file="$HOME/.android/debug.keystore" \
+            -Pandroid.injected.signing.store.password=android \
+            -Pandroid.injected.signing.key.alias=androiddebugkey \
+            -Pandroid.injected.signing.key.password=android \
+            -PappVersionCode=${GITHUB_RUN_NUMBER} \
+            -PappVersionName=layout-test.${GITHUB_RUN_NUMBER} \
+            --no-daemon
 
       - name: Verify and package APK
         run: |
-          APK=android/app/build/outputs/apk/debug/app-debug.apk
+          APK=android/app/build/outputs/apk/release/app-release.apk
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify "$APK"
+          python3 - "$APK" <<'PY'
+          import sys
+          from zipfile import ZipFile
+          with ZipFile(sys.argv[1]) as apk:
+              assert not any('ocr' in name.lower() for name in apk.namelist()), 'OCR remains in APK'
+          PY
           cp "$APK" Mercadinho-Uniao-Teste.apk
           sha256sum Mercadinho-Uniao-Teste.apk > Mercadinho-Uniao-Teste.sha256
 
@@ -118,8 +137,9 @@ jobs:
           prerelease: true
           make_latest: false
           body: |
-            Versão de teste com OCR local para sugerir nome e embalagem a partir do texto da embalagem, sem internet.
-            Leitura de código de barras e OCR executados no aparelho; não consulta catálogo externo.
+            Versão de teste sem OCR, com o mesmo logotipo, ícone e abertura do APK oficial.
+            Leitura de código de barras executada no aparelho; cadastro dos demais dados manual.
+            Empacotamento release com a mesma chave de assinatura das versões anteriores de teste.
             A prévia da câmera tem controle de lanterna quando o aparelho oferece suporte.
             Instala separadamente como Mercadinho União — Teste.
             Dados locais próprios; não substitui a versão oficial.
