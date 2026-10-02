@@ -35,4 +35,4 @@ Datas do histórico continuam como input date nativo: seletor e geometria perten
 
 ## APK de teste
 
-O teste mantém o applicationId app.minimarket.pos.visiontest, os dados próprios e a chave de assinatura já usada nos testes. É compilado como release com essa mesma chave para aproximar o tamanho e o empacotamento do oficial; permanece instalado separadamente. Não inclui bibliotecas, modelos ou ações de OCR.
+O teste mantém o applicationId app.minimarket.pos.visiontest, os dados próprios. É compilado como release, assinado pela configuração debug do Gradle, para aproximar o tamanho e o empacotamento do oficial; permanece instalado separadamente. Não inclui bibliotecas, modelos ou ações de OCR. O cache anterior não salvava o arquivo gerado pelo AGP em ~/.config/.android/debug.keystore; a chave antiga não é recuperável. O cache passa a cobrir ambos os caminhos. O Android pode rejeitar uma atualização sobre testes antigos por diferença de assinatura; não desinstalar nem apagar dados automaticamente.

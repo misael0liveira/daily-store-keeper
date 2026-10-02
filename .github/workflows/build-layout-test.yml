@@ -88,20 +88,16 @@ jobs:
       - name: Reuse test APK signing key
         uses: actions/cache@v4
         with:
-          path: ~/.android/debug.keystore
+          path: |
+            ~/.android/debug.keystore
+            ~/.config/.android/debug.keystore
           key: mercadinho-vision-test-signing-v1
-
-      - name: Require existing test signing key
-        run: test -s "$HOME/.android/debug.keystore"
 
       - name: Build installable test APK with release packaging
         working-directory: android
         run: |
           ./gradlew assembleRelease \
-            -Pandroid.injected.signing.store.file="$HOME/.android/debug.keystore" \
-            -Pandroid.injected.signing.store.password=android \
-            -Pandroid.injected.signing.key.alias=androiddebugkey \
-            -Pandroid.injected.signing.key.password=android \
+            -PtestApk=true \
             -PappVersionCode=${GITHUB_RUN_NUMBER} \
             -PappVersionName=layout-test.${GITHUB_RUN_NUMBER} \
             --no-daemon
@@ -139,7 +135,8 @@ jobs:
           body: |
             Versão de teste sem OCR, com o mesmo logotipo, ícone e abertura do APK oficial.
             Leitura de código de barras executada no aparelho; cadastro dos demais dados manual.
-            Empacotamento release com a mesma chave de assinatura das versões anteriores de teste.
+            Empacotamento release; a chave de teste passa a ser preservada no diretório usado pelo Android Gradle Plugin.
+            A chave das versões anteriores não foi salva pelo cache antigo; o Android pode exigir reinstalação do teste.
             A prévia da câmera tem controle de lanterna quando o aparelho oferece suporte.
             Instala separadamente como Mercadinho União — Teste.
             Dados locais próprios; não substitui a versão oficial.
