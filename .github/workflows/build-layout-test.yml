@@ -39,6 +39,9 @@ jobs:
       - name: Install dependencies
         run: bun install --no-frozen-lockfile
 
+      - name: Verify checkout and camera regressions
+        run: node --test tests/pdv-regressions.test.mjs
+
       - name: Isolate preview app
         run: |
           python3 - <<'PY'

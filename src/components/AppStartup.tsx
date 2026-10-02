@@ -1,12 +1,20 @@
 import { useEffect, useState, type ReactNode } from "react";
-
-const isNativeApp = typeof window !== "undefined" && window.location.protocol === "capacitor:";
+import { ClientOnly } from "@tanstack/react-router";
+import { isNativeApp } from "@/lib/platform";
 
 export function AppStartup({ children }: { children: ReactNode }) {
-  const [ready, setReady] = useState(!isNativeApp);
+  return (
+    <ClientOnly fallback={children}>
+      <StartupGate>{children}</StartupGate>
+    </ClientOnly>
+  );
+}
+
+function StartupGate({ children }: { children: ReactNode }) {
+  const [ready, setReady] = useState(() => !isNativeApp());
 
   useEffect(() => {
-    if (!isNativeApp) return;
+    if (!isNativeApp()) return;
     const timer = window.setTimeout(() => setReady(true), 4000);
     return () => window.clearTimeout(timer);
   }, []);

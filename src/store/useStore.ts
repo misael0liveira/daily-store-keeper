@@ -116,17 +116,6 @@ export const useStore = create<StoreState>()(
           return p ? [{ barcode: p.barcode, name: p.name, price: p.price, qty: item.qty }] : [];
         });
         const total = items.reduce((sum, i) => sum + i.price * i.qty, 0);
-        const fingerprint = `${method}|${total}|${items.map((i) => `${i.barcode}x${i.qty}`).join(",")}`;
-        const last = state.sales.at(0);
-        if (
-          last &&
-          Date.now() - last.timestamp < 5000 &&
-          `${last.method}|${last.total}|${last.items.map((i) => `${i.barcode}x${i.qty}`).join(",")}` ===
-            fingerprint
-        ) {
-          set({ cart: [] });
-          return last;
-        }
         const sale: Sale = {
           id:
             typeof crypto !== "undefined" && crypto.randomUUID

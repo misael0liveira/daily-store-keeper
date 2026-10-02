@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { closeScannerAfterStart } from "@/lib/scannerLifecycle";
 
 type Props = {
   onScan: (code: string) => void;
@@ -18,28 +19,34 @@ function ScannerInner({ onScan }: Props) {
   const [flashBusy, setFlashBusy] = useState(false);
   const [manualCode, setManualCode] = useState("");
   const lastScanRef = useRef<{ code: string; at: number }>({ code: "", at: 0 });
+  const onScanRef = useRef(onScan);
+
+  useEffect(() => {
+    onScanRef.current = onScan;
+  }, [onScan]);
 
   useEffect(() => {
     let scanner: import("html5-qrcode").Html5Qrcode | null = null;
     let cancelled = false;
+    const container = containerRef.current;
 
     const start = async () => {
-      const { Html5Qrcode } = await import("html5-qrcode");
-      if (cancelled || !containerRef.current) return;
-      const id = containerRef.current.id;
-      scanner = new Html5Qrcode(id);
-      scannerRef.current = scanner;
       try {
+        const { Html5Qrcode } = await import("html5-qrcode");
+        if (cancelled || !container) return;
+        scanner = new Html5Qrcode(container.id);
+        scannerRef.current = scanner;
         await scanner.start(
           { facingMode: "environment" },
           { fps: 10 },
           (decodedText) => {
+            if (cancelled) return;
             const now = Date.now();
             if (decodedText === lastScanRef.current.code && now - lastScanRef.current.at < 1500) {
               return;
             }
             lastScanRef.current = { code: decodedText, at: now };
-            onScan(decodedText);
+            onScanRef.current(decodedText);
           },
           () => {},
         );
@@ -65,19 +72,19 @@ function ScannerInner({ onScan }: Props) {
       }
     };
 
-    start();
+    const starting = start();
 
     return () => {
       cancelled = true;
       scannerRef.current = null;
       if (scanner) {
-        void scanner
-          .stop()
-          .catch(() => {})
-          .finally(() => scanner?.clear());
+        void closeScannerAfterStart(scanner, starting, () => {
+          const video = container?.querySelector("video");
+          const stream = video?.srcObject;
+          if (stream instanceof MediaStream) stream.getTracks().forEach((track) => track.stop());
+        });
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const submitManual = () => {
