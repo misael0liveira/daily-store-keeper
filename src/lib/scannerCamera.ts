@@ -19,3 +19,16 @@ export async function configureScannerFocus(scanner: FocusableScanner): Promise<
     return false;
   }
 }
+
+/** html5-qrcode can wrap DOM camera errors in a plain string. */
+export function scannerCameraErrorMessage(error: unknown): string {
+  const description =
+    error && typeof error === "object"
+      ? ["name" in error ? error.name : "", "message" in error ? error.message : ""].join(" ")
+      : String(error ?? "");
+  return /NotAllowedError|PermissionDeniedError|PermissionDismissedError|permission\s+denied/i.test(
+    description,
+  )
+    ? "Permissão da câmera negada. Digite o código de barras manualmente."
+    : "Não foi possível abrir a câmera. Digite o código manualmente.";
+}

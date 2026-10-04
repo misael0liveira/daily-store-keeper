@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { configureScannerFocus } from "@/lib/scannerCamera";
+import { configureScannerFocus, scannerCameraErrorMessage } from "@/lib/scannerCamera";
 import { closeScannerAfterStart } from "@/lib/scannerLifecycle";
 
 type Props = {
@@ -77,15 +77,7 @@ function ScannerInner({ onScan }: Props) {
         }
       } catch (err) {
         if (cancelled) return;
-        const name =
-          err && typeof err === "object" && "name" in err
-            ? String((err as { name: unknown }).name)
-            : "";
-        setError(
-          name === "NotAllowedError"
-            ? "Permissão da câmera negada. Digite o código de barras manualmente."
-            : "Não foi possível abrir a câmera. Digite o código manualmente.",
-        );
+        setError(scannerCameraErrorMessage(err));
       }
     };
 

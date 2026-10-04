@@ -195,7 +195,7 @@ test("Pix generic preview preserves the BCB reference checksum and rejects inval
   }
 });
 
-const { configureScannerFocus } = loadTs("../src/lib/scannerCamera.ts");
+const { configureScannerFocus, scannerCameraErrorMessage } = loadTs("../src/lib/scannerCamera.ts");
 
 test("scanner enables continuous focus only on supported cameras", async () => {
   const applied = [];
@@ -241,4 +241,15 @@ test("unsupported or rejected focus controls never prevent camera scanning", asy
     }),
     false,
   );
+});
+
+test("camera permission errors remain recognizable when the reader wraps them as text", () => {
+  for (const error of [
+    { name: "NotAllowedError", message: "Permission denied" },
+    "Error getting userMedia, error = NotAllowedError: Permission denied",
+    "PermissionDeniedError",
+  ]) {
+    assert.match(scannerCameraErrorMessage(error), /Permissão da câmera negada/);
+  }
+  assert.match(scannerCameraErrorMessage(new Error("Device not found")), /Não foi possível abrir/);
 });
