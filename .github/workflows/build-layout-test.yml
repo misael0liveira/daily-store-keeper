@@ -148,7 +148,7 @@ jobs:
           prerelease: true
           make_latest: false
           body: |
-            Barra de navegação CODEXURE: superfície escura, bolha laranja, brilho e curva animada seguindo a seleção.
+            Barra de navegação com a paleta do APK: superfície branca e bolha azul no tema claro; cores adaptadas ao tema escuro. Curva, brilho e animação CODEXURE preservados.
             Cinco abas funcionais: Início, Histórico, Caixa, Estoque e Ajustes.
             Versão de teste sem OCR, com o mesmo logotipo, ícone e abertura do APK oficial.
             Leitura de código de barras executada no aparelho; cadastro dos demais dados manual.

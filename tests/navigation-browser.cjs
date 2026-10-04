@@ -2,6 +2,30 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE);
 const assert = require("node:assert/strict");
 const { mkdirSync } = require("node:fs");
 
+async function verifyTheme(nav, theme) {
+  const colors = await nav.evaluate((element) => {
+    const probe = document.createElement("span");
+    probe.style.backgroundColor = "var(--card)";
+    probe.style.color = "var(--primary)";
+    element.appendChild(probe);
+    const palette = getComputedStyle(probe);
+    const expectedSurface = palette.backgroundColor;
+    const expectedPrimary = palette.color;
+    probe.style.color = "var(--primary-foreground)";
+    const expectedInk = getComputedStyle(probe).color;
+    const actual = {
+      surface: getComputedStyle(element.querySelector(".pos-nav-outline path")).fill,
+      label: getComputedStyle(element.querySelector(".is-active .pos-nav-label")).color,
+      ink: getComputedStyle(element.querySelector(".is-active .pos-nav-icon")).color,
+    };
+    probe.remove();
+    return { ...actual, expectedSurface, expectedPrimary, expectedInk };
+  });
+  assert.equal(colors.surface, colors.expectedSurface, `Dock surface/theme mismatch: ${theme}`);
+  assert.equal(colors.label, colors.expectedPrimary, `Dock primary/theme mismatch: ${theme}`);
+  assert.equal(colors.ink, colors.expectedInk, `Dock active icon/theme mismatch: ${theme}`);
+}
+
 (async () => {
   mkdirSync("navigation-screenshots", { recursive: true });
   const browser = await chromium.launch({ headless: true });
@@ -48,10 +72,12 @@ const { mkdirSync } = require("node:fs");
       }
       await page.screenshot({ path: `navigation-screenshots/ajustes-${width}.png` });
       await nav.getByRole("link", { name: "Início", exact: true }).click();
+      await verifyTheme(nav, "claro");
       await page.screenshot({ path: `navigation-screenshots/inicio-${width}.png` });
       await page.evaluate(() => {
         document.documentElement.classList.add("dark");
       });
+      await verifyTheme(nav, "escuro");
       await page.screenshot({ path: `navigation-screenshots/escuro-${width}.png` });
       await context.close();
     }
