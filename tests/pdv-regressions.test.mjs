@@ -140,3 +140,57 @@ test("Android detection works with an https WebView and remains false for web/SS
     globalThis.window = previous;
   }
 });
+
+const { createPixTxid, buildPixPayload } = loadTs("../src/lib/pix.ts");
+const pixParams = {
+  key: "123e4567-e12b-12d1-a456-426655440000",
+  merchantName: "Fulano de Tal",
+  city: "BRASILIA",
+};
+
+function readFields(payload) {
+  const fields = {};
+  for (let offset = 0; offset < payload.length;) {
+    const id = payload.slice(offset, offset + 2);
+    const length = Number(payload.slice(offset + 2, offset + 4));
+    assert.ok(Number.isInteger(length) && length > 0, "Invalid Pix field length");
+    fields[id] = payload.slice(offset + 4, offset + 4 + length);
+    assert.equal(fields[id].length, length, "Truncated Pix field");
+    offset += 4 + length;
+  }
+  return fields;
+}
+
+test("same-value Pix checkouts have distinct valid references and stable payloads", () => {
+  const previousNow = Date.now;
+  Date.now = () => 1800000000000;
+  try {
+    const ids = Array.from({ length: 1000 }, createPixTxid);
+    assert.equal(new Set(ids).size, ids.length);
+    for (const txid of ids) assert.match(txid, /^[A-Za-z0-9]{25}$/);
+    const first = buildPixPayload({ ...pixParams, amount: 20, txid: ids[0] });
+    const second = buildPixPayload({ ...pixParams, amount: 20, txid: ids[1] });
+    assert.notEqual(first, second);
+    assert.equal(first, buildPixPayload({ ...pixParams, amount: 20, txid: ids[0] }));
+    for (const [payload, txid] of [
+      [first, ids[0]],
+      [second, ids[1]],
+    ]) {
+      const fields = readFields(payload);
+      assert.equal(fields["54"], "20.00");
+      assert.equal(readFields(fields["62"])["05"], txid);
+      assert.match(fields["63"], /^[0-9A-F]{4}$/);
+    }
+  } finally {
+    Date.now = previousNow;
+  }
+});
+
+test("Pix generic preview preserves the BCB reference checksum and rejects invalid txids", () => {
+  const reference = buildPixPayload(pixParams);
+  assert.ok(reference.endsWith("63041D3D"));
+  assert.equal(readFields(readFields(reference)["62"])["05"], "***");
+  for (const txid of ["", "sale 1", "sale-1", "a".repeat(26)]) {
+    assert.throws(() => buildPixPayload({ ...pixParams, txid }), /identificador Pix/);
+  }
+});

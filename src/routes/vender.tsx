@@ -7,6 +7,7 @@ import { PaymentSheet } from "@/components/PaymentSheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { beep, unlockAudio, vibrate } from "@/lib/feedback";
+import { createPixTxid } from "@/lib/pix";
 import { PAYMENT_LABELS, formatBRL, useStore, type PaymentMethod } from "@/store/useStore";
 
 export const Route = createFileRoute("/vender")({
@@ -33,6 +34,7 @@ export const Route = createFileRoute("/vender")({
 function CaixaPage() {
   const { products, cart, addToCart, changeQty, checkout } = useStore();
   const [payOpen, setPayOpen] = useState(false);
+  const [pixTxid, setPixTxid] = useState("");
   const [query, setQuery] = useState("");
 
   const addProduct = (code: string) => {
@@ -90,7 +92,10 @@ function CaixaPage() {
     paidAmount?: number;
     change?: number;
   }) => {
-    const sale = checkout(payload);
+    const sale = checkout({
+      ...payload,
+      ...(payload.method === "pix" ? { pixTxid } : {}),
+    });
     if (!sale) return;
     setPayOpen(false);
     beep(true);
@@ -239,7 +244,10 @@ function CaixaPage() {
         <Button
           className="pos-primary w-full"
           disabled={cart.length === 0}
-          onClick={() => setPayOpen(true)}
+          onClick={() => {
+            setPixTxid(createPixTxid());
+            setPayOpen(true);
+          }}
         >
           Ir para pagamento
         </Button>
@@ -249,6 +257,7 @@ function CaixaPage() {
         open={payOpen}
         onOpenChange={setPayOpen}
         total={total}
+        pixTxid={pixTxid}
         onConfirm={confirmPayment}
       />
     </div>

@@ -41,6 +41,7 @@ export type Sale = {
   method: PaymentMethod;
   paidAmount?: number;
   change?: number;
+  pixTxid?: string;
   syncState?: SyncState;
   deviceId?: string;
   offline?: boolean;
@@ -63,6 +64,7 @@ type StoreState = {
     method: PaymentMethod;
     paidAmount?: number;
     change?: number;
+    pixTxid?: string;
   }) => Sale | null;
   deleteSale: (id: string) => void;
   markSalesSynced: (ids: string[]) => void;
@@ -108,7 +110,7 @@ export const useStore = create<StoreState>()(
         })),
       removeFromCart: (barcode) =>
         set((s) => ({ cart: s.cart.filter((i) => i.barcode !== barcode) })),
-      checkout: ({ method, paidAmount, change }) => {
+      checkout: ({ method, paidAmount, change, pixTxid }) => {
         const state = get();
         if (state.cart.length === 0) return null;
         const items: SaleItem[] = state.cart.flatMap((item) => {
@@ -125,6 +127,7 @@ export const useStore = create<StoreState>()(
           items,
           total,
           method,
+          ...(method === "pix" && pixTxid ? { pixTxid } : {}),
           syncState: "pending",
           deviceId: getDeviceId(),
           offline: typeof navigator !== "undefined" && navigator.onLine === false,

@@ -40,3 +40,9 @@ O teste mantém o applicationId app.minimarket.pos.visiontest, os dados próprio
 ## Navegação CODEXURE do teste
 
 BottomNavigation é o proprietário compartilhado da barra em todas as rotas. Links reais preservam destinos e histórico do router; /vendas/configuracoes continua selecionando Ajustes. aria-current identifica a página ativa; os cinco links mantêm aria-label em português mesmo com apenas um rótulo visível. A bolha e o contorno animam juntos; troca rápida cancela a animação anterior. Preferência de movimento reduzido é respeitada. O pagamento permanece acima da barra e nenhum dado local muda na navegação. Tokens e proporções estão em DESIGN.md e src/styles.css.
+
+## Pix por pagamento
+
+Ao abrir um novo pagamento no Caixa, gerar um txid aleatório de 25 caracteres alfanuméricos, sem depender do valor ou da internet. Manter esse identificador durante as renderizações e trocas de método do mesmo pagamento. Nova abertura cria uma nova referência, inclusive após cancelamento. QR Code e Copia e Cola usam o mesmo payload; a confirmação manual e a confirmação por notificação salvam pixTxid junto da venda. Vendas antigas continuam válidas sem esse campo. A prévia genérica nas configurações mantém *** e não representa uma venda. O código permanece um QR estático com referência individual, sem integração de cobrança dinâmica bancária.
+
+Verificação: testes de referências distintas mesmo com relógio fixo, limites do campo e checksum do exemplo oficial; fluxo no navegador com duas vendas de R$ 20, QR e Copia e Cola distintos, referência estável durante o pagamento, segunda venda offline, persistência e redução de estoque. A aceitação e os avisos do aplicativo do banco precisam ser conferidos no aparelho.

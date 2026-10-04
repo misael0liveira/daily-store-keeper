@@ -28,26 +28,27 @@ export type PixParams = {
   txid?: string;
 };
 
+/** A fresh offline reference for one checkout, within the static Pix 25-character limit. */
+export function createPixTxid(): string {
+  const bytes = new Uint8Array(12);
+  globalThis.crypto.getRandomValues(bytes);
+  return "M" + Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
 /** Static Pix BR Code (EMV) payload. */
-export function buildPixPayload({
-  key,
-  merchantName,
-  city,
-  amount,
-  txid = "***",
-}: PixParams) {
+export function buildPixPayload({ key, merchantName, city, amount, txid = "***" }: PixParams) {
+  if (txid !== "***" && !/^[A-Za-z0-9]{1,25}$/.test(txid)) {
+    throw new Error("O identificador Pix deve ter entre 1 e 25 caracteres alfanuméricos.");
+  }
   const merchantAccount = field("00", "br.gov.bcb.pix") + field("01", key.trim());
   let payload =
-    field("00", "01") +
-    field("26", merchantAccount) +
-    field("52", "0000") +
-    field("53", "986");
+    field("00", "01") + field("26", merchantAccount) + field("52", "0000") + field("53", "986");
   if (amount && amount > 0) payload += field("54", amount.toFixed(2));
   payload +=
     field("58", "BR") +
     field("59", sanitize(merchantName, 25) || "RECEBEDOR") +
     field("60", sanitize(city, 15) || "BRASIL") +
-    field("62", field("05", sanitize(txid, 25) || "***")) +
+    field("62", field("05", txid)) +
     "6304";
   return payload + crc16(payload);
 }

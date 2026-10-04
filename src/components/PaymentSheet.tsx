@@ -121,11 +121,13 @@ export function PaymentSheet({
   open,
   onOpenChange,
   total,
+  pixTxid,
   onConfirm,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   total: number;
+  pixTxid: string;
   onConfirm: (payload: { method: PaymentMethod; paidAmount?: number; change?: number }) => void;
 }) {
   const settings = useStore((s) => s.settings);
@@ -146,14 +148,16 @@ export function PaymentSheet({
   const insufficient = method === "dinheiro" && change !== null && change < 0;
 
   const pixReady = settings.pixKey.trim().length > 0;
-  const pixPayload = pixReady
-    ? buildPixPayload({
-        key: settings.pixKey,
-        merchantName: settings.merchantName || settings.storeName,
-        city: settings.city,
-        amount: total,
-      })
-    : "";
+  const pixPayload =
+    pixReady && pixTxid
+      ? buildPixPayload({
+          key: settings.pixKey,
+          merchantName: settings.merchantName || settings.storeName,
+          city: settings.city,
+          amount: total,
+          txid: pixTxid,
+        })
+      : "";
 
   useEffect(() => {
     if (!open || method !== "pix" || total <= 0 || pixSuccess) {
