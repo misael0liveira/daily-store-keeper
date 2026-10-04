@@ -36,3 +36,7 @@ Datas do histórico continuam como input date nativo: seletor e geometria perten
 ## APK de teste
 
 O teste mantém o applicationId app.minimarket.pos.visiontest, os dados próprios. É compilado como release, assinado pela configuração debug do Gradle, para aproximar o tamanho e o empacotamento do oficial; permanece instalado separadamente. Não inclui bibliotecas, modelos ou ações de OCR. O cache anterior não salvava o arquivo gerado pelo AGP em ~/.config/.android/debug.keystore; a chave antiga não é recuperável. O cache passa a cobrir ambos os caminhos. O Android pode rejeitar uma atualização sobre testes antigos por diferença de assinatura; não desinstalar nem apagar dados automaticamente.
+
+## Navegação CODEXURE do teste
+
+BottomNavigation é o proprietário compartilhado da barra em todas as rotas. Links reais preservam destinos e histórico do router; /vendas/configuracoes continua selecionando Ajustes. aria-current identifica a página ativa; os cinco links mantêm aria-label em português mesmo com apenas um rótulo visível. A bolha e o contorno animam juntos; troca rápida cancela a animação anterior. Preferência de movimento reduzido é respeitada. O pagamento permanece acima da barra e nenhum dado local muda na navegação. Tokens e proporções estão em DESIGN.md e src/styles.css.

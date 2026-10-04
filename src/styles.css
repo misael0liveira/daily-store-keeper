@@ -1234,7 +1234,7 @@
 .pdv-checkout-bar {
   position: fixed;
   z-index: 30;
-  bottom: calc(92px + env(safe-area-inset-bottom));
+  bottom: calc(var(--pos-nav-reserved) + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   width: min(100%, 512px);
@@ -1248,80 +1248,151 @@
   font-size: 16px;
 }
 .m3-app-content {
-  padding-bottom: calc(102px + env(safe-area-inset-bottom));
+  padding-bottom: calc(var(--pos-nav-reserved) + env(safe-area-inset-bottom));
 }
-@property --tab-center {
-  syntax: "<percentage>";
-  inherits: true;
-  initial-value: 10%;
+/* CODEXURE reference dock: token ownership stays in this stylesheet. */
+:root {
+  --pos-nav-reserved: clamp(112px, 27vw, 144px);
+  --dock-surface: #18131f;
+  --dock-border: #716779;
+  --dock-muted: #b6a7cc;
+  --dock-active: #eb541f;
+  --dock-active-ink: #23151a;
+  --dock-highlight: #fa844a;
+  --dock-mid: #ed602a;
+  --dock-low: #df4619;
+  --dock-edge: #f08351;
 }
 .pos-nav {
-  transition: --tab-center 240ms ease;
-  --tab-center: calc(10% + var(--active-tab) * 20%);
+  --dock-center: 15%;
   position: fixed;
-  bottom: 0;
+  bottom: calc(16px + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
-  width: min(100%, 512px);
-  height: calc(72px + env(safe-area-inset-bottom));
-  padding-bottom: env(safe-area-inset-bottom);
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  width: min(calc(100% - 32px), 480px);
+  aspect-ratio: 550 / 140;
+  isolation: isolate;
   z-index: 40;
 }
-.pos-nav-surface {
+.pos-nav-outline {
   position: absolute;
   inset: 0;
-  background: var(--card);
-  border-radius: 18px 18px 0 0;
-  box-shadow: 0 -1px 4px rgb(15 40 25 / 0.08);
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
 }
-.pos-nav-notch {
-  position: absolute;
-  left: var(--tab-center);
-  top: -1px;
-  width: 84px;
-  height: 38px;
-  color: var(--background);
-  fill: currentColor;
-  transform: translateX(-50%);
-  transition: left 240ms ease;
+.pos-nav-outline path {
+  fill: var(--dock-surface);
+  stroke: var(--dock-border);
+  stroke-width: 1.2;
 }
 .pos-nav-bubble {
   position: absolute;
-  width: 48px;
-  height: 48px;
-  left: var(--tab-center);
-  top: -16px;
+  width: 14.54545%;
+  aspect-ratio: 1;
+  left: var(--dock-center);
+  top: 3.57143%;
   transform: translateX(-50%);
   border-radius: 50%;
-  background: var(--primary);
-  box-shadow: 0 6px 14px rgb(20 27 37 / 0.18);
-  transition: left 240ms ease;
+  border: 1px solid var(--dock-edge);
+  background: radial-gradient(
+    circle at 33% 18%,
+    var(--dock-highlight),
+    var(--dock-mid) 36%,
+    var(--dock-low) 85%
+  );
+  box-shadow:
+    inset 0 2px 6px rgb(255 199 150 / 0.27),
+    inset 0 -4px 5px rgb(153 41 15 / 0.2),
+    0 0 12px 5px rgb(238 91 37 / 0.18),
+    0 0 28px 9px rgb(244 92 35 / 0.22);
+  pointer-events: none;
+}
+.pos-nav-links {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  padding-inline: 6.25%;
 }
 .pos-nav-item {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  padding: 15px 0 8px;
-  gap: 5px;
-  color: var(--muted-foreground);
-  font-size: 11px;
-  line-height: 16px;
+  min-width: 0;
+  min-height: 44px;
+  color: var(--dock-muted);
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  border-radius: 12px;
 }
-.pos-nav-item svg {
-  transition: transform 240ms ease;
+.pos-nav-icon {
+  position: absolute;
+  top: 48.57143%;
+  height: 37.14286%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    top 420ms cubic-bezier(0.2, 0.8, 0.25, 1),
+    color 250ms ease;
+}
+.pos-nav-icon svg {
+  width: clamp(18px, 5vw, 26px);
+  height: clamp(18px, 5vw, 26px);
   flex-shrink: 0;
 }
-.pos-nav-item.is-active {
-  color: var(--primary);
+.pos-nav-label {
+  position: absolute;
+  top: 80%;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(11px, 2.7vw, 15px);
   font-weight: 600;
+  line-height: 1;
+  opacity: 0;
+  color: var(--dock-active);
+  transition: opacity 180ms ease;
+  white-space: nowrap;
 }
-.pos-nav-item.is-active svg {
-  color: var(--primary-foreground);
-  transform: translateY(-17px);
+.pos-nav-item.is-active .pos-nav-icon {
+  top: 13.57143%;
+  color: var(--dock-active-ink);
+}
+.pos-nav-item.is-active .pos-nav-label {
+  opacity: 1;
+}
+.pos-nav-item:hover:not(.is-active) .pos-nav-icon {
+  color: var(--dock-highlight);
+}
+.pos-nav-item:active .pos-nav-icon {
+  opacity: 0.75;
+}
+.pos-nav-item:focus-visible {
+  outline-color: var(--dock-highlight);
+}
+@media (forced-colors: active) {
+  .pos-nav-outline path {
+    fill: Canvas;
+    stroke: CanvasText;
+  }
+  .pos-nav-bubble {
+    background: Highlight;
+    border-color: Highlight;
+    box-shadow: none;
+  }
+  .pos-nav-item {
+    color: LinkText;
+  }
+  .pos-nav-item.is-active .pos-nav-icon {
+    color: HighlightText;
+  }
+  .pos-nav-label {
+    color: LinkText;
+  }
 }
 
 /* Histórico follows the same compact visual language as Início and Estoque. */
@@ -1515,9 +1586,9 @@ a:focus-visible {
 }
 @media (prefers-reduced-motion: reduce) {
   .pos-nav,
-  .pos-nav-notch,
   .pos-nav-bubble,
-  .pos-nav-item svg {
+  .pos-nav-icon,
+  .pos-nav-label {
     transition: none;
   }
 }

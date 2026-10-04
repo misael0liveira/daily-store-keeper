@@ -8,8 +8,8 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type CSSProperties, type ReactNode } from "react";
-import { Boxes, ScanBarcode, House, ReceiptText, Settings } from "lucide-react";
+import { useEffect, type ReactNode } from "react";
+import { BottomNavigation } from "@/components/BottomNavigation";
 import appCss from "../styles.css?url";
 import { AppStartup } from "@/components/AppStartup";
 import { AppUpdatePrompt } from "@/components/AppUpdatePrompt";
@@ -126,55 +126,6 @@ function BrandWatermark() {
   );
 }
 
-const navigation = [
-  { to: "/", label: "Início", icon: House },
-  { to: "/vendas", label: "Histórico", icon: ReceiptText },
-  { to: "/vender", label: "Caixa", icon: ScanBarcode },
-  { to: "/estoque", label: "Estoque", icon: Boxes },
-  { to: "/mais", label: "Ajustes", icon: Settings },
-] as const;
-
-function BottomNav() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const selected = pathname.startsWith("/vendas/configuracoes")
-    ? 4
-    : Math.max(
-        0,
-        navigation.findIndex((item) =>
-          item.to === "/" ? pathname === "/" : pathname.startsWith(item.to),
-        ),
-      );
-  return (
-    <nav
-      className="pos-nav"
-      aria-label="Navegação principal"
-      style={{ "--active-tab": selected } as CSSProperties}
-    >
-      <div className="pos-nav-surface" aria-hidden="true" />
-      <svg
-        className="pos-nav-notch"
-        viewBox="0 -2 84 38"
-        preserveAspectRatio="none"
-        aria-hidden="true"
-      >
-        <path d="M0-2H84V0C72 0 69 4 63 14C56 27 51 34 42 34C33 34 28 27 21 14C15 4 12 0 0 0Z" />
-      </svg>
-      <div className="pos-nav-bubble" aria-hidden="true" />
-      {navigation.map(({ to, label, icon: Icon }, index) => (
-        <Link
-          key={to}
-          to={to}
-          aria-current={selected === index ? "page" : undefined}
-          className={`pos-nav-item ${selected === index ? "is-active" : ""}`}
-        >
-          <Icon aria-hidden="true" size={23} strokeWidth={1.8} />
-          <span>{label}</span>
-        </Link>
-      ))}
-    </nav>
-  );
-}
-
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -205,7 +156,7 @@ function RootComponent() {
         <main className="m3-app-content mx-auto max-w-lg">
           <Outlet />
         </main>
-        <BottomNav />
+        <BottomNavigation />
         <Toaster richColors position="top-center" />
         <AppUpdatePrompt />
       </AppStartup>
