@@ -17,7 +17,7 @@ Primitivos: Button, Input, Sheet e AlertDialog existentes. Estado: useStore. Fee
 
 Início: logotipo oficial e um único status; resumo diário com Nova venda; até três produtos de reposição; duas últimas vendas.
 Caixa: título simples, câmera persistente, busca, lista com subtotal e quantidade, pagamento fixo acima da navegação.
-Scanner: quatro cantos brancos independentes enquadram o código e uma linha verde atravessa a leitura; sem retângulo completo, ícone sobre a câmera, linha vermelha ou molduras sobrepostas.
+Scanner: quatro cantos brancos independentes enquadram o código e uma linha verde atravessa a leitura; sem retângulo completo, ícone sobre a câmera, linha vermelha ou molduras sobrepostas. A ação secundária “Digitar código” aparece abaixo da prévia e abre a entrada manual com Label, Input e Button existentes; cores e tipografia seguem os tokens do app.
 Estoque: lista primeiro, busca por nome/código, filtro de saldo <=5; cadastro/edição em Sheet.
 Histórico: cabeçalho e cartões com a mesma densidade das demais rotas; filtros suaves, configurações somente em Ajustes e um único estado vazio por período.
 Não colocar números ilustrativos, fotos de câmera ou botões sem função na produção.

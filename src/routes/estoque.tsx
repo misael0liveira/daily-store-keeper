@@ -341,7 +341,12 @@ function EstoquePage() {
                   }
                 }}
                 placeholder="Ex.: 7891234567890"
+                type="text"
                 inputMode="numeric"
+                enterKeyHint="done"
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
                 className="h-12 text-base"
               />
             </div>

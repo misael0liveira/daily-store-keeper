@@ -194,3 +194,51 @@ test("Pix generic preview preserves the BCB reference checksum and rejects inval
     assert.throws(() => buildPixPayload({ ...pixParams, txid }), /identificador Pix/);
   }
 });
+
+const { configureScannerFocus } = loadTs("../src/lib/scannerCamera.ts");
+
+test("scanner enables continuous focus only on supported cameras", async () => {
+  const applied = [];
+  const scanner = {
+    getRunningTrackCapabilities: () => ({ focusMode: ["manual", "continuous"] }),
+    applyVideoConstraints: async (constraints) => {
+      applied.push(constraints);
+    },
+  };
+  assert.equal(await configureScannerFocus(scanner), true);
+  assert.deepEqual(applied, [{ advanced: [{ focusMode: "continuous" }] }]);
+});
+
+test("unsupported or rejected focus controls never prevent camera scanning", async () => {
+  for (const capabilities of [{}, { focusMode: ["manual"] }]) {
+    assert.equal(
+      await configureScannerFocus({
+        getRunningTrackCapabilities: () => capabilities,
+        applyVideoConstraints: async () => {
+          assert.fail("Unsupported focus was applied");
+        },
+      }),
+      false,
+    );
+  }
+  assert.equal(
+    await configureScannerFocus({
+      getRunningTrackCapabilities: () => ({ focusMode: ["continuous"] }),
+      applyVideoConstraints: async () => {
+        throw new Error("Camera control unavailable");
+      },
+    }),
+    false,
+  );
+  assert.equal(
+    await configureScannerFocus({
+      getRunningTrackCapabilities: () => {
+        throw new Error("Capabilities unavailable");
+      },
+      applyVideoConstraints: async () => {
+        assert.fail("Capabilities unavailable");
+      },
+    }),
+    false,
+  );
+});

@@ -1,9 +1,12 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { CameraOff, Flashlight, FlashlightOff } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { configureScannerFocus } from "@/lib/scannerCamera";
 import { closeScannerAfterStart } from "@/lib/scannerLifecycle";
 
 type Props = {
@@ -18,6 +21,11 @@ function ScannerInner({ onScan }: Props) {
   const [flashOn, setFlashOn] = useState(false);
   const [flashBusy, setFlashBusy] = useState(false);
   const [manualCode, setManualCode] = useState("");
+  const [manualOpen, setManualOpen] = useState(false);
+  const manualActiveRef = useRef(false);
+  const manualInputRef = useRef<HTMLInputElement>(null);
+  const manualTriggerRef = useRef<HTMLButtonElement>(null);
+  const manualId = useId();
   const lastScanRef = useRef<{ code: string; at: number }>({ code: "", at: 0 });
   const onScanRef = useRef(onScan);
 
@@ -38,9 +46,16 @@ function ScannerInner({ onScan }: Props) {
         scannerRef.current = scanner;
         await scanner.start(
           { facingMode: "environment" },
-          { fps: 10 },
+          {
+            fps: 10,
+            videoConstraints: {
+              facingMode: { ideal: "environment" },
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+            },
+          },
           (decodedText) => {
-            if (cancelled) return;
+            if (cancelled || manualActiveRef.current) return;
             const now = Date.now();
             if (decodedText === lastScanRef.current.code && now - lastScanRef.current.at < 1500) {
               return;
@@ -50,6 +65,8 @@ function ScannerInner({ onScan }: Props) {
           },
           () => {},
         );
+        if (cancelled) return;
+        await configureScannerFocus(scanner);
         if (cancelled) return;
         try {
           const torch = scanner.getRunningTrackCameraCapabilities().torchFeature();
@@ -87,12 +104,30 @@ function ScannerInner({ onScan }: Props) {
     };
   }, []);
 
+  const openManual = () => {
+    manualActiveRef.current = true;
+    // Mount and focus within the tap so Android can show the numeric keyboard.
+    flushSync(() => setManualOpen(true));
+    manualInputRef.current?.focus();
+  };
+
+  const closeManual = () => {
+    manualInputRef.current?.blur();
+    manualActiveRef.current = false;
+    flushSync(() => setManualOpen(false));
+    manualTriggerRef.current?.focus({ preventScroll: true });
+  };
+
   const submitManual = () => {
     const code = manualCode.trim();
-    if (code) {
-      onScan(code);
-      setManualCode("");
+    if (!code) {
+      manualInputRef.current?.focus();
+      return;
     }
+    lastScanRef.current = { code, at: Date.now() };
+    setManualCode("");
+    closeManual();
+    onScanRef.current(code);
   };
 
   const toggleFlash = async () => {
@@ -122,19 +157,6 @@ function ScannerInner({ onScan }: Props) {
         <div className="flex flex-col items-center gap-3 py-6 text-center">
           <CameraOff className="size-10 text-destructive" />
           <p className="text-sm text-muted-foreground">{error}</p>
-          <div className="flex w-full gap-2">
-            <Input
-              value={manualCode}
-              onChange={(e) => setManualCode(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && !e.nativeEvent.isComposing && submitManual()}
-              placeholder="Digite o código de barras"
-              inputMode="numeric"
-              className="h-12 text-base"
-            />
-            <Button className="h-12 px-5" onClick={submitManual}>
-              OK
-            </Button>
-          </div>
         </div>
       ) : (
         <div className="barcode-scanner-frame relative overflow-hidden rounded-xl">
@@ -167,6 +189,61 @@ function ScannerInner({ onScan }: Props) {
           </div>
         </div>
       )}
+      {!error && !manualOpen && (
+        <Button
+          ref={manualTriggerRef}
+          type="button"
+          variant="outline"
+          className="mt-3 h-12 w-full"
+          aria-expanded={manualOpen}
+          aria-controls={manualId}
+          onClick={openManual}
+        >
+          Digitar código
+        </Button>
+      )}
+      <div id={manualId} hidden={!error && !manualOpen} className="mt-3">
+        <form
+          noValidate
+          className="space-y-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            submitManual();
+          }}
+        >
+          <Label htmlFor={`${manualId}-input`}>Código de barras</Label>
+          <div className="flex gap-2">
+            <Input
+              id={`${manualId}-input`}
+              ref={manualInputRef}
+              type="text"
+              value={manualCode}
+              onChange={(event) => setManualCode(event.target.value)}
+              onFocus={() => {
+                manualActiveRef.current = true;
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && event.nativeEvent.isComposing) event.preventDefault();
+              }}
+              placeholder="Digite os números do código"
+              inputMode="numeric"
+              enterKeyHint="done"
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck={false}
+              className="h-12 min-w-0 text-base"
+            />
+            <Button type="submit" className="h-12 shrink-0 px-4" disabled={!manualCode.trim()}>
+              Usar código
+            </Button>
+          </div>
+          {!error && (
+            <Button type="button" variant="ghost" className="h-11 w-full" onClick={closeManual}>
+              Cancelar digitação
+            </Button>
+          )}
+        </form>
+      </div>
     </div>
   );
 }
