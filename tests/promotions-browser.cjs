@@ -82,13 +82,11 @@ async function checkWidth(page) {
         ctx.fillRect(20, 20, 40, 40);
         return canvas.toDataURL("image/png").split(",")[1];
       });
-      await editor
-        .getByLabel("Carregar foto do produto")
-        .setInputFiles({
-          name: "produto.png",
-          mimeType: "image/png",
-          buffer: Buffer.from(data, "base64"),
-        });
+      await editor.getByLabel("Carregar foto do produto").setInputFiles({
+        name: "produto.png",
+        mimeType: "image/png",
+        buffer: Buffer.from(data, "base64"),
+      });
       await editor.getByRole("img", { name: "Foto de Arroz 5kg" }).waitFor();
       await editor.getByRole("button", { name: "Atualizar produto", exact: true }).click();
       await editor.waitFor({ state: "hidden" });

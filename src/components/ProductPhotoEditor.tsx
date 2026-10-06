@@ -1,6 +1,5 @@
 import { Camera, ImagePlus, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { flushSync } from "react-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { prepareProductPhoto } from "@/lib/productPhotos";
@@ -98,8 +97,8 @@ export function ProductPhotoEditor({
             variant="outline"
             disabled={busy}
             onClick={() => {
-              flushSync(() => onCaptureChange(true));
               camera.current?.click();
+              onCaptureChange(true);
             }}
           >
             <Camera size={17} />

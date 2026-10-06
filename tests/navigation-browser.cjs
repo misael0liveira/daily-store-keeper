@@ -64,11 +64,18 @@ async function verifyTheme(nav, theme) {
             inside: rect.left >= 0 && rect.right <= innerWidth && bead.top >= 0,
             overflow: document.documentElement.scrollWidth > innerWidth,
             shape: shape.getAttribute("d"),
+            top: Math.min(
+              ...Array.from(
+                { length: 301 },
+                (_, index) => shape.getPointAtLength((shape.getTotalLength() * index) / 300).y,
+              ),
+            ),
           };
         });
         assert.ok(geometry.delta < 1, `Bead/icon drift at ${width}px, ${label}`);
         assert.ok(geometry.inside && !geometry.overflow, `Overflow at ${width}px, ${label}`);
         assert.ok(geometry.shape.includes("C"), "Dock curve missing");
+        assert.ok(geometry.top >= 44.99, "Dock contour has a raised pointed shoulder");
       }
       await page.screenshot({ path: `navigation-screenshots/ajustes-${width}.png` });
       await nav.getByRole("link", { name: "Início", exact: true }).click();
@@ -86,7 +93,14 @@ async function verifyTheme(nav, theme) {
     await page.goto("http://127.0.0.1:4173/", { waitUntil: "networkidle" });
     const nav = page.getByRole("navigation", { name: "Navegação principal" });
     await nav.waitFor({ state: "visible" });
+    const center = () =>
+      nav.evaluate((el) => parseFloat(el.style.getPropertyValue("--dock-center")));
+    const before = await center();
     await nav.getByRole("link", { name: "Ajustes", exact: true }).click();
+    await page.waitForURL("**/mais");
+    await page.waitForTimeout(70);
+    const intermediate = await center();
+    assert.ok(intermediate > before && intermediate < 85, "Bead no longer moves between tabs");
     await nav.getByRole("link", { name: "Histórico", exact: true }).click();
     await page.waitForTimeout(550);
     assert.equal(

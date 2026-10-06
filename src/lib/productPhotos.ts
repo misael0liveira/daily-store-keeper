@@ -97,7 +97,11 @@ export async function prepareProductPhoto(file: File, whiteBackground: boolean) 
   try {
     const image = new Image();
     image.src = url;
-    await image.decode();
+    try {
+      await image.decode();
+    } catch {
+      throw new Error("Não foi possível ler a foto. Use JPG, PNG ou WebP.");
+    }
     const scale = Math.min(1, 480 / Math.max(image.naturalWidth, image.naturalHeight));
     const width = Math.max(1, Math.round(image.naturalWidth * scale));
     const height = Math.max(1, Math.round(image.naturalHeight * scale));
