@@ -81,6 +81,17 @@ export function ProductPhotoEditor({
       void process(next, white);
     }
   };
+  const openPicker = (input: HTMLInputElement | null, capture = false) => {
+    if (!input) return;
+    try {
+      if (typeof input.showPicker === "function") input.showPicker();
+      else input.click();
+      if (capture) onCaptureChange(true);
+    } catch {
+      input.click();
+      if (capture) onCaptureChange(true);
+    }
+  };
   return (
     <div className="product-photo-editor">
       <ProductPhoto
@@ -96,10 +107,7 @@ export function ProductPhotoEditor({
             type="button"
             variant="outline"
             disabled={busy}
-            onClick={() => {
-              camera.current?.click();
-              onCaptureChange(true);
-            }}
+            onClick={() => openPicker(camera.current, true)}
           >
             <Camera size={17} />
             Tirar foto
@@ -108,7 +116,7 @@ export function ProductPhotoEditor({
             type="button"
             variant="outline"
             disabled={busy}
-            onClick={() => fileInput.current?.click()}
+            onClick={() => openPicker(fileInput.current)}
           >
             <ImagePlus size={17} />
             Carregar foto
