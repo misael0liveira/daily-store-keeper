@@ -188,7 +188,7 @@ async function checkWidth(page) {
       await page.screenshot({ path: `navigation-screenshots/promocoes-${width}.png` });
       await modal.getByRole("button", { name: "Aplicar promoção", exact: true }).click();
       await modal.waitFor({ state: "hidden" });
-      await page.reload({ waitUntil: "networkidle" });
+      await page.goto(origin, { waitUntil: "networkidle" });
       await stock(page);
       await page.getByRole("img", { name: "Foto de Arroz 5kg" }).waitFor();
       await page.getByRole("link", { name: "Caixa", exact: true }).click();
