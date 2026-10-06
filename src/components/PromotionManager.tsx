@@ -148,7 +148,7 @@ export function PromotionManager() {
   };
   return (
     <section className="space-y-4" aria-label="Promoções do estoque">
-      <div className="relative">
+      <div className="relative promotion-search">
         <Search
           aria-hidden="true"
           className="absolute left-3 top-1/2 size-5 -translate-y-1/2 text-muted-foreground"
@@ -164,7 +164,7 @@ export function PromotionManager() {
         {search && (
           <button
             type="button"
-            className="pos-search-clear right-12"
+            className="pos-search-clear"
             aria-label="Limpar busca de promoção"
             onClick={() => {
               setSearch("");

@@ -1273,6 +1273,16 @@
 .promotion-camera:hover {
   background: var(--accent);
 }
+.promotion-search .pos-search-clear {
+  right: 48px;
+}
+.pos-stock .pos-filters {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pos-stock .pos-filters button {
+  padding-inline: 12px;
+}
 .promotion-camera:active {
   opacity: 0.75;
 }

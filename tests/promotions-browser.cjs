@@ -123,11 +123,12 @@ async function checkWidth(page) {
       );
       // Exercise the capture input through the same chooser callback used by the Android bridge.
       await page.locator(".pos-stock-list button").filter({ hasText: "Arroz 5kg" }).click();
-      const chooserPromise = page.waitForEvent("filechooser", { timeout: 5000 });
-      await editor.getByRole("button", { name: "Tirar foto", exact: true }).click();
       let chooser;
       try {
-        chooser = await chooserPromise;
+        [chooser] = await Promise.all([
+          page.waitForEvent("filechooser", { timeout: 5000 }),
+          editor.getByRole("button", { name: "Tirar foto", exact: true }).click({ timeout: 4500 }),
+        ]);
       } catch (error) {
         const diagnostic = await editor.evaluate((element) => ({
           text: element.textContent,
@@ -138,6 +139,13 @@ async function checkWidth(page) {
           })),
           active: document.activeElement?.outerHTML,
           activation: navigator.userActivation.isActive,
+          buttons: Array.from(element.querySelectorAll("button")).map((button) => ({
+            text: button.textContent,
+            disabled: button.disabled,
+            rect: button.getBoundingClientRect().toJSON(),
+          })),
+          rect: element.getBoundingClientRect().toJSON(),
+          scrollTop: element.scrollTop,
         }));
         await page.screenshot({
           path: `navigation-screenshots/camera-picker-failure-${width}.png`,
