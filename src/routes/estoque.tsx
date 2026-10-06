@@ -12,6 +12,12 @@ import {
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
+import { ProductPhoto } from "@/components/ProductPhoto";
+import { ProductPhotoEditor } from "@/components/ProductPhotoEditor";
+import { ProductPrice } from "@/components/ProductPrice";
+import { PromotionManager } from "@/components/PromotionManager";
+import { usePricingTime } from "@/hooks/usePricingTime";
+import { saveProductPhoto, deleteProductPhoto } from "@/lib/productPhotos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -33,7 +39,7 @@ import {
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { beep, unlockAudio, vibrate } from "@/lib/feedback";
-import { formatBRL, useStore } from "@/store/useStore";
+import { useStore } from "@/store/useStore";
 
 export const Route = createFileRoute("/estoque")({
   head: () => ({
@@ -59,6 +65,11 @@ function EstoquePage() {
   const { products, upsertProduct, deleteProduct } = useStore();
   const [editorOpen, setEditorOpen] = useState(false);
   const [lowOnly, setLowOnly] = useState(false);
+  const [promotionsOpen, setPromotionsOpen] = useState(false);
+  const [photo, setPhoto] = useState<Blob | null | undefined>();
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoCapture, setPhotoCapture] = useState(false);
+  const now = usePricingTime();
   const [saving, setSaving] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [barcode, setBarcode] = useState("");
@@ -69,6 +80,7 @@ function EstoquePage() {
   const [stock, setStock] = useState("");
   const [search, setSearch] = useState("");
   const lastScanRef = useRef<string | null>(null);
+  const savingRef = useRef(false);
 
   const existing = barcode.trim() ? products[barcode.trim()] : undefined;
   const list = useMemo(() => {
@@ -87,6 +99,8 @@ function EstoquePage() {
       lastScanRef.current = code;
 
       setBarcode(code);
+      setPhoto(undefined);
+      setPhotoBusy(false);
       const p = products[code];
       if (p) {
         setName(p.name);
@@ -113,8 +127,8 @@ function EstoquePage() {
     [products],
   );
 
-  const save = () => {
-    if (saving) return;
+  const save = async () => {
+    if (savingRef.current || photoBusy) return;
     const code = barcode.trim();
     const priceNum = Number(String(price).replace(",", "."));
     const stockNum = Number(stock);
@@ -131,16 +145,23 @@ function EstoquePage() {
       return;
     }
 
+    savingRef.current = true;
     setSaving(true);
+    let newPhotoId: string | undefined;
     try {
+      if (photo) newPhotoId = await saveProductPhoto(photo);
       upsertProduct({
+        ...existing,
         barcode: code,
         name: name.trim(),
         price: priceNum,
         stock: stockNum,
-        ...(brand.trim() ? { brand: brand.trim() } : {}),
-        ...(packageSize.trim() ? { packageSize: packageSize.trim() } : {}),
+        brand: brand.trim() || undefined,
+        packageSize: packageSize.trim() || undefined,
+        photoId: photo === undefined ? existing?.photoId : newPhotoId,
       });
+      if (existing?.photoId && photo !== undefined)
+        void deleteProductPhoto(existing.photoId).catch(() => undefined);
       toast.success(existing ? "Produto atualizado" : "Produto cadastrado", {
         description: `${name.trim()} foi salvo neste aparelho.`,
       });
@@ -153,14 +174,17 @@ function EstoquePage() {
       setPackageSize("");
       setPrice("");
       setStock("");
+      setPhoto(undefined);
 
       lastScanRef.current = null;
     } catch {
+      if (newPhotoId) void deleteProductPhoto(newPhotoId).catch(() => undefined);
       toast.error("Não foi possível salvar o produto", {
         description: "Confira os dados salvos neste aparelho antes de tentar novamente.",
       });
     } finally {
       setSaving(false);
+      savingRef.current = false;
     }
   };
 
@@ -168,6 +192,7 @@ function EstoquePage() {
     if (!existing) return;
     {
       deleteProduct(existing.barcode);
+      if (existing.photoId) void deleteProductPhoto(existing.photoId).catch(() => undefined);
       toast.success("Produto excluído", { description: existing.name });
       setEditorOpen(false);
       setScannerOpen(false);
@@ -183,6 +208,9 @@ function EstoquePage() {
     setPackageSize(p.packageSize ?? "");
     setPrice(String(p.price));
     setStock(String(p.stock));
+    setPhoto(undefined);
+    setPhotoBusy(false);
+    setPhotoCapture(false);
     setEditorOpen(true);
   };
 
@@ -200,6 +228,9 @@ function EstoquePage() {
             setPackageSize("");
             setPrice("");
             setStock("");
+            setPhoto(undefined);
+            setPhotoBusy(false);
+            setPhotoCapture(false);
 
             lastScanRef.current = null;
             unlockAudio();
@@ -211,35 +242,54 @@ function EstoquePage() {
           Cadastrar
         </Button>
       </header>
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Nome ou código"
-          aria-label="Buscar no estoque"
-          className="pos-search pl-10 pr-11"
-        />
-        {search && (
-          <button
-            type="button"
-            className="pos-search-clear"
-            aria-label="Limpar busca"
-            onClick={() => setSearch("")}
-          >
-            <X size={18} />
-          </button>
-        )}
-      </div>
+      {!promotionsOpen && (
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Nome ou código"
+            aria-label="Buscar no estoque"
+            className="pos-search pl-10 pr-11"
+          />
+          {search && (
+            <button
+              type="button"
+              className="pos-search-clear"
+              aria-label="Limpar busca"
+              onClick={() => setSearch("")}
+            >
+              <X size={18} />
+            </button>
+          )}
+        </div>
+      )}
       <div className="pos-filters" aria-label="Filtrar estoque">
-        <button aria-pressed={!lowOnly} onClick={() => setLowOnly(false)}>
+        <button
+          aria-pressed={!lowOnly && !promotionsOpen}
+          onClick={() => {
+            setLowOnly(false);
+            setPromotionsOpen(false);
+          }}
+        >
           Todos
         </button>
-        <button aria-pressed={lowOnly} onClick={() => setLowOnly(true)}>
+        <button
+          aria-pressed={lowOnly && !promotionsOpen}
+          onClick={() => {
+            setLowOnly(true);
+            setPromotionsOpen(false);
+          }}
+        >
           Estoque baixo
         </button>
+        <button aria-pressed={promotionsOpen} onClick={() => setPromotionsOpen(true)}>
+          Promoção
+        </button>
       </div>
-      {list.length === 0 ? (
+      {promotionsOpen ? (
+        <PromotionManager />
+      ) : list.length === 0 ? (
         <div className="pos-empty py-12 text-center">
           <PackageOpen className="mx-auto mb-3 size-9" />
           <p>
@@ -262,10 +312,11 @@ function EstoquePage() {
           {list.map((p) => (
             <li key={p.barcode}>
               <button onClick={() => loadProduct(p.barcode)}>
-                <span>
+                <ProductPhoto photoId={p.photoId} name={p.name} />
+                <span className="min-w-0 flex-1">
                   <strong>{p.name}</strong>
                   <span className="pos-stock-detail">
-                    {formatBRL(p.price)} ·{" "}
+                    <ProductPrice product={p} now={now} /> ·{" "}
                     <span className={p.stock <= 5 ? "pos-low-stock" : ""}>{p.stock} un.</span>
                   </span>
                   {(p.brand || p.packageSize) && (
@@ -287,6 +338,10 @@ function EstoquePage() {
             setEditorOpen(open);
             if (!open) setScannerOpen(false);
             if (!open) {
+              setPhotoCapture(false);
+              setPhotoBusy(false);
+            }
+            if (!open) {
               lastScanRef.current = null;
             }
           }
@@ -299,9 +354,9 @@ function EstoquePage() {
               Escaneie ou digite o código de barras e preencha os dados do produto.
             </SheetDescription>
           </SheetHeader>
-          {scannerOpen ? (
+          {scannerOpen && !photoCapture ? (
             <BarcodeScanner onScan={handleScan} />
-          ) : (
+          ) : !photoCapture ? (
             <Button
               variant="outline"
               className="h-14 w-full gap-3 text-lg"
@@ -313,8 +368,19 @@ function EstoquePage() {
               <ScanBarcode className="size-6" />
               Ler produto com a câmera
             </Button>
+          ) : (
+            <p className="text-sm text-muted-foreground">Câmera pausada para tirar a foto.</p>
           )}
           <div className="space-y-4 rounded-2xl border bg-card p-4 shadow-sm">
+            <ProductPhotoEditor
+              key={barcode}
+              photoId={existing?.photoId}
+              name={name}
+              value={photo}
+              onChange={setPhoto}
+              onBusyChange={setPhotoBusy}
+              onCaptureChange={setPhotoCapture}
+            />
             <div className="space-y-2">
               <Label htmlFor="barcode">Código de barras</Label>
               <Input
@@ -323,6 +389,8 @@ function EstoquePage() {
                 onChange={(e) => {
                   const code = e.target.value;
                   setBarcode(code);
+                  setPhoto(undefined);
+                  setPhotoBusy(false);
                   lastScanRef.current = null;
 
                   const p = products[code.trim()];
@@ -410,7 +478,11 @@ function EstoquePage() {
                 />
               </div>
             </div>
-            <Button className="h-14 w-full gap-2 text-lg" disabled={saving} onClick={save}>
+            <Button
+              className="h-14 w-full gap-2 text-lg"
+              disabled={saving || photoBusy}
+              onClick={() => void save()}
+            >
               <Save className="size-5" />
               {saving ? "Salvando…" : existing ? "Atualizar produto" : "Cadastrar produto"}
             </Button>

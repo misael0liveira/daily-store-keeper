@@ -253,3 +253,156 @@ test("camera permission errors remain recognizable when the reader wraps them as
   }
   assert.match(scannerCameraErrorMessage(new Error("Device not found")), /Não foi possível abrir/);
 });
+
+function withLocalStore(run) {
+  const saved = new Map();
+  const previousWindow = globalThis.window;
+  const previousStorage = globalThis.localStorage;
+  const storage = {
+    getItem: (key) => saved.get(key) ?? null,
+    setItem: (key, value) => saved.set(key, value),
+    removeItem: (key) => saved.delete(key),
+  };
+  globalThis.localStorage = storage;
+  globalThis.window = { localStorage: storage };
+  try {
+    run(loadTs("../src/store/useStore.ts"), saved, storage);
+  } finally {
+    globalThis.window = previousWindow;
+    globalThis.localStorage = previousStorage;
+  }
+}
+
+test("dated promotions respect inclusive start, exclusive end, future scheduling and cents", () => {
+  const { getProductPricing, saleItemsTotal } = loadTs("../src/store/useStore.ts");
+  const product = {
+    barcode: "01",
+    name: "Arroz",
+    price: 19.9,
+    stock: 8,
+    promotion: { mode: "period", discountPercent: 15, startsAt: 1000, endsAt: 2000 },
+  };
+  assert.equal(getProductPricing(product, 999).price, 19.9);
+  assert.equal(getProductPricing(product, 1000).price, 16.92);
+  assert.equal(getProductPricing(product, 1999).active, true);
+  assert.equal(getProductPricing(product, 2000).price, 19.9);
+  assert.equal(
+    saleItemsTotal([
+      { price: 0.1, qty: 3 },
+      { price: 0.2, qty: 1 },
+    ]),
+    0.5,
+  );
+});
+
+test("discounted quote, payment and history agree even if a dated promotion expires during payment", () => {
+  withLocalStore(({ useStore, quoteCart, saleItemsTotal }, saved) => {
+    const oldNow = Date.now;
+    try {
+      Date.now = () => 1000;
+      const state = () => useStore.getState();
+      state().upsertProduct({
+        barcode: "01",
+        name: "Arroz",
+        price: 20,
+        stock: 10,
+        photoId: "existing-photo",
+      });
+      state().applyPromotions([
+        {
+          barcode: "01",
+          price: 20,
+          promotion: { mode: "period", discountPercent: 25, startsAt: 500, endsAt: 2000 },
+        },
+      ]);
+      state().addToCart("01");
+      state().changeQty("01", 1);
+      const quote = quoteCart(state().products, state().cart);
+      assert.equal(saleItemsTotal(quote), 30);
+      Date.now = () => 2500;
+      const sale = state().checkout({ method: "pix", pixTxid: "REFERENCE", quote });
+      assert.equal(sale.total, 30);
+      assert.equal(sale.items[0].originalPrice, 20);
+      assert.equal(sale.items[0].discountPercent, 25);
+      assert.equal(sale.items[0].price, 15);
+      assert.equal(state().products["01"].stock, 8);
+      assert.equal(state().products["01"].photoId, "existing-photo");
+      assert.equal(JSON.parse(saved.get("pdv-mercado")).state.sales[0].total, 30);
+      assert.equal(
+        loadTs("../src/store/useStore.ts").useStore.getState().products["01"].photoId,
+        "existing-photo",
+      );
+    } finally {
+      Date.now = oldNow;
+    }
+  });
+});
+
+test("stock-limited promotions finish on depletion and do not return after replenishment", () => {
+  withLocalStore(({ useStore, getProductPricing }) => {
+    const state = () => useStore.getState();
+    state().upsertProduct({ barcode: "01", name: "Arroz", price: 20, stock: 1 });
+    state().applyPromotions([
+      { barcode: "01", price: 20, promotion: { mode: "stock", discountPercent: 10 } },
+    ]);
+    assert.equal(getProductPricing(state().products["01"]).price, 18);
+    state().addToCart("01");
+    assert.equal(state().checkout({ method: "dinheiro" }).total, 18);
+    assert.equal(state().products["01"].stock, 0);
+    assert.equal(state().products["01"].promotion, undefined);
+    state().upsertProduct({ ...state().products["01"], stock: 5 });
+    assert.equal(getProductPricing(state().products["01"]).price, 20);
+  });
+});
+
+test("multiple promotions validate atomically, preserve photos, and rollback on storage failure", () => {
+  withLocalStore(({ useStore }, saved, storage) => {
+    const state = () => useStore.getState();
+    for (const barcode of ["01", "02"])
+      state().upsertProduct({
+        barcode,
+        name: barcode,
+        price: 20,
+        stock: 5,
+        photoId: `photo-${barcode}`,
+      });
+    const first = { barcode: "01", price: 20, promotion: { mode: "stock", discountPercent: 10 } };
+    const second = { barcode: "02", price: 20, promotion: { mode: "stock", discountPercent: 101 } };
+    assert.throws(() => state().applyPromotions([first, second]), /desconto/);
+    assert.equal(state().products["01"].promotion, undefined);
+    second.promotion.discountPercent = 20;
+    const durableBefore = saved.get("pdv-mercado");
+    const originalSet = storage.setItem;
+    storage.setItem = () => {
+      throw new Error("quota");
+    };
+    assert.throws(() => state().applyPromotions([first, second]), /quota/);
+    assert.equal(state().products["01"].promotion, undefined);
+    assert.equal(saved.get("pdv-mercado"), durableBefore);
+    storage.setItem = originalSet;
+    state().applyPromotions([first, second]);
+    assert.equal(state().products["02"].promotion.discountPercent, 20);
+    assert.equal(state().products["01"].photoId, "photo-01");
+    state().removePromotion("01");
+    assert.equal(state().products["01"].promotion, undefined);
+  });
+});
+
+const { whitenUniformBackground } = loadTs("../src/lib/productPhotos.ts");
+test("local white background treatment preserves the central product and enclosed details", () => {
+  const pixels = new Uint8ClampedArray(5 * 5 * 4);
+  for (let i = 0; i < 25; i++) pixels.set([210, 210, 210, 255], i * 4);
+  for (const i of [6, 7, 8, 11, 13, 16, 17, 18]) pixels.set([180, 20, 20, 255], i * 4);
+  assert.equal(whitenUniformBackground(pixels, 5, 5), true);
+  assert.deepEqual(Array.from(pixels.slice(0, 4)), [255, 255, 255, 255]);
+  assert.deepEqual(Array.from(pixels.slice(6 * 4, 7 * 4)), [180, 20, 20, 255]);
+  assert.deepEqual(Array.from(pixels.slice(12 * 4, 13 * 4)), [210, 210, 210, 255]);
+});
+test("varied backgrounds are preserved instead of erasing the product", () => {
+  const pixels = new Uint8ClampedArray([
+    255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 0, 255,
+  ]);
+  const original = pixels.slice();
+  assert.equal(whitenUniformBackground(pixels, 2, 2), false);
+  assert.deepEqual(pixels, original);
+});

@@ -1,7 +1,6 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { CameraOff, Flashlight, FlashlightOff } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
-import { flushSync } from "react-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,10 +20,8 @@ function ScannerInner({ onScan }: Props) {
   const [flashOn, setFlashOn] = useState(false);
   const [flashBusy, setFlashBusy] = useState(false);
   const [manualCode, setManualCode] = useState("");
-  const [manualOpen, setManualOpen] = useState(false);
   const manualActiveRef = useRef(false);
   const manualInputRef = useRef<HTMLInputElement>(null);
-  const manualTriggerRef = useRef<HTMLButtonElement>(null);
   const manualId = useId();
   const lastScanRef = useRef<{ code: string; at: number }>({ code: "", at: 0 });
   const onScanRef = useRef(onScan);
@@ -96,20 +93,6 @@ function ScannerInner({ onScan }: Props) {
     };
   }, []);
 
-  const openManual = () => {
-    manualActiveRef.current = true;
-    // Mount and focus within the tap so Android can show the numeric keyboard.
-    flushSync(() => setManualOpen(true));
-    manualInputRef.current?.focus();
-  };
-
-  const closeManual = () => {
-    manualInputRef.current?.blur();
-    manualActiveRef.current = false;
-    flushSync(() => setManualOpen(false));
-    manualTriggerRef.current?.focus({ preventScroll: true });
-  };
-
   const submitManual = () => {
     const code = manualCode.trim();
     if (!code) {
@@ -118,7 +101,8 @@ function ScannerInner({ onScan }: Props) {
     }
     lastScanRef.current = { code, at: Date.now() };
     setManualCode("");
-    closeManual();
+    manualInputRef.current?.blur();
+    manualActiveRef.current = false;
     onScanRef.current(code);
   };
 
@@ -181,20 +165,7 @@ function ScannerInner({ onScan }: Props) {
           </div>
         </div>
       )}
-      {!error && !manualOpen && (
-        <Button
-          ref={manualTriggerRef}
-          type="button"
-          variant="outline"
-          className="mt-3 h-12 w-full"
-          aria-expanded={manualOpen}
-          aria-controls={manualId}
-          onClick={openManual}
-        >
-          Digitar código
-        </Button>
-      )}
-      <div id={manualId} hidden={!error && !manualOpen} className="mt-3">
+      <div id={manualId} hidden={!error} className="mt-3">
         <form
           noValidate
           className="space-y-2"
@@ -229,11 +200,6 @@ function ScannerInner({ onScan }: Props) {
               Usar código
             </Button>
           </div>
-          {!error && (
-            <Button type="button" variant="ghost" className="h-11 w-full" onClick={closeManual}>
-              Cancelar digitação
-            </Button>
-          )}
         </form>
       </div>
     </div>

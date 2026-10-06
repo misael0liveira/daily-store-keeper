@@ -46,7 +46,23 @@ const { mkdirSync } = require("node:fs");
         await scanner.getByText(/Permissão da câmera negada/).waitFor();
       } else {
         await scanner.locator("video").waitFor();
-        await scanner.getByRole("button", { name: "Digitar código", exact: true }).click();
+      }
+      assert.equal(
+        await page.getByRole("button", { name: "Digitar código", exact: true }).count(),
+        0,
+      );
+      if (!denied) {
+        const search = page.getByRole("textbox", { name: "Digitar código ou nome do produto" });
+        await search.fill("00123");
+        await search.press("Enter");
+        const saved = await page.evaluate(
+          () => JSON.parse(localStorage.getItem("pdv-mercado")).state,
+        );
+        assert.deepEqual(saved.cart, [{ barcode: "00123", qty: 1 }]);
+        assert.equal(await scanner.locator("video").count(), 1);
+        await page.screenshot({ path: "navigation-screenshots/scanner-search-320.png" });
+        await context.close();
+        continue;
       }
       const input = scanner.getByRole("textbox", { name: "Código de barras", exact: true });
       await input.waitFor();
@@ -87,7 +103,7 @@ const { mkdirSync } = require("node:fs");
       await context.close();
     }
     console.log(
-      "Scanner verified: live camera/manual entry, numeric input, leading zeros, Enter, cancel/focus restore and denied permission fallback.",
+      "Scanner verified: no Digitar código button, live camera with search, leading zeros, and numeric denied-permission fallback.",
     );
   } finally {
     await browser.close();

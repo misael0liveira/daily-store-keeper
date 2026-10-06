@@ -4,11 +4,23 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { PaymentSheet } from "@/components/PaymentSheet";
+import { ProductPhoto } from "@/components/ProductPhoto";
+import { ProductPrice } from "@/components/ProductPrice";
+import { usePricingTime } from "@/hooks/usePricingTime";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { beep, unlockAudio, vibrate } from "@/lib/feedback";
 import { createPixTxid } from "@/lib/pix";
-import { PAYMENT_LABELS, formatBRL, useStore, type PaymentMethod } from "@/store/useStore";
+import {
+  PAYMENT_LABELS,
+  formatBRL,
+  getProductPricing,
+  quoteCart,
+  saleItemsTotal,
+  useStore,
+  type PaymentMethod,
+  type SaleItem,
+} from "@/store/useStore";
 
 export const Route = createFileRoute("/vender")({
   head: () => ({
@@ -36,6 +48,8 @@ function CaixaPage() {
   const [payOpen, setPayOpen] = useState(false);
   const [pixTxid, setPixTxid] = useState("");
   const [query, setQuery] = useState("");
+  const now = usePricingTime();
+  const [paymentQuote, setPaymentQuote] = useState<SaleItem[]>([]);
 
   const addProduct = (code: string) => {
     const product = products[code];
@@ -44,7 +58,7 @@ function CaixaPage() {
       beep(true);
       vibrate(60);
       toast.success(`${product.name} adicionado`, {
-        description: formatBRL(product.price),
+        description: formatBRL(getProductPricing(product).price),
       });
     } else {
       beep(false);
@@ -82,10 +96,8 @@ function CaixaPage() {
     }
   };
 
-  const total = cart.reduce((sum, item) => {
-    const p = products[item.barcode];
-    return sum + (p ? p.price * item.qty : 0);
-  }, 0);
+  const total = saleItemsTotal(quoteCart(products, cart, now));
+  const paymentTotal = saleItemsTotal(paymentQuote);
 
   const confirmPayment = (payload: {
     method: PaymentMethod;
@@ -94,9 +106,13 @@ function CaixaPage() {
   }) => {
     const sale = checkout({
       ...payload,
+      quote: paymentQuote,
       ...(payload.method === "pix" ? { pixTxid } : {}),
     });
-    if (!sale) return;
+    if (!sale) {
+      toast.error("O carrinho mudou. Feche o pagamento e tente novamente.");
+      return;
+    }
     setPayOpen(false);
     beep(true);
     vibrate(120);
@@ -166,13 +182,12 @@ function CaixaPage() {
                         setQuery("");
                       }}
                     >
-                      <div className="min-w-0">
+                      <ProductPhoto photoId={p.photoId} name={p.name} />
+                      <div className="min-w-0 flex-1">
                         <p className="truncate font-medium">{p.name}</p>
                         <p className="text-xs text-muted-foreground">Cód. {code}</p>
                       </div>
-                      <span className="shrink-0 text-sm font-semibold text-primary">
-                        {formatBRL(p.price)}
-                      </span>
+                      <ProductPrice product={p} now={now} />
                     </button>
                   </li>
                 ))}
@@ -200,16 +215,19 @@ function CaixaPage() {
               {cart.map((item) => {
                 const p = products[item.barcode];
                 if (!p) return null;
+                const pricing = getProductPricing(p, now);
                 return (
                   <li key={item.barcode} className="pos-cart-row">
-                    <div>
+                    <ProductPhoto photoId={p.photoId} name={p.name} />
+                    <div className="pos-cart-product">
                       <p>{p.name}</p>
-                      <span className="text-sm text-muted-foreground">
-                        {formatBRL(p.price)} / un.
-                      </span>
+                      <ProductPrice product={p} now={now} />
+                      <span className="text-xs text-muted-foreground"> / un.</span>
                     </div>
                     <div className="pos-cart-amount">
-                      <strong>{formatBRL(p.price * item.qty)}</strong>
+                      <strong className="product-current-price">
+                        {formatBRL(pricing.price * item.qty)}
+                      </strong>
                       <div className="pos-quantity">
                         <button
                           type="button"
@@ -245,6 +263,7 @@ function CaixaPage() {
           className="pos-primary w-full"
           disabled={cart.length === 0}
           onClick={() => {
+            setPaymentQuote(quoteCart(products, cart));
             setPixTxid(createPixTxid());
             setPayOpen(true);
           }}
@@ -256,7 +275,7 @@ function CaixaPage() {
       <PaymentSheet
         open={payOpen}
         onOpenChange={setPayOpen}
-        total={total}
+        total={paymentTotal}
         pixTxid={pixTxid}
         onConfirm={confirmPayment}
       />

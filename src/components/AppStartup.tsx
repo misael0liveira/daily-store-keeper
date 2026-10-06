@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { ClientOnly } from "@tanstack/react-router";
+import { ClientOnly, useRouter } from "@tanstack/react-router";
 import { isNativeApp } from "@/lib/platform";
 
 export function AppStartup({ children }: { children: ReactNode }) {
@@ -11,13 +11,15 @@ export function AppStartup({ children }: { children: ReactNode }) {
 }
 
 function StartupGate({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [ready, setReady] = useState(() => !isNativeApp());
 
   useEffect(() => {
     if (!isNativeApp()) return;
-    const timer = window.setTimeout(() => setReady(true), 4000);
+    void router.navigate({ to: "/vender", replace: true });
+    const timer = window.setTimeout(() => setReady(true), 2000);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [router]);
 
   if (ready) return <>{children}</>;
 
