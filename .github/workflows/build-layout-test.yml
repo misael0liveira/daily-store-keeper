@@ -6,6 +6,7 @@ on:
     branches: ["feat/**"]
     paths:
       - "src/**"
+      - "tests/**"
       - "public/**"
       - "android/**"
       - "package.json"
@@ -159,7 +160,7 @@ jobs:
             Descontos usados no pagamento e registrados no histórico; os preços ficam estáveis durante o pagamento aberto.
             Barra de navegação com a paleta do APK: superfície branca e bolha azul no tema claro; cores adaptadas ao tema escuro. Curva, brilho e animação CODEXURE preservados.
             Pix com identificador único por novo pagamento, mesmo quando duas vendas têm o mesmo valor; identificador salvo na venda.
-            Scanner solicita foco contínuo quando suportado e imagem 1280 × 720; entrada manual acessível com teclado numérico, inclusive com a câmera aberta.
+            Scanner solicita foco contínuo quando suportado e imagem 1280 × 720; busca por nome/código no Caixa e entrada numérica de reserva quando a câmera está indisponível.
             Cinco abas funcionais: Início, Histórico, Caixa, Estoque e Ajustes.
             Versão de teste sem OCR, com o mesmo logotipo, ícone e abertura do APK oficial.
             Leitura de código de barras executada no aparelho; cadastro dos demais dados manual.

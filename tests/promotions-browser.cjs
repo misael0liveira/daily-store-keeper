@@ -89,7 +89,7 @@ async function checkWidth(page) {
       });
       await editor.getByRole("img", { name: "Foto de Arroz 5kg" }).waitFor();
       await editor.getByRole("button", { name: "Atualizar produto", exact: true }).click();
-      await editor.waitFor({ state: "hidden" });
+      await page.locator(".pos-product-sheet").waitFor({ state: "detached" });
       let stored = await page.evaluate(() => JSON.parse(localStorage.getItem("pdv-mercado")).state);
       assert.ok(stored.products["00123"].photoId);
       const photoCheck = await page.evaluate(async (id) => {
@@ -123,6 +123,7 @@ async function checkWidth(page) {
       );
       // Exercise the capture input through the same chooser callback used by the Android bridge.
       await page.locator(".pos-stock-list button").filter({ hasText: "Arroz 5kg" }).click();
+      await editor.waitFor();
       let chooser;
       try {
         [chooser] = await Promise.all([
@@ -130,23 +131,26 @@ async function checkWidth(page) {
           editor.getByRole("button", { name: "Tirar foto", exact: true }).click({ timeout: 4500 }),
         ]);
       } catch (error) {
-        const diagnostic = await editor.evaluate((element) => ({
-          text: element.textContent,
-          inputs: Array.from(element.querySelectorAll('input[type="file"]')).map((input) => ({
-            capture: input.capture,
-            connected: input.isConnected,
-            disabled: input.disabled,
-          })),
-          active: document.activeElement?.outerHTML,
-          activation: navigator.userActivation.isActive,
-          buttons: Array.from(element.querySelectorAll("button")).map((button) => ({
-            text: button.textContent,
-            disabled: button.disabled,
-            rect: button.getBoundingClientRect().toJSON(),
-          })),
-          rect: element.getBoundingClientRect().toJSON(),
-          scrollTop: element.scrollTop,
-        }));
+        const diagnostic = await page.evaluate(() => {
+          const element = document.querySelector(".pos-product-sheet") || document.body;
+          return {
+            text: element.textContent,
+            inputs: Array.from(element.querySelectorAll('input[type="file"]')).map((input) => ({
+              capture: input.capture,
+              connected: input.isConnected,
+              disabled: input.disabled,
+            })),
+            active: document.activeElement?.outerHTML,
+            activation: navigator.userActivation.isActive,
+            buttons: Array.from(element.querySelectorAll("button")).map((button) => ({
+              text: button.textContent,
+              disabled: button.disabled,
+              rect: button.getBoundingClientRect().toJSON(),
+            })),
+            rect: element.getBoundingClientRect().toJSON(),
+            scrollTop: element.scrollTop,
+          };
+        });
         await page.screenshot({
           path: `navigation-screenshots/camera-picker-failure-${width}.png`,
         });
@@ -159,7 +163,7 @@ async function checkWidth(page) {
       });
       await editor.getByRole("img", { name: "Foto de Arroz 5kg" }).waitFor();
       await editor.getByRole("button", { name: "Atualizar produto", exact: true }).click();
-      await editor.waitFor({ state: "hidden" });
+      await page.locator(".pos-product-sheet").waitFor({ state: "detached" });
       await page.getByRole("button", { name: "Promoção", exact: true }).click();
       await selectProduct(page, "Arroz 5kg");
       await selectProduct(page, "Feijão");
