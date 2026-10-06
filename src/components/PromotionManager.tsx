@@ -137,10 +137,19 @@ export function PromotionManager() {
           ? caught.message
           : "Não foi possível salvar. Confira o armazenamento do aparelho.",
       );
-      window.setTimeout(
-        () => modalRef.current?.querySelector<HTMLInputElement>("input")?.focus(),
-        0,
-      );
+      const message = caught instanceof Error ? caught.message : "";
+      const index = selected.findIndex((code) => {
+        const product = products[code];
+        return product && message.includes(product.name);
+      });
+      if (index >= 0) {
+        const field = message.includes("desconto")
+          ? "discount"
+          : message.includes("preço")
+            ? "price"
+            : "end";
+        modalRef.current?.querySelector<HTMLInputElement>(`#promotion-${index}-${field}`)?.focus();
+      }
     } finally {
       setSaving(false);
       savingRef.current = false;
