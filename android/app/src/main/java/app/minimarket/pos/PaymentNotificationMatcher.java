@@ -52,7 +52,7 @@ final class PaymentNotificationMatcher {
         } else if (card) {
             if (!isCardProvider(packageName) || pix) return null;
             // A card purchase or money released to the account is not a new merchant sale.
-            if (n.matches(".*(?:\\bcompra\\b|voce pagou|voce gastou|transferencia|\\bted\\b|deposito|saldo|antecip|recebiveis|liberad|lote).*")) return null;
+            if (n.matches(".*(?:\\bcompra\\b|voce pagou|voce gastou|transferencia|\\bted\\b|deposito|saldo|antecip|recebiveis|liberad|lote|cashback|bonus|promoc|oferta|ganhe|simulac).*")) return null;
             if (!SALE.matcher(n).find() && !(RECEIVED.matcher(n).find() &&
                     (n.contains("cartao") || n.contains("debito") || n.contains("credito")))) return null;
             if ("debito".equals(method) && n.contains("credito") && !n.contains("debito")) return null;

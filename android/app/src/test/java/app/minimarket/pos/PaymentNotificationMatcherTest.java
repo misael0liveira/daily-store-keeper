@@ -21,7 +21,8 @@ public class PaymentNotificationMatcherTest {
                 "Venda aprovada no crédito R$ 4,24", "Venda aprovada R$ 4,25", "Saldo liberado R$ 4,24",
                 "Venda não aprovada R$ 4,24", "Venda cancelada R$ 4,24", "Venda aprovada com estorno R$ 4,24",
                 "Venda aprovada total R$ 4,24 líquido R$ 4,00", "Venda aprovada R$ 4,24 aguardando pagamento",
-                "Pagamento no cartão a receber R$ 4,24" }) {
+                "Pagamento no cartão a receber R$ 4,24", "Ganhe cashback de R$ 4,24 na primeira venda aprovada",
+                "Bônus por venda aprovada R$ 4,24" }) {
             assertNull(text, PaymentNotificationMatcher.match(PROVIDERS[0], text, "debito", 424));
         }
         assertNull(PaymentNotificationMatcher.match(PROVIDERS[0], "Venda aprovada no débito R$ 4,24", "credito", 424));
