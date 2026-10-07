@@ -23,7 +23,7 @@ const endOfDay = (d: Date) => {
 export function periodRange(
   period: PeriodKey,
   from?: string,
-  to?: string
+  to?: string,
 ): { start: number; end: number } {
   const now = new Date();
   const end = endOfDay(now).getTime();
@@ -34,9 +34,7 @@ export function periodRange(
     return { start, end: stop };
   }
   const days = period === "semanal" ? 7 : period === "quinzenal" ? 15 : 30;
-  const start = startOfDay(
-    new Date(now.getTime() - (days - 1) * 24 * 60 * 60 * 1000)
-  ).getTime();
+  const start = startOfDay(new Date(now.getTime() - (days - 1) * 24 * 60 * 60 * 1000)).getTime();
   return { start, end };
 }
 

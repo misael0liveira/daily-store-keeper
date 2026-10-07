@@ -26,12 +26,7 @@ export function PixQr({ payload, size = 220 }: { payload: string; size?: number 
       style={{ width: size + 24, height: size + 24 }}
     >
       {dataUrl ? (
-        <img
-          src={dataUrl}
-          alt="QR Code do pagamento Pix"
-          width={size}
-          height={size}
-        />
+        <img src={dataUrl} alt="QR Code do pagamento Pix" width={size} height={size} />
       ) : (
         <span className="text-xs text-slate-500">Gerando QR Code…</span>
       )}

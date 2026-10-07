@@ -5,9 +5,7 @@ const APP_SCOPE = new URL("./", self.registration.scope).href;
 self.addEventListener("install", (event) => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(PAGE_CACHE).then((cache) =>
-      cache.add(APP_SCOPE).catch(() => undefined),
-    ),
+    caches.open(PAGE_CACHE).then((cache) => cache.add(APP_SCOPE).catch(() => undefined)),
   );
 });
 
@@ -45,9 +43,7 @@ self.addEventListener("fetch", (event) => {
           return response;
         } catch {
           return (
-            (await caches.match(request)) ||
-            (await caches.match(APP_SCOPE)) ||
-            Response.error()
+            (await caches.match(request)) || (await caches.match(APP_SCOPE)) || Response.error()
           );
         }
       })(),

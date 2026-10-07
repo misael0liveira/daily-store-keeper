@@ -19,14 +19,8 @@ function isBlockedContext(): boolean {
   if (hostname.startsWith("id-preview--") || hostname.startsWith("preview--")) {
     return true;
   }
-  const blockedHosts = [
-    "lovableproject.com",
-    "lovableproject-dev.com",
-    "beta.lovable.dev",
-  ];
-  if (
-    blockedHosts.some((h) => hostname === h || hostname.endsWith(`.${h}`))
-  ) {
+  const blockedHosts = ["lovableproject.com", "lovableproject-dev.com", "beta.lovable.dev"];
+  if (blockedHosts.some((h) => hostname === h || hostname.endsWith(`.${h}`))) {
     return true;
   }
   return false;
@@ -39,28 +33,17 @@ async function unregisterAppWorkers() {
     await Promise.allSettled(
       regs
         .filter((r) => {
-          const url =
-            r.active?.scriptURL ??
-            r.waiting?.scriptURL ??
-            r.installing?.scriptURL ??
-            "";
+          const url = r.active?.scriptURL ?? r.waiting?.scriptURL ?? r.installing?.scriptURL ?? "";
           return url.endsWith("/sw.js");
         })
-        .map((r) => r.unregister())
+        .map((r) => r.unregister()),
     );
   } catch {
     // ignore
   }
 }
 
-const OFFLINE_PAGES = [
-  "/",
-  "/vender",
-  "/estoque",
-  "/mais",
-  "/vendas",
-  "/vendas/configuracoes",
-];
+const OFFLINE_PAGES = ["/", "/vender", "/estoque", "/mais", "/vendas", "/vendas/configuracoes"];
 
 async function warmPagesCache() {
   if (!("caches" in window)) return;
@@ -75,7 +58,7 @@ async function warmPagesCache() {
           credentials: "same-origin",
         });
         if (response.ok) await cache.put(url, response.clone());
-      })
+      }),
     );
   } catch {
     // offline or storage full — the app still works with what is cached

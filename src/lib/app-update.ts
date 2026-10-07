@@ -20,8 +20,14 @@ export type UpdateInfo = {
 };
 
 function compareVersions(a: string, b: string) {
-  const pa = a.replace(/^v/i, "").split(".").map((value) => Number.parseInt(value, 10));
-  const pb = b.replace(/^v/i, "").split(".").map((value) => Number.parseInt(value, 10));
+  const pa = a
+    .replace(/^v/i, "")
+    .split(".")
+    .map((value) => Number.parseInt(value, 10));
+  const pb = b
+    .replace(/^v/i, "")
+    .split(".")
+    .map((value) => Number.parseInt(value, 10));
 
   for (let i = 0; i < 3; i += 1) {
     const avRaw = pa[i] ?? Number.NaN;
@@ -34,11 +40,7 @@ function compareVersions(a: string, b: string) {
   return 0;
 }
 
-function extractVersion(release: {
-  tag_name?: string;
-  name?: string;
-  body?: string;
-}) {
+function extractVersion(release: { tag_name?: string; name?: string; body?: string }) {
   const candidates = [
     release.body?.match(/(?:^|\n)version\s*=\s*v?([0-9]+\.[0-9]+\.[0-9]+)/i)?.[1],
     release.name?.match(/v?([0-9]+\.[0-9]+\.[0-9]+)/i)?.[1],
@@ -97,8 +99,7 @@ export async function checkForAppUpdate(): Promise<UpdateInfo | null> {
     version,
     downloadUrl,
     releaseUrl:
-      release.html_url ||
-      "https://github.com/misael0liveira/daily-store-keeper/releases/latest",
+      release.html_url || "https://github.com/misael0liveira/daily-store-keeper/releases/latest",
     notes:
       release.body?.replace(/(?:^|\n)version\s*=\s*v?[0-9]+\.[0-9]+\.[0-9]+/i, "").trim() ||
       "Nova versão disponível.",

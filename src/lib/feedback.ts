@@ -6,8 +6,7 @@ function getCtx(): AudioContext | null {
     if (!audioCtx) {
       const Ctor =
         window.AudioContext ??
-        (window as unknown as { webkitAudioContext?: typeof AudioContext })
-          .webkitAudioContext;
+        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (!Ctor) return null;
       audioCtx = new Ctor();
     }
@@ -25,13 +24,7 @@ export function unlockAudio() {
   }
 }
 
-function tone(
-  ctx: AudioContext,
-  freq: number,
-  start: number,
-  duration: number,
-  volume: number
-) {
+function tone(ctx: AudioContext, freq: number, start: number, duration: number, volume: number) {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.type = "square";

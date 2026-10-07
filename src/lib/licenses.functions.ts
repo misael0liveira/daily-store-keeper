@@ -57,12 +57,14 @@ export const createLicenseCode = createServerFn({ method: "POST" })
   });
 
 export const updateLicenseCode = createServerFn({ method: "POST" })
-  .inputValidator((input: { password: string; id: string; active?: boolean; unbind?: boolean }) => ({
-    password: String(input?.password ?? ""),
-    id: String(input?.id ?? ""),
-    active: typeof input?.active === "boolean" ? input.active : undefined,
-    unbind: input?.unbind === true,
-  }))
+  .inputValidator(
+    (input: { password: string; id: string; active?: boolean; unbind?: boolean }) => ({
+      password: String(input?.password ?? ""),
+      id: String(input?.id ?? ""),
+      active: typeof input?.active === "boolean" ? input.active : undefined,
+      unbind: input?.unbind === true,
+    }),
+  )
   .handler(async ({ data }): Promise<LicenseRow> => {
     checkPassword(data.password);
     if (!data.id) throw new Error("Código inválido.");

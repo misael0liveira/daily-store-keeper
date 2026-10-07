@@ -29,19 +29,10 @@ export type PixParams = {
 };
 
 /** Static Pix BR Code (EMV) payload. */
-export function buildPixPayload({
-  key,
-  merchantName,
-  city,
-  amount,
-  txid = "***",
-}: PixParams) {
+export function buildPixPayload({ key, merchantName, city, amount, txid = "***" }: PixParams) {
   const merchantAccount = field("00", "br.gov.bcb.pix") + field("01", key.trim());
   let payload =
-    field("00", "01") +
-    field("26", merchantAccount) +
-    field("52", "0000") +
-    field("53", "986");
+    field("00", "01") + field("26", merchantAccount) + field("52", "0000") + field("53", "986");
   if (amount && amount > 0) payload += field("54", amount.toFixed(2));
   payload +=
     field("58", "BR") +
