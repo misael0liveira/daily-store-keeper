@@ -43,7 +43,7 @@ jobs:
       - name: Verify checkout and camera regressions
         run: |
           bunx tsc --noEmit
-          node --test tests/pdv-regressions.test.mjs
+          node --test tests/*.test.mjs
 
       - name: Isolate preview app
         run: |
@@ -82,6 +82,7 @@ jobs:
           python3 -m http.server 4173 --directory dist/client > /tmp/mercadinho-preview.log 2>&1 &
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright node tests/navigation-browser.cjs
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright node tests/pix-browser.cjs
+          PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright node tests/payments-browser.cjs
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright node tests/scanner-browser.cjs
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright node tests/promotions-browser.cjs
 
@@ -115,7 +116,7 @@ jobs:
       - name: Build installable test APK with release packaging
         working-directory: android
         run: |
-          ./gradlew assembleRelease \
+          ./gradlew testDebugUnitTest assembleRelease \
             -PtestApk=true \
             -PappVersionCode=${GITHUB_RUN_NUMBER} \
             -PappVersionName=layout-test.${GITHUB_RUN_NUMBER} \
@@ -159,6 +160,8 @@ jobs:
             Promoção no Estoque: busca por nome/código, scanner, seleção de produtos e descontos por período ou até o estoque acabar.
             Descontos usados no pagamento e registrados no histórico; os preços ficam estáveis durante o pagamento aberto.
             Barra de navegação com a paleta do APK: superfície branca e bolha azul no tema claro; cores adaptadas ao tema escuro. Curva, brilho e animação CODEXURE preservados.
+            Layouts Pix, dinheiro com teclado fixo/PAGO e cartão conforme referências; confirmação verde por 2 segundos em todos os meios.
+            Cartão: regras conservadoras para notificações de Mercado Pago, PagBank, Ton e SumUp; formatos reais ainda precisam de validação no aparelho.
             Pix com identificador único por novo pagamento, mesmo quando duas vendas têm o mesmo valor; identificador salvo na venda.
             Scanner solicita foco contínuo quando suportado e imagem 1280 × 720; busca por nome/código no Caixa e entrada numérica de reserva quando a câmera está indisponível.
             Cinco abas funcionais: Início, Histórico, Caixa, Estoque e Ajustes.

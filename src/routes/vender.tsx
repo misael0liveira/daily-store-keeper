@@ -12,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import { beep, unlockAudio, vibrate } from "@/lib/feedback";
 import { createPixTxid } from "@/lib/pix";
 import {
-  PAYMENT_LABELS,
   formatBRL,
   getProductPricing,
   quoteCart,
@@ -111,17 +110,11 @@ function CaixaPage() {
     });
     if (!sale) {
       toast.error("O carrinho mudou. Feche o pagamento e tente novamente.");
-      return;
+      return false;
     }
-    setPayOpen(false);
     beep(true);
     vibrate(120);
-    toast.success("Venda registrada!", {
-      description:
-        sale.change && sale.change > 0
-          ? `${PAYMENT_LABELS[sale.method]} · Troco ${formatBRL(sale.change)}`
-          : `${PAYMENT_LABELS[sale.method]} · ${formatBRL(sale.total)}`,
-    });
+    return true;
   };
 
   return (

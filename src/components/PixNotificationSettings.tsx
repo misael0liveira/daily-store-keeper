@@ -44,10 +44,10 @@ export function PixNotificationSettings() {
           <BellRing className="size-5 text-primary" />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="font-bold">Pix por notificação</h2>
+          <h2 className="font-bold">Pagamentos por notificação</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Detecta automaticamente notificações de Pix recebido de qualquer banco que mostre o
-            valor na notificação.
+            Reconhece Pix recebido e avisos de venda no cartão do Mercado Pago, PagBank, Ton e
+            SumUp, quando o texto mostra o recebimento e o valor da venda.
           </p>
         </div>
       </div>
@@ -77,10 +77,12 @@ export function PixNotificationSettings() {
       </Button>
 
       <p className="text-xs leading-relaxed text-muted-foreground">
-        O PDV só considera uma notificação quando ela contém indicação de Pix recebido e o valor é
-        igual ao valor esperado da venda. O Android pode ocultar conteúdos considerados sensíveis em
-        algumas notificações, então esta é uma confirmação por notificação, não uma confirmação
-        bancária via API.
+        O PDV verifica o valor, o horário e o tipo de pagamento. No cartão, considera apenas os
+        quatro aplicativos listados e avisos de venda aprovada ou recebimento. Compras, estornos,
+        valores diferentes e textos não reconhecidos permanecem pendentes. O Android pode ocultar
+        conteúdos considerados sensíveis em algumas notificações, então esta é uma confirmação por
+        notificação, não uma confirmação bancária via API. Os formatos de cada aplicativo precisam
+        ser validados no aparelho.
       </p>
     </section>
   );

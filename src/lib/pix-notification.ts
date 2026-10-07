@@ -7,14 +7,20 @@ export type PixNotificationPayment = {
   bank?: string;
   packageName?: string;
   notificationText?: string;
+  monitorId?: string;
+  method?: "pix" | "debito" | "credito";
 };
 
 export interface PixNotificationPlugin {
   isNotificationAccessGranted(): Promise<{ granted: boolean }>;
   openNotificationSettings(): Promise<void>;
-  setExpectedAmount(options: { amount: number }): Promise<void>;
-  clearExpectedAmount(): Promise<void>;
-  getLastPayment(): Promise<PixNotificationPayment>;
+  setExpectedAmount(options: {
+    amount: number;
+    method: "pix" | "debito" | "credito";
+    monitorId: string;
+  }): Promise<{ startedAt: number }>;
+  clearExpectedAmount(options: { monitorId: string }): Promise<void>;
+  getLastPayment(options: { monitorId: string }): Promise<PixNotificationPayment>;
   getStatus(): Promise<{ enabled: boolean; platform: string }>;
 }
 

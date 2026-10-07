@@ -22,7 +22,6 @@ public class PixNotificationPlugin extends Plugin {
     private static final String KEY_LAST_TIMESTAMP = "last_timestamp";
     private static final String KEY_LAST_BANK = "last_bank";
     private static final String KEY_LAST_PACKAGE = "last_package";
-    private static final String KEY_LAST_TEXT = "last_text";
 
     private SharedPreferences prefs() {
         return getContext().getSharedPreferences(PREFS, 0);
@@ -60,61 +59,58 @@ public class PixNotificationPlugin extends Plugin {
     @PluginMethod
     public void setExpectedAmount(PluginCall call) {
         Double amount = call.getDouble("amount");
-        if (amount == null || amount <= 0) {
-            call.reject("Valor Pix inválido.");
+        String method = call.getString("method", "pix");
+        String monitorId = call.getString("monitorId", "");
+        if (amount == null || !Double.isFinite(amount) || amount <= 0 || monitorId.isEmpty()
+                || !("pix".equals(method) || "debito".equals(method) || "credito".equals(method))) {
+            call.reject("Dados do pagamento inválidos.");
             return;
         }
-        prefs().edit()
-                .putString(KEY_EXPECTED_AMOUNT, String.format(java.util.Locale.US, "%.2f", amount))
-                .putLong(KEY_EXPECTED_SINCE, System.currentTimeMillis())
-                .remove(KEY_LAST_AMOUNT)
-                .remove(KEY_LAST_TIMESTAMP)
-                .remove(KEY_LAST_BANK)
-                .remove(KEY_LAST_PACKAGE)
-                .remove(KEY_LAST_TEXT)
-                .apply();
-        call.resolve();
+        long startedAt = System.currentTimeMillis();
+        synchronized (PaymentNotificationState.LOCK) {
+            SharedPreferences.Editor editor = prefs().edit()
+                    .putString(KEY_EXPECTED_AMOUNT, String.format(java.util.Locale.US, "%.2f", amount))
+                    .putLong(KEY_EXPECTED_SINCE, startedAt)
+                    .putString("expected_method", method).putString("expected_monitor", monitorId);
+            PaymentNotificationState.removeLast(editor);
+            editor.apply();
+        }
+        JSObject result = new JSObject();
+        result.put("startedAt", startedAt);
+        call.resolve(result);
     }
 
     @PluginMethod
     public void clearExpectedAmount(PluginCall call) {
-        prefs().edit()
-                .remove(KEY_EXPECTED_AMOUNT)
-                .remove(KEY_EXPECTED_SINCE)
-                .remove(KEY_LAST_AMOUNT)
-                .remove(KEY_LAST_TIMESTAMP)
-                .remove(KEY_LAST_BANK)
-                .remove(KEY_LAST_PACKAGE)
-                .remove(KEY_LAST_TEXT)
-                .apply();
+        synchronized (PaymentNotificationState.LOCK) {
+            if (call.getString("monitorId", "").equals(prefs().getString("expected_monitor", ""))) {
+                PaymentNotificationState.clear(prefs());
+            }
+        }
         call.resolve();
     }
 
     @PluginMethod
     public void getLastPayment(PluginCall call) {
-        SharedPreferences p = prefs();
-        if (!p.contains(KEY_LAST_AMOUNT)) {
-            JSObject result = new JSObject();
-            result.put("found", false);
-            call.resolve(result);
-            return;
-        }
-
         JSObject result = new JSObject();
-        result.put("found", true);
-        result.put("amount", Double.parseDouble(p.getString(KEY_LAST_AMOUNT, "0")));
-        result.put("timestamp", p.getLong(KEY_LAST_TIMESTAMP, 0));
-        result.put("bank", p.getString(KEY_LAST_BANK, "Banco não identificado"));
-        result.put("packageName", p.getString(KEY_LAST_PACKAGE, ""));
-        result.put("notificationText", p.getString(KEY_LAST_TEXT, ""));
-
-        p.edit()
-                .remove(KEY_LAST_AMOUNT)
-                .remove(KEY_LAST_TIMESTAMP)
-                .remove(KEY_LAST_BANK)
-                .remove(KEY_LAST_PACKAGE)
-                .remove(KEY_LAST_TEXT)
-                .apply();
+        result.put("found", false);
+        synchronized (PaymentNotificationState.LOCK) {
+            SharedPreferences p = prefs();
+            String monitorId = call.getString("monitorId", "");
+            if (!monitorId.isEmpty() && monitorId.equals(p.getString("expected_monitor", ""))
+                    && monitorId.equals(p.getString("last_monitor", "")) && p.contains(KEY_LAST_AMOUNT)) {
+                result.put("found", true);
+                result.put("amount", Double.parseDouble(p.getString(KEY_LAST_AMOUNT, "0")));
+                result.put("timestamp", p.getLong(KEY_LAST_TIMESTAMP, 0));
+                result.put("bank", p.getString(KEY_LAST_BANK, "Banco não identificado"));
+                result.put("packageName", p.getString(KEY_LAST_PACKAGE, ""));
+                result.put("monitorId", monitorId);
+                result.put("method", p.getString("last_method", "pix"));
+                SharedPreferences.Editor editor = p.edit();
+                PaymentNotificationState.removeLast(editor);
+                editor.apply();
+            }
+        }
         call.resolve(result);
     }
 

@@ -39,3 +39,9 @@ Identidade aprovada em 02/10/2026: 98201.jpg inteira na abertura com “Abrindo�
 ## Fotos e promoções do APK teste — 06/10/2026
 
 ProductPhoto e ProductPrice são os proprietários compartilhados das imagens e preços no Estoque, Caixa e promoções. Fotos em quadros brancos com cantos arredondados; não mudar a cor da fotografia no tema escuro. Preço vigente em verde semântico (`--product-price-green` em src/styles.css); numa promoção ativa, valor original vermelho e riscado, desconto em verde ao lado. Isso não muda a cor azul das ações. Promoção fica ao lado de Todos e Estoque baixo. O modal segue Dialog/Radix, com cartões arredondados para múltiplos produtos, foto à esquerda, valor e desconto lado a lado e duração por datas ou estoque abaixo. Em telas estreitas, as datas se empilham para preservar a leitura.
+
+## Pagamentos — referências Canva fornecidas em 07/10/2026
+
+As três referências SVG do proprietário definem a tela Pix branca com QR real, a tela de dinheiro em cinza/preto com teclado fixo e botão verde PAGO, e a tela de cartão com gradiente azul e ilustração da maquininha. A ilustração foi extraída com sua máscara de transparência do SVG de cartão; o logo completo aprovado continua sendo reutilizado. Os controles de troca de meio e confirmação manual preservam ações do fluxo anterior.
+
+`PaymentSheet` é a variante de pagamento do Sheet modal canônico; foco, Escape, fundo inerte e retorno de foco continuam sob Radix. O teclado ocupa uma área fixa na base; em aparelhos baixos o resumo rola sem esconder o teclado. Valores, QR e troco vêm da venda atual. `PaymentSuccess` reutiliza a animação verde existente para todos os meios durante 2 segundos, com movimento reduzido respeitado.

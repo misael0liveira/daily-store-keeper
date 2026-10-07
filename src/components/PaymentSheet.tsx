@@ -1,14 +1,14 @@
 import { Link } from "@tanstack/react-router";
-import { Banknote, Check, Copy, CreditCard, QrCode } from "lucide-react";
+import { Banknote, Copy, CreditCard, Delete, QrCode, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { PaymentSuccess } from "@/components/PaymentSuccess";
 import { PixQr } from "@/components/PixQr";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { buildPixPayload } from "@/lib/pix";
 import { PixNotification } from "@/lib/pix-notification";
+import { editCashAmount, cashAmount } from "@/lib/cash-keypad";
 import { PAYMENT_LABELS, formatBRL, useStore, type PaymentMethod } from "@/store/useStore";
 
 const methods: { key: PaymentMethod; icon: typeof Banknote }[] = [
@@ -17,105 +17,8 @@ const methods: { key: PaymentMethod; icon: typeof Banknote }[] = [
   { key: "debito", icon: CreditCard },
   { key: "credito", icon: CreditCard },
 ];
-
-function PixPaymentSuccess({
-  amount,
-  bank,
-  onDone,
-}: {
-  amount: number;
-  bank: string | undefined;
-  onDone: () => void;
-}) {
-  useEffect(() => {
-    const timeout = window.setTimeout(onDone, 2800);
-    return () => window.clearTimeout(timeout);
-  }, [onDone]);
-
-  return (
-    <div
-      className="fixed inset-0 z-[200] flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-[#087B3E] px-6 text-white"
-      role="status"
-      aria-live="assertive"
-      aria-label="Pagamento recebido"
-    >
-      <style>{`
-        @keyframes pixRingIn { 0% { transform: scale(.72); opacity: 0; } 35% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.08); opacity: 0; } }
-        @keyframes pixRingPulse { 0%, 100% { transform: scale(.96); opacity: .2; } 50% { transform: scale(1.04); opacity: .55; } }
-        @keyframes pixCircle { 0% { stroke-dashoffset: 330; } 58% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; } }
-        @keyframes pixCheck { 0% { stroke-dashoffset: 80; opacity: 0; } 55% { stroke-dashoffset: 80; opacity: 0; } 78% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 1; } }
-        @keyframes pixDot { 0% { transform: translateY(12px) scale(.4); opacity: 0; } 35% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-26px) scale(.8); opacity: 0; } }
-        @keyframes pixText { 0%, 45% { opacity: 0; transform: translateY(8px); } 72%, 100% { opacity: 1; transform: translateY(0); } }
-        @keyframes pixGlow { 0%, 35% { opacity: 0; transform: scale(.7); } 70%, 100% { opacity: 1; transform: scale(1); } }
-        .pix-success-ring { animation: pixRingIn 1.15s cubic-bezier(.2,.8,.2,1) both; }
-        .pix-success-pulse { animation: pixRingPulse 1.35s ease-in-out .1s infinite; }
-        .pix-success-circle { stroke-dasharray: 330; stroke-dashoffset: 330; animation: pixCircle 1.25s cubic-bezier(.65,0,.35,1) .05s both; }
-        .pix-success-check { stroke-dasharray: 80; stroke-dashoffset: 80; animation: pixCheck 1.25s cubic-bezier(.65,0,.35,1) .05s both; }
-        .pix-success-dot { animation: pixDot 1.25s ease-out .15s both; }
-        .pix-success-text { animation: pixText 1.35s ease-out .1s both; }
-        .pix-success-glow { animation: pixGlow 1.2s ease-out both; }
-        @media (prefers-reduced-motion: reduce) {
-          .pix-success-ring, .pix-success-pulse, .pix-success-circle, .pix-success-check, .pix-success-dot, .pix-success-text, .pix-success-glow {
-            animation: none !important; opacity: 1 !important; transform: none !important; stroke-dashoffset: 0 !important;
-          }
-        }
-      `}</style>
-      <div className="relative flex size-[260px] items-center justify-center sm:size-[300px]">
-        <div className="pix-success-glow absolute size-[230px] rounded-full bg-emerald-300/20 blur-3xl sm:size-[270px]" />
-        <div className="pix-success-pulse absolute size-[205px] rounded-full border border-emerald-200/30 sm:size-[245px]" />
-        <div className="pix-success-ring absolute size-[190px] rounded-full border border-emerald-200/20 sm:size-[220px]" />
-        <svg
-          viewBox="0 0 140 140"
-          className="relative size-[190px] drop-shadow-[0_0_28px_rgba(134,239,172,.35)] sm:size-[220px]"
-          aria-hidden="true"
-        >
-          <circle
-            cx="70"
-            cy="70"
-            r="52"
-            fill="rgba(255,255,255,.08)"
-            stroke="rgba(255,255,255,.24)"
-            strokeWidth="2"
-          />
-          <circle
-            cx="70"
-            cy="70"
-            r="52"
-            fill="none"
-            stroke="#86EFAC"
-            strokeWidth="8"
-            strokeLinecap="round"
-            className="pix-success-circle"
-            transform="rotate(-90 70 70)"
-          />
-          <path
-            d="M43 71.5 61 89 99 51"
-            fill="none"
-            stroke="#fff"
-            strokeWidth="10"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="pix-success-check"
-          />
-        </svg>
-        <span className="pix-success-dot absolute left-1/2 top-1/2 size-3 -translate-x-1/2 rounded-full bg-emerald-200 shadow-[0_0_18px_rgba(167,243,208,.9)]" />
-      </div>
-      <div className="pix-success-text -mt-3 text-center">
-        <p className="text-[30px] font-semibold tracking-tight sm:text-[34px]">
-          Pagamento recebido!
-        </p>
-        <p className="mt-3 text-[28px] font-medium tracking-tight text-emerald-100">
-          {formatBRL(amount)}
-        </p>
-        {bank && <p className="mt-2 text-sm font-medium text-emerald-100/80">{bank}</p>}
-        <div className="mt-7 flex items-center justify-center gap-2 text-sm text-emerald-100/80">
-          <Check className="size-4" />
-          Venda confirmada
-        </div>
-      </div>
-    </div>
-  );
-}
+const keys = ["1", "2", "3", "backspace", "4", "5", "6", "clear", "7", "8", "9", "0"];
+type Confirmation = { method: PaymentMethod; paidAmount?: number; change?: number };
 
 export function PaymentSheet({
   open,
@@ -128,25 +31,20 @@ export function PaymentSheet({
   onOpenChange: (open: boolean) => void;
   total: number;
   pixTxid: string;
-  onConfirm: (payload: { method: PaymentMethod; paidAmount?: number; change?: number }) => void;
+  onConfirm: (payload: Confirmation) => boolean;
 }) {
   const settings = useStore((s) => s.settings);
   const [method, setMethod] = useState<PaymentMethod>("dinheiro");
   const [paidRaw, setPaidRaw] = useState("");
-  const [pixSuccess, setPixSuccess] = useState<{ amount: number; bank: string | undefined } | null>(
-    null,
-  );
+  const [success, setSuccess] = useState<{ amount: number; bank: string | undefined } | null>(null);
+  const [notificationAccess, setNotificationAccess] = useState<boolean | null>(null);
+  const [manualOpen, setManualOpen] = useState(false);
+  const locked = useRef(false);
   const onConfirmRef = useRef(onConfirm);
-
-  useEffect(() => {
-    onConfirmRef.current = onConfirm;
-  }, [onConfirm]);
-
-  const paidValue = Number(paidRaw.replace(",", "."));
-  const paid = paidRaw.trim() === "" || Number.isNaN(paidValue) ? null : paidValue;
-  const change = paid !== null ? paid - total : null;
-  const insufficient = method === "dinheiro" && change !== null && change < 0;
-
+  onConfirmRef.current = onConfirm;
+  const paid = cashAmount(paidRaw, total);
+  const change = Math.round((paid - total) * 100) / 100;
+  const insufficient = change < 0;
   const pixReady = settings.pixKey.trim().length > 0;
   const pixPayload =
     pixReady && pixTxid
@@ -159,83 +57,93 @@ export function PaymentSheet({
         })
       : "";
 
-  useEffect(() => {
-    if (!open || method !== "pix" || total <= 0 || pixSuccess) {
-      void PixNotification.clearExpectedAmount().catch(() => undefined);
+  // Save before displaying success; the receipt cannot disappear if Android interrupts the animation.
+  const acceptRef = useRef<(payload: Confirmation, bank?: string) => void>(() => {});
+  acceptRef.current = (payload, bank) => {
+    if (locked.current || !open) return;
+    locked.current = true;
+    if (!onConfirmRef.current(payload)) {
+      locked.current = false;
       return;
     }
+    setSuccess({ amount: total, bank });
+  };
 
-    let timer: number | undefined;
+  useEffect(() => {
+    if (!open) {
+      locked.current = false;
+      setPaidRaw("");
+      setMethod("dinheiro");
+      setManualOpen(false);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    setManualOpen(false);
+    setNotificationAccess(null);
+    if (!open || method === "dinheiro" || total <= 0 || success) return;
+    const monitorId = `${pixTxid}:${method}:${crypto.randomUUID()}`;
     let active = true;
-
+    let polling = false;
+    let timer: number | undefined;
     const startMonitor = async () => {
       try {
-        await PixNotification.setExpectedAmount({ amount: total });
+        const { startedAt } = await PixNotification.setExpectedAmount({
+          amount: total,
+          method,
+          monitorId,
+        });
+        if (!active) {
+          await PixNotification.clearExpectedAmount({ monitorId });
+          return;
+        }
         const status = await PixNotification.isNotificationAccessGranted();
-        if (!status.granted || !active) return;
-
+        if (!active) return;
+        setNotificationAccess(status.granted);
         timer = window.setInterval(async () => {
-          if (!active) return;
+          if (!active || polling || locked.current) return;
+          polling = true;
           try {
-            const payment = await PixNotification.getLastPayment();
-            if (!payment.found || payment.amount == null) return;
-
-            if (Math.abs(payment.amount - total) <= 0.009) {
-              active = false;
-              if (timer !== undefined) window.clearInterval(timer);
-              await PixNotification.clearExpectedAmount().catch(() => undefined);
-              setPixSuccess({
-                amount: payment.amount,
-                bank: payment.bank,
-              });
-            }
+            const payment = await PixNotification.getLastPayment({ monitorId });
+            if (
+              !active ||
+              !payment.found ||
+              payment.amount == null ||
+              payment.monitorId !== monitorId ||
+              payment.method !== method ||
+              !payment.timestamp ||
+              payment.timestamp < startedAt ||
+              Math.abs(payment.amount - total) > 0.009
+            )
+              return;
+            acceptRef.current({ method }, payment.bank);
           } catch {
-            // Native bridge is unavailable in the browser preview.
+            /* The native service may temporarily be unavailable. */
+          } finally {
+            polling = false;
           }
-        }, 900);
+        }, 400);
       } catch {
-        // Native bridge is unavailable in the browser preview.
+        if (active) setNotificationAccess(false);
       }
     };
-
     void startMonitor();
-
     return () => {
       active = false;
       if (timer !== undefined) window.clearInterval(timer);
-      void PixNotification.clearExpectedAmount().catch(() => undefined);
+      void PixNotification.clearExpectedAmount({ monitorId }).catch(() => undefined);
     };
-  }, [open, method, total, pixSuccess]);
+  }, [open, method, total, pixTxid, success]);
 
-  const finishPix = () => {
-    const success = pixSuccess;
-    setPixSuccess(null);
-    onConfirmRef.current({ method: "pix" });
-    if (success) {
-      toast.success("Venda concluída", {
-        description: formatBRL(success.amount) + " · Pix recebido",
-      });
-    }
-  };
   const confirm = () => {
-    if (insufficient) {
-      toast.error("Valor pago insuficiente", {
-        description: `Faltam ${formatBRL(-(change ?? 0))}`,
-      });
-      return;
-    }
-    if (method === "pix" && !pixReady) {
-      toast.error("Cadastre a chave Pix nas configurações de vendas");
-      return;
-    }
-    onConfirm({
-      method,
-      ...(method === "dinheiro" && paid !== null ? { paidAmount: paid, change: change ?? 0 } : {}),
-    });
-    setPaidRaw("");
-    setMethod("dinheiro");
+    if (method === "dinheiro" && insufficient) return;
+    if (method === "pix" && !pixReady) return;
+    acceptRef.current({ method, ...(method === "dinheiro" ? { paidAmount: paid, change } : {}) });
   };
-
+  const edit = (key: string) => setPaidRaw((raw) => editCashAmount(raw, key));
+  const close = () => {
+    if (!locked.current) onOpenChange(false);
+  };
   const copyPix = async () => {
     try {
       await navigator.clipboard.writeText(pixPayload);
@@ -246,122 +154,231 @@ export function PaymentSheet({
   };
 
   return (
-    <>
-      <Sheet open={open && !pixSuccess} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className="max-h-[92dvh] overflow-y-auto rounded-t-3xl">
-          <SheetHeader className="text-left">
-            <SheetTitle className="font-display text-3xl tracking-wide">Pagamento</SheetTitle>
-          </SheetHeader>
-
-          <div className="space-y-4 px-4 pb-6">
-            <div className="flex items-baseline justify-between rounded-2xl border bg-card p-4">
-              <span className="text-sm font-medium text-muted-foreground">Total a pagar</span>
-              <span className="font-display text-3xl tracking-wide text-primary">
-                {formatBRL(total)}
-              </span>
+    <Sheet
+      open={open}
+      onOpenChange={(next) => {
+        if (!locked.current) onOpenChange(next);
+      }}
+    >
+      <SheetContent
+        side="bottom"
+        className={`payment-sheet payment-${method}`}
+        showCloseButton={false}
+        onEscapeKeyDown={(e) => {
+          if (locked.current) e.preventDefault();
+        }}
+        onPointerDownOutside={(e) => {
+          if (locked.current) e.preventDefault();
+        }}
+      >
+        <SheetTitle className="sr-only">Pagamento</SheetTitle>
+        <SheetDescription className="sr-only">
+          Escolha a forma de pagamento e confirme a venda de {formatBRL(total)}.
+        </SheetDescription>
+        {success ? (
+          <PaymentSuccess
+            amount={success.amount}
+            bank={success.bank}
+            onDone={() => {
+              setSuccess(null);
+              locked.current = false;
+              onOpenChange(false);
+            }}
+          />
+        ) : (
+          <>
+            <div className="payment-brand">
+              <img src="/brand/mercadinho-uniao-logo.png" alt="Mercadinho União" />
             </div>
-
-            <div className="grid grid-cols-2 gap-3">
+            <div className="payment-methods" aria-label="Forma de pagamento">
               {methods.map(({ key, icon: Icon }) => (
                 <button
                   key={key}
                   type="button"
+                  aria-pressed={method === key}
                   onClick={() => setMethod(key)}
-                  className={`flex h-20 flex-col items-center justify-center gap-1 rounded-2xl border text-sm font-medium transition-colors ${
-                    method === key
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "bg-card text-foreground hover:bg-accent"
-                  }`}
                 >
-                  <Icon className="size-6" />
-                  {PAYMENT_LABELS[key]}
+                  <Icon size={18} aria-hidden="true" />
+                  {key === "debito"
+                    ? "Débito"
+                    : key === "credito"
+                      ? "Crédito"
+                      : PAYMENT_LABELS[key]}
                 </button>
               ))}
             </div>
-
-            {method === "dinheiro" && (
-              <div className="space-y-3 rounded-2xl border bg-card p-4">
-                <div className="space-y-2">
-                  <Label htmlFor="paid">Valor pago pelo cliente</Label>
-                  <Input
-                    id="paid"
-                    inputMode="decimal"
-                    placeholder="R$ 0,00"
-                    value={paidRaw}
-                    onChange={(e) => setPaidRaw(e.target.value.replace(/[^\d.,]/g, ""))}
-                    className="h-12 text-right text-lg font-semibold"
-                  />
+            <section className="payment-panel">
+              <button
+                type="button"
+                className="payment-close"
+                aria-label="Fechar pagamento"
+                onClick={close}
+              >
+                <X aria-hidden="true" />
+              </button>
+              {method === "dinheiro" ? (
+                <>
+                  <div className="payment-cash-body">
+                    <h2>Pagamento</h2>
+                    <p className="payment-subtitle">Dinheiro</p>
+                    <div className="payment-cash-row">
+                      <span>Total a pagar</span>
+                      <strong>{formatBRL(total)}</strong>
+                    </div>
+                    <label className="payment-cash-row">
+                      <span>Valor Recebido</span>
+                      <input
+                        aria-label="Valor pago pelo cliente"
+                        readOnly
+                        inputMode="none"
+                        value={formatBRL(paid)}
+                        onKeyDown={(e) => {
+                          if (
+                            /^\d$/.test(e.key) ||
+                            [",", ".", "Backspace", "Delete"].includes(e.key)
+                          ) {
+                            e.preventDefault();
+                            edit(
+                              e.key === "Backspace"
+                                ? "backspace"
+                                : e.key === "Delete"
+                                  ? "clear"
+                                  : e.key,
+                            );
+                          }
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            confirm();
+                          }
+                        }}
+                      />
+                    </label>
+                    <div
+                      className={`payment-cash-row ${insufficient ? "payment-insufficient" : ""}`}
+                      aria-live="polite"
+                    >
+                      <span>{insufficient ? "Faltam" : "Troco"}</span>
+                      <strong>{formatBRL(Math.abs(change))}</strong>
+                    </div>
+                  </div>
+                  <div className="payment-keypad" aria-label="Teclado numérico">
+                    {keys.map((key) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => edit(key)}
+                        aria-label={
+                          key === "backspace"
+                            ? "Apagar último dígito"
+                            : key === "clear"
+                              ? "Limpar valor"
+                              : key
+                        }
+                      >
+                        {key === "backspace" ? (
+                          <Delete aria-hidden="true" />
+                        ) : key === "clear" ? (
+                          "C"
+                        ) : (
+                          key
+                        )}
+                      </button>
+                    ))}
+                    <button
+                      className="payment-paid"
+                      type="button"
+                      onClick={confirm}
+                      disabled={insufficient}
+                    >
+                      PAGO
+                    </button>
+                    <button type="button" onClick={() => edit(",")} aria-label="Vírgula">
+                      ,
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="payment-wait-body">
+                  {method === "pix" ? (
+                    pixReady ? (
+                      <>
+                        <div className="payment-qr">
+                          <PixQr payload={pixPayload} size={280} />
+                        </div>
+                        <p className="payment-pix-instruction">
+                          O cliente escaneia o código para pagar {formatBRL(total)}.
+                        </p>
+                        <div className="payment-waiting" role="status">
+                          AGUARDANDO PIX{" "}
+                          <span className="payment-dots" aria-hidden="true">
+                            <i />
+                            <i />
+                            <i />
+                          </span>
+                        </div>
+                        <button className="payment-copy" type="button" onClick={copyPix}>
+                          <Copy size={17} aria-hidden="true" />
+                          Copiar código Pix
+                        </button>
+                      </>
+                    ) : (
+                      <div className="payment-missing-pix">
+                        <p>Nenhuma chave Pix cadastrada ainda.</p>
+                        <Link
+                          to="/vendas/configuracoes"
+                          className={buttonVariants({ variant: "outline" })}
+                          onClick={close}
+                        >
+                          Cadastrar chave Pix
+                        </Link>
+                      </div>
+                    )
+                  ) : (
+                    <>
+                      <h2>Receber</h2>
+                      <strong className="payment-card-amount">{formatBRL(total)}</strong>
+                      <p className="payment-card-method">{PAYMENT_LABELS[method]}</p>
+                      <img
+                        className="payment-terminal"
+                        src="/brand/payment-terminal.png"
+                        alt="Maquininha com cartão"
+                      />
+                      <div className="payment-waiting" role="status">
+                        Aguardando Pagamento
+                      </div>
+                    </>
+                  )}
+                  {(method !== "pix" || pixReady) && (
+                    <div className="payment-fallback">
+                      {notificationAccess === false && (
+                        <p>
+                          A confirmação automática precisa do acesso às notificações no Android.
+                        </p>
+                      )}
+                      <button
+                        type="button"
+                        className="payment-manual-toggle"
+                        aria-expanded={manualOpen}
+                        onClick={() => setManualOpen(!manualOpen)}
+                      >
+                        Confirmar manualmente
+                      </button>
+                      {manualOpen && (
+                        <div className="payment-manual">
+                          <p>Confira o recebimento no aplicativo antes de confirmar.</p>
+                          <Button type="button" onClick={confirm}>
+                            Confirmar pagamento
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-                {paid !== null && (
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-sm font-medium text-muted-foreground">Troco</span>
-                    <span
-                      className={`font-display text-2xl tracking-wide ${
-                        insufficient ? "text-destructive" : "text-primary"
-                      }`}
-                    >
-                      {insufficient
-                        ? `Faltam ${formatBRL(-(change ?? 0))}`
-                        : formatBRL(change ?? 0)}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {method === "pix" && (
-              <div className="space-y-3 rounded-2xl border bg-card p-4">
-                {pixReady ? (
-                  <>
-                    <PixQr payload={pixPayload} />
-                    <p className="text-center text-sm text-muted-foreground">
-                      O cliente escaneia o código para pagar {formatBRL(total)}.
-                    </p>
-                    <p className="rounded-xl bg-secondary p-3 text-center text-sm font-medium text-secondary-foreground">
-                      Aguardando Pix recebido...
-                    </p>
-                    <Button variant="outline" className="h-12 w-full gap-2" onClick={copyPix}>
-                      <Copy className="size-5" />
-                      Copiar código Pix
-                    </Button>
-                  </>
-                ) : (
-                  <div className="space-y-3 text-center">
-                    <p className="text-sm text-muted-foreground">
-                      Nenhuma chave Pix cadastrada ainda.
-                    </p>
-                    <Link
-                      to="/vendas/configuracoes"
-                      className={buttonVariants({ variant: "outline", className: "h-12 w-full" })}
-                      onClick={() => onOpenChange(false)}
-                    >
-                      Cadastrar chave Pix
-                    </Link>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {(method === "debito" || method === "credito") && (
-              <p className="rounded-2xl border bg-card p-4 text-sm text-muted-foreground">
-                Passe o cartão na maquininha e confirme abaixo para registrar a venda.
-              </p>
-            )}
-
-            <Button
-              className="h-14 w-full text-lg"
-              onClick={confirm}
-              disabled={insufficient || (method === "pix" && !pixReady)}
-            >
-              Confirmar pagamento
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
-
-      {pixSuccess && (
-        <PixPaymentSuccess amount={pixSuccess.amount} bank={pixSuccess.bank} onDone={finishPix} />
-      )}
-    </>
+              )}
+            </section>
+          </>
+        )}
+      </SheetContent>
+    </Sheet>
   );
 }

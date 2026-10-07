@@ -60,6 +60,7 @@ const assert = require("node:assert/strict");
       "Reference changed within checkout",
     );
     await context.setOffline(true);
+    await sheet.getByRole("button", { name: "Confirmar manualmente" }).click();
     await sheet.getByRole("button", { name: "Confirmar pagamento" }).click();
     await sheet.waitFor({ state: "hidden" });
     const search = page.getByRole("textbox", { name: "Digitar código ou nome do produto" });
@@ -75,6 +76,7 @@ const assert = require("node:assert/strict");
     assert.notEqual(second, first, "Same-value Pix reused the first code");
     assert.notEqual(secondQr, firstQr, "QR image reused the first code");
     assert.notEqual(secondTxid, firstTxid);
+    await sheet.getByRole("button", { name: "Confirmar manualmente" }).click();
     await sheet.getByRole("button", { name: "Confirmar pagamento" }).click();
     await sheet.waitFor({ state: "hidden" });
     const persisted = await page.evaluate(

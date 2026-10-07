@@ -208,8 +208,11 @@ async function checkWidth(page) {
       await page.getByRole("button", { name: "Ir para pagamento" }).click();
       await page
         .getByRole("dialog", { name: "Pagamento", exact: true })
-        .getByRole("button", { name: "Confirmar pagamento", exact: true })
+        .getByRole("button", { name: "PAGO", exact: true })
         .click();
+      await page
+        .getByRole("dialog", { name: "Pagamento", exact: true })
+        .waitFor({ state: "hidden" });
       stored = await page.evaluate(() => JSON.parse(localStorage.getItem("pdv-mercado")).state);
       assert.equal(stored.sales[0].total, 15);
       assert.equal(stored.sales[0].items[0].originalPrice, 20);
@@ -218,8 +221,11 @@ async function checkWidth(page) {
       await page.getByRole("button", { name: "Ir para pagamento" }).click();
       await page
         .getByRole("dialog", { name: "Pagamento", exact: true })
-        .getByRole("button", { name: "Confirmar pagamento", exact: true })
+        .getByRole("button", { name: "PAGO", exact: true })
         .click();
+      await page
+        .getByRole("dialog", { name: "Pagamento", exact: true })
+        .waitFor({ state: "hidden" });
       stored = await page.evaluate(() => JSON.parse(localStorage.getItem("pdv-mercado")).state);
       assert.equal(stored.products["00123"].stock, 0);
       assert.equal(stored.products["00123"].promotion, undefined);
