@@ -86,6 +86,7 @@ jobs:
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright node tests/scanner-browser.cjs
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright node tests/promotions-browser.cjs
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright AXE_MODULE=/tmp/mercadinho-browser/node_modules/@axe-core/playwright node tests/palette-browser.cjs
+          PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright AXE_MODULE=/tmp/mercadinho-browser/node_modules/@axe-core/playwright node tests/payment-dimensions-browser.cjs
 
       - name: Upload navigation screenshots
         if: always()
@@ -154,6 +155,7 @@ jobs:
           prerelease: true
           make_latest: false
           body: |
+            Pagamentos com logo, abas e cards nas mesmas posições entre dinheiro, Pix, débito e crédito. Ícones e campos alinhados; teclado fixo e confirmação manual acessível em telas pequenas. Dimensões verificadas em 320–430 px, nos dois temas e com áreas seguras simuladas.
             Paleta centralizada em todas as telas: azul da marca nas ações, verde nos preços/sucesso, vermelho nos erros e âmbar nos avisos; temas claro e escuro, pagamentos e notificações revisados com testes de contraste e acessibilidade.
             Contorno da tab bar arredondado, sem pontas; movimento da bolinha entre as cinco abas preservado.
             Logo de abertura por 2 segundos; o APK abre diretamente no Caixa.

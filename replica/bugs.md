@@ -35,3 +35,23 @@
 Ícones Android, instalação sobre o APK42 e notificações bancárias reais. Sem bug atribuído a esses itens sem reprodução.
 
 Nenhum S1/S2 reproduzido nesta revisão. Nenhum bug reproduzido permanece aberto.
+
+## DIM-01 — cabeçalho e card mudavam de posição entre meios
+
+- Severidade: S3, corrigido.
+- Reprodução: base APK43/aa39ed0, 390×844; abrir pagamento e alternar dinheiro/Pix/débito.
+- Esperado: logo, abas e card mantêm posição e dimensões ao trocar o conteúdo interno.
+- Real: a altura da marca dependia da distribuição flexível do conteúdo: dinheiro 168,80px, Pix 208,89px, cartão 224,98px. O card começava em y=244,80 / 284,89 / 300,98, deslocamento de até 56,18px.
+- Evidência: medidas do baseline de tests/payment-dimensions-browser.cjs; também reproduzido em 430×800, com deslocamento de 36,02px.
+- Correção: altura compartilhada da logo e das abas, sem flex-shrink condicionado ao conteúdo; card usa o espaço restante. Regressão compara os quatro meios.
+- Commit: o commit desta revisão de dimensões; consultar `git log -1 -- e2e/payment-dimensions.spec.cjs`.
+
+## DIM-02 — ícones comprimidos nas abas de pagamento
+
+- Severidade: S3, corrigido.
+- Reprodução: base APK43, 320×568, abrir pagamento e comparar os ícones das quatro abas.
+- Esperado: ícones de mesmo tamanho e rótulos completos.
+- Real: ícone de dinheiro encolhia no layout horizontal ao competir com o rótulo pela largura.
+- Evidência: primeira execução falhou em `light-320x568/Dinheiro: compressed payment icon`; inspeção da geometria do SVG no navegador.
+- Correção: ícone não encolhe e o nome fica abaixo do ícone. Teste inspeciona dimensões, alinhamento e limites do rótulo.
+- Commit: o commit desta revisão; consultar `git log -1 -- e2e/payment-dimensions.spec.cjs`.

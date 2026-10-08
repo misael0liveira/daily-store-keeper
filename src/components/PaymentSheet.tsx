@@ -190,7 +190,7 @@ export function PaymentSheet({
             <div className="payment-brand">
               <img src="/brand/mercadinho-uniao-logo.png" alt="Mercadinho União" />
             </div>
-            <div className="payment-methods" aria-label="Forma de pagamento">
+            <div className="payment-methods" role="group" aria-label="Forma de pagamento">
               {methods.map(({ key, icon: Icon }) => (
                 <button
                   key={key}
@@ -199,11 +199,13 @@ export function PaymentSheet({
                   onClick={() => setMethod(key)}
                 >
                   <Icon size={18} aria-hidden="true" />
-                  {key === "debito"
-                    ? "Débito"
-                    : key === "credito"
-                      ? "Crédito"
-                      : PAYMENT_LABELS[key]}
+                  <span>
+                    {key === "debito"
+                      ? "Débito"
+                      : key === "credito"
+                        ? "Crédito"
+                        : PAYMENT_LABELS[key]}
+                  </span>
                 </button>
               ))}
             </div>
@@ -298,56 +300,58 @@ export function PaymentSheet({
                   </div>
                 </>
               ) : (
-                <div className="payment-wait-body">
-                  {method === "pix" ? (
-                    pixReady ? (
-                      <>
-                        <div className="payment-qr">
-                          <PixQr payload={pixPayload} size={280} />
+                <>
+                  <div className="payment-wait-body">
+                    {method === "pix" ? (
+                      pixReady ? (
+                        <>
+                          <div className="payment-qr">
+                            <PixQr payload={pixPayload} size={280} />
+                          </div>
+                          <p className="payment-pix-instruction">
+                            O cliente escaneia o código para pagar {formatBRL(total)}.
+                          </p>
+                          <div className="payment-waiting" role="status">
+                            AGUARDANDO PIX{" "}
+                            <span className="payment-dots" aria-hidden="true">
+                              <i />
+                              <i />
+                              <i />
+                            </span>
+                          </div>
+                          <button className="payment-copy" type="button" onClick={copyPix}>
+                            <Copy size={17} aria-hidden="true" />
+                            Copiar código Pix
+                          </button>
+                        </>
+                      ) : (
+                        <div className="payment-missing-pix">
+                          <p>Nenhuma chave Pix cadastrada ainda.</p>
+                          <Link
+                            to="/vendas/configuracoes"
+                            className={buttonVariants({ variant: "outline" })}
+                            onClick={close}
+                          >
+                            Cadastrar chave Pix
+                          </Link>
                         </div>
-                        <p className="payment-pix-instruction">
-                          O cliente escaneia o código para pagar {formatBRL(total)}.
-                        </p>
-                        <div className="payment-waiting" role="status">
-                          AGUARDANDO PIX{" "}
-                          <span className="payment-dots" aria-hidden="true">
-                            <i />
-                            <i />
-                            <i />
-                          </span>
-                        </div>
-                        <button className="payment-copy" type="button" onClick={copyPix}>
-                          <Copy size={17} aria-hidden="true" />
-                          Copiar código Pix
-                        </button>
-                      </>
+                      )
                     ) : (
-                      <div className="payment-missing-pix">
-                        <p>Nenhuma chave Pix cadastrada ainda.</p>
-                        <Link
-                          to="/vendas/configuracoes"
-                          className={buttonVariants({ variant: "outline" })}
-                          onClick={close}
-                        >
-                          Cadastrar chave Pix
-                        </Link>
-                      </div>
-                    )
-                  ) : (
-                    <>
-                      <h2>Receber</h2>
-                      <strong className="payment-card-amount">{formatBRL(total)}</strong>
-                      <p className="payment-card-method">{PAYMENT_LABELS[method]}</p>
-                      <img
-                        className="payment-terminal"
-                        src="/brand/payment-terminal.png"
-                        alt="Maquininha com cartão"
-                      />
-                      <div className="payment-waiting" role="status">
-                        Aguardando Pagamento
-                      </div>
-                    </>
-                  )}
+                      <>
+                        <h2>Receber</h2>
+                        <strong className="payment-card-amount">{formatBRL(total)}</strong>
+                        <p className="payment-card-method">{PAYMENT_LABELS[method]}</p>
+                        <img
+                          className="payment-terminal"
+                          src="/brand/payment-terminal.png"
+                          alt="Maquininha com cartão"
+                        />
+                        <div className="payment-waiting" role="status">
+                          Aguardando Pagamento
+                        </div>
+                      </>
+                    )}
+                  </div>
                   {(method !== "pix" || pixReady) && (
                     <div className="payment-fallback">
                       {notificationAccess === false && (
@@ -373,7 +377,7 @@ export function PaymentSheet({
                       )}
                     </div>
                   )}
-                </div>
+                </>
               )}
             </section>
           </>

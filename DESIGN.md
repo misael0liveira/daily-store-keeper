@@ -68,3 +68,11 @@ Pagamentos mantêm as composições aprovadas. Cartão usa gradiente derivado do
 Exceções técnicas intencionais: o raster QR é #0F172A sobre #FFFFFF, valores exigidos pelo gerador; a composição da foto continua branca; as cores de arranque/manifest nativos são valores estáticos compatíveis com a identidade. Esses pixels e metadados não são cores de controles. O fallback de erro do servidor importa a mesma paleta via CSS inline, sem segunda tabela de valores. ThemeApplier lê --background para a barra do navegador; NativeThemeBars usa a API SystemBars já incluída no Capacitor após a abertura branca e ao voltar ao app.
 
 Verificação de regressão: e2e/palette-*.spec.cjs, tests/palette-browser.cjs, testes anteriores de navegação/Pix/pagamentos/scanner/promoções e testes de unidade. Plano e bugs reproduzidos em replica/.
+
+## Dimensões dos pagamentos — 08/10/2026
+
+PaymentSheet continua o proprietário único dos quatro meios. A geometria compartilhada está em src/styles.css: margem de 12px, logo contida sem deformação, quatro abas de mesma largura, ícones de 18×18px acima dos nomes e card flexível até a área segura inferior. A altura da logo é clamp(96px, 16dvh, 144px); abas de 60px. Em telas de até 700px de altura, a logo ocupa 80px, as abas 56px e os intervalos 8px. Essas medidas não dependem do meio selecionado: trocar dinheiro/Pix/débito/crédito não desloca logo, abas, card ou fechar.
+
+Os três campos monetários do dinheiro compartilham largura de 55% e alinhamento à direita; os rótulos ocupam a outra coluna. Teclado fixo com quatro linhas e botão PAGO permanece na base do card; somente o resumo pode rolar em alturas insuficientes. O QR mantém proporção quadrada e reserva espaço para fechar. Cartão contém a ilustração sem deformá-la e alinha valor/status à margem interna do card.
+
+Pix e cartão usam rolagem no conteúdo central; confirmação manual fica em um rodapé separado dentro do mesmo card, com expansão rolável e foco acessível. Nada nesta revisão altera paleta, notificações, cálculo de troco ou confirmação verde de dois segundos. Verificação de geometria em e2e/payment-dimensions.spec.cjs e tests/payment-dimensions-browser.cjs; capturas e medidas são comparadas entre os quatro meios, nos dois temas.

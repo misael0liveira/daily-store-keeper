@@ -81,3 +81,11 @@ src/theme/palette.css é o proprietário dos valores de claro/escuro e das super
 Sonner acompanha o tema salvo e mapeia normal/sucesso/informação/aviso/erro para esses tokens. Avisos em superfície suave usam texto semântico, não foreground de um botão sólido. Status de monitoramento e preço usam o mesmo sucesso, sem tornar ações de navegação verdes.
 
 A apresentação não altera regras de venda, permissões, storage, identificador ou assinatura. A única revisão Android remove a reaplicação fixa de ícones escuros no MainActivity: SystemBars do Capacitor recebe o tema no NativeThemeBars e na retomada; a configuração inicial LIGHT preserva a abertura branca. Insets, barras transparentes e comportamento do scanner são mantidos. Build e assinatura são verificados; aparência física e atualização no aparelho permanecem verificações manuais.
+
+## Geometria compartilhada dos pagamentos — 08/10/2026
+
+PaymentSheet e os tokens --payment-* em src/styles.css são a fonte única das dimensões. Não criar altura de logo ou largura de aba específica para um meio. As variantes permitidas são composição interna: resumo/teclado de dinheiro, QR Pix ou ilustração/valor de cartão. Campos de dinheiro compartilham coluna, largura e alinhamento; ícones das quatro abas têm 18×18px e não encolhem.
+
+A folha respeita 100dvh e os insets superior/inferior. Teclado e rodapé de confirmação não pertencem à rolagem do conteúdo central. Expandir a confirmação manual pode rolar apenas seu próprio rodapé; botão de confirmar fica acessível pelo toque e foco. A troca de meio conserva o enquadramento externo e o identificador Pix da sessão. Fluxos, notificações e persistência anteriores permanecem cobertos pelos testes existentes.
+
+As áreas seguras de 24px são simuladas no navegador para verificar geometria, juntamente com um valor de R$ 1.234,56. Insets reais, escala de fonte do sistema, orientação horizontal e renderização do WebView exigem conferência física; não se declara cobertura desses estados a partir das simulações.
