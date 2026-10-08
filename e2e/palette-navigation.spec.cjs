@@ -3,7 +3,7 @@ const { scan, assertReadable } = require("./palette-support.cjs");
 
 module.exports = async function navigation(page, context, label) {
   const nav = page.getByRole("navigation", { name: "Navegação principal" });
-  for (const route of ["Início", "Histórico", "Caixa", "Estoque", "Ajustes"]) {
+  for (const route of ["Fiados", "Histórico", "Caixa", "Estoque", "Ajustes"]) {
     await nav.getByRole("link", { name: route, exact: true }).click();
     await scan(page, `${label} ${route}`);
     await page.screenshot({ path: `navigation-screenshots/palette-${label}-${route}.png` });
@@ -27,7 +27,9 @@ module.exports = async function navigation(page, context, label) {
   assert.ok(status.defined, "Success status has no canonical color");
   assert.equal(status.actual, status.expected, "Success utility is missing");
   await scan(page, `${label} configurações e QR`);
-  await nav.getByRole("link", { name: "Início", exact: true }).click();
+  await nav.getByRole("link", { name: "Fiados", exact: true }).click();
+  await nav.getByRole("link", { name: "Ajustes", exact: true }).click();
+  await page.getByRole("link", { name: /Resumo da loja/ }).click();
   await assertReadable(
     page.getByRole("link", { name: "Nova venda", exact: true }),
     "Primary action",
@@ -44,7 +46,7 @@ module.exports = async function navigation(page, context, label) {
   const theme = await page.evaluate(
     () => JSON.parse(localStorage.getItem("pdv-mercado")).state.theme,
   );
-  await nav.getByRole("link", { name: "Início", exact: true }).click();
+  await nav.getByRole("link", { name: "Fiados", exact: true }).click();
   await page.reload({ waitUntil: "networkidle" });
   await nav.waitFor();
   assert.equal(

@@ -19,6 +19,12 @@ omitted:
 
 # Mercadinho União — visual aprovado
 
+## Fiados — edição aprovada em 08/10/2026
+
+Fiados substitui Início no primeiro destino; Histórico, Caixa, Estoque e Ajustes conservam as posições. O resumo anterior, com logo e Nova venda, fica em Ajustes → Resumo da loja. Essa decisão substitui as referências antigas a Início abaixo. CustomersPanel é compartilhado com Gestão → Clientes; cartões, formulários e feedback seguem ManagementUI e os tokens existentes. Listas mostram nome/código e saldo; documentos pessoais não compõem QR. O cartão do cliente usa superfície branca de mídia e legenda própria.
+
+Entrada da compra e recebimento da dívida são contextos do mesmo PaymentSheet. O cabeçalho reserva título, Dividir e fechar; nome longo fica no subtítulo truncado e permanece completo no nome acessível da folha. O resumo do fiado mostra compra, entrada, dívida anterior e novo saldo; só a confirmação registra venda/estoque. A barra do Caixa reserva altura adicional para a ação de fiado.
+
 ## Gestão local — 08/10/2026
 
 A gestão utiliza a identidade aprovada, tokens de src/theme/palette.css, cartões pos-card e coluna mobile existente. A assinatura visual continua sendo logo e dock; novas telas priorizam dados e ações, sem nova paleta ou decoração. Ajustes dá acesso a Gestão sem adicionar abas ao dock. Painéis de entrada, inventário, caixa, custos, clientes, atendimentos, backup e equipe compartilham ManagementUI. Native select/date/month aceitam popup do Android/navegador; não prometem geometria ou idioma controlados pelo app. Campos extras do produto ficam em disclosure opcional. Documentos históricos exibem situação e valores; cancelamento não apaga a venda. Pagamento dividido usa controle discreto dentro do enquadramento aprovado, mantendo logo, quatro abas e teclado.

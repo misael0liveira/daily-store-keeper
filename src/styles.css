@@ -1067,7 +1067,7 @@
   padding-inline: 16px;
 }
 .pdv-sell-content {
-  padding-bottom: 155px;
+  padding-bottom: 205px;
 }
 .pdv-scanner-card {
   padding: 0;
@@ -2339,4 +2339,62 @@ a:focus-visible {
 .payment-success-dot {
   background: var(--success-glow);
   box-shadow: 0 0 18px var(--success-glow);
+}
+
+/* Fiados usa os mesmos cartões, tokens e coluna móvel. */
+.customer-sheet {
+  max-height: 90dvh;
+  overflow-y: auto;
+  padding: 24px 16px;
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+}
+.customer-sheet > h2 {
+  padding-right: 32px;
+  overflow-wrap: anywhere;
+}
+[data-sonner-toaster] {
+  max-width: calc(100vw - 32px);
+}
+.customer-list-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  text-align: left;
+  color: var(--foreground);
+  min-height: 72px;
+  cursor: pointer;
+}
+.customer-list-item:hover {
+  border-color: var(--primary);
+}
+.customer-totals {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+.customer-totals span {
+  display: block;
+  font-size: 13px;
+}
+.customer-totals strong {
+  display: block;
+  margin-top: 6px;
+  font-size: clamp(18px, 5vw, 24px);
+}
+.customer-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  background: var(--image-surface);
+  color: var(--image-foreground);
+  border-radius: 14px;
+}
+.payment-panel-heading .payment-subtitle {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }

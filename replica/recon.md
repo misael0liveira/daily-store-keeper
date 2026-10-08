@@ -30,3 +30,7 @@ Dado de teste: Arroz São João, código 123, R$ 4,24, estoque 2. Isolado em cad
 Autenticação, segundo usuário remoto, senha incorreta, expiração de login, OAuth e cartão Stripe não se aplicam ao PDV local. Ele não processa o cartão; aguarda notificação ou conferência manual. A regra de validade da notificação continua nos testes Java e de pagamentos existentes.
 
 F05 Geometria de pagamentos: logo, quatro abas, card, fechar, campos de dinheiro, QR, maquininha, teclado e rodapé de confirmação. Mesmo proprietário PaymentSheet; tokens --payment-* em src/styles.css. Dados continuam locais. Reproduzir em 320×568, 360×640, 390×844, 414×896 e 430×800, nos dois temas; caso adicional 390×844 com insets simulados de 24px e total de R$ 1.234,56.
+
+F17 Fiados: cadastro, CPF opcional, código estável, busca, limite, extrato e cartão QR.
+F18 Compra parcial: identificar cliente, produtos, entrada nos quatro meios, revisão e registro do saldo em aberto.
+F19 Receber dívida: valor, alocação, quatro meios, idempotência, recibo e caixa sem nova venda/estoque.

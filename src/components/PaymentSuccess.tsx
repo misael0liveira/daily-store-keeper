@@ -6,10 +6,14 @@ export function PaymentSuccess({
   amount,
   bank,
   onDone,
+  detail = "Venda confirmada",
+  heading = "Pagamento recebido!",
 }: {
   amount: number;
   bank: string | undefined;
   onDone: () => void;
+  detail?: string | undefined;
+  heading?: string;
 }) {
   const onDoneRef = useRef(onDone);
   onDoneRef.current = onDone;
@@ -23,7 +27,7 @@ export function PaymentSuccess({
       className="absolute inset-0 flex min-h-dvh flex-col items-center justify-center overflow-hidden payment-success px-6"
       role="status"
       aria-live="assertive"
-      aria-label="Pagamento recebido"
+      aria-label={heading === "Pagamento recebido!" ? "Pagamento recebido" : heading}
     >
       <style>{`
         @keyframes pixRingIn { 0% { transform: scale(.72); opacity: 0; } 35% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.08); opacity: 0; } }
@@ -87,16 +91,14 @@ export function PaymentSuccess({
         <span className="pix-success-dot absolute left-1/2 top-1/2 size-3 -translate-x-1/2 rounded-full payment-success-dot" />
       </div>
       <div className="pix-success-text -mt-3 text-center">
-        <p className="text-[30px] font-semibold tracking-tight sm:text-[34px]">
-          Pagamento recebido!
-        </p>
+        <p className="text-[30px] font-semibold tracking-tight sm:text-[34px]">{heading}</p>
         <p className="mt-3 text-[28px] font-medium tracking-tight payment-success-accent">
           {formatBRL(amount)}
         </p>
         {bank && <p className="mt-2 text-sm font-medium payment-success-accent">{bank}</p>}
         <div className="mt-7 flex items-center justify-center gap-2 text-sm payment-success-accent">
           <Check className="size-4" />
-          Venda confirmada
+          {detail}
         </div>
       </div>
     </div>

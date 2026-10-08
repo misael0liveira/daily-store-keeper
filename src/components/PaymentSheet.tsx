@@ -36,12 +36,16 @@ export function PaymentSheet({
   total,
   pixTxid,
   onConfirm,
+  contextTitle,
+  successDetail,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   total: number;
   pixTxid: string;
-  onConfirm: (payload: Confirmation) => boolean | "partial";
+  onConfirm: (payload: Confirmation) => boolean | "partial" | "collected";
+  contextTitle?: string | undefined;
+  successDetail?: string | undefined;
 }) {
   const settings = useStore((s) => s.settings);
   const [method, setMethod] = useState<PaymentMethod>("dinheiro");
@@ -83,7 +87,7 @@ export function PaymentSheet({
   acceptRef.current = (payload, bank) => {
     if (locked.current || !open) return;
     locked.current = true;
-    let result: boolean | "partial";
+    let result: boolean | "partial" | "collected";
     try {
       result = onConfirmRef.current({
         ...payload,
@@ -103,6 +107,12 @@ export function PaymentSheet({
       locked.current = false;
       return;
     }
+    if (result === "collected") {
+      locked.current = false;
+      onOpenChange(false);
+      toast.success("Entrada recebida. Confira e registre o saldo fiado.");
+      return;
+    }
     if (result === "partial") {
       locked.current = false;
       setPaidRaw("");
@@ -112,7 +122,7 @@ export function PaymentSheet({
       toast.success("Parcela recebida. Escolha como pagar o restante.");
       return;
     }
-    setSuccess({ amount: total, bank });
+    setSuccess({ amount, bank });
   };
 
   useEffect(() => {
@@ -220,14 +230,15 @@ export function PaymentSheet({
           if (locked.current) e.preventDefault();
         }}
       >
-        <SheetTitle className="sr-only">Pagamento</SheetTitle>
+        <SheetTitle className="sr-only">{contextTitle || "Pagamento"}</SheetTitle>
         <SheetDescription className="sr-only">
-          Escolha a forma de pagamento e confirme a venda de {formatBRL(total)}.
+          Escolha a forma de pagamento e confirme o recebimento de {formatBRL(total)}.
         </SheetDescription>
         {success ? (
           <PaymentSuccess
             amount={success.amount}
             bank={success.bank}
+            detail={successDetail}
             onDone={() => {
               setSuccess(null);
               locked.current = false;
@@ -260,12 +271,15 @@ export function PaymentSheet({
             </div>
             <section className="payment-panel">
               <div className="payment-panel-header">
-                <div className="payment-panel-heading">
+                <div className="payment-panel-heading" title={contextTitle}>
                   {method === "dinheiro" && (
                     <>
-                      <h2>Pagamento</h2>
-                      <p className="payment-subtitle">Dinheiro</p>
+                      <h2>{contextTitle ? "Recebimento" : "Pagamento"}</h2>
+                      <p className="payment-subtitle">{contextTitle || "Dinheiro"}</p>
                     </>
+                  )}
+                  {method !== "dinheiro" && contextTitle && (
+                    <p className="payment-subtitle">{contextTitle}</p>
                   )}
                 </div>
                 <button

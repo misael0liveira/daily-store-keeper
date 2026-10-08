@@ -262,7 +262,76 @@ export type Customer = {
   name: string;
   contact?: string | undefined;
   active?: boolean | undefined;
+  code?: string | undefined;
+  cpf?: string | undefined;
+  creditEnabled?: boolean | undefined;
+  creditLimit?: number | undefined;
+  dueDay?: number | undefined;
 };
+export function validCpf(raw: string) {
+  const cpf = raw.replace(/\D/g, "");
+  if (!/^\d{11}$/.test(cpf) || /^(\d)\1+$/.test(cpf)) return false;
+  for (let n = 9; n < 11; n++) {
+    let sum = 0;
+    for (let i = 0; i < n; i++) sum += Number(cpf[i]) * (n + 1 - i);
+    const check = (sum * 10) % 11;
+    if ((check === 10 ? 0 : check) !== Number(cpf[n])) return false;
+  }
+  return true;
+}
+export function normalizeCustomers(customers: Customer[]) {
+  const used = new Set(customers.map((c) => c.code).filter(Boolean));
+  let next = 1;
+  return customers.map((c) => {
+    while (used.has(`U-${String(next).padStart(4, "0")}`)) next++;
+    const code = c.code || `U-${String(next++).padStart(4, "0")}`;
+    used.add(code);
+    return { ...c, code, creditEnabled: c.creditEnabled ?? true };
+  });
+}
+export function customerMatches(c: Customer, query: string) {
+  const normalize = (s: string) =>
+    s
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+  const q = normalize(query.trim());
+  if (!q) return true;
+  const digits = q.replace(/\D/g, "");
+  return [c.name, c.code ?? "", c.contact ?? "", c.cpf ?? ""].some(
+    (v) =>
+      normalize(v).includes(q) ||
+      (digits.length > 0 && !/[a-z]/i.test(q) && v.replace(/\D/g, "").includes(digits)),
+  );
+}
+export function customerBalance(state: Pick<ManagementData, "receivables">, customerId: string) {
+  return money(
+    state.receivables.filter((d) => d.customerId === customerId).reduce((n, d) => n + d.balance, 0),
+  );
+}
+export function validLocalDate(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split("-").map(Number);
+  const d = new Date(year!, month! - 1, day!);
+  return (
+    year! >= 2000 && d.getFullYear() === year && d.getMonth() === month! - 1 && d.getDate() === day
+  );
+}
+export function suggestedDueDate(day?: number) {
+  const now = new Date();
+  const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 30);
+  if (day) {
+    const targetMonth = now.getDate() < day ? now.getMonth() : now.getMonth() + 1;
+    date.setTime(
+      new Date(
+        now.getFullYear(),
+        targetMonth,
+        Math.min(day, new Date(now.getFullYear(), targetMonth + 1, 0).getDate()),
+      ).getTime(),
+    );
+  }
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
 export type Receivable = {
   id: string;
   saleId: string;
@@ -271,7 +340,15 @@ export type Receivable = {
   dueAt: string;
   original: number;
   balance: number;
-  receipts: { id: string; timestamp: number; amount: number; method: PaymentMethod }[];
+  receipts: {
+    id: string;
+    timestamp: number;
+    amount: number;
+    method: PaymentMethod;
+    reference?: string | undefined;
+    source?: "manual" | "notification" | undefined;
+    bank?: string | undefined;
+  }[];
 };
 export type Staff = {
   id: string;
@@ -468,6 +545,18 @@ export type StoreState = ManagementData & {
   upsertCustomer: (customer: Customer) => void;
   selectCustomer: (id?: string) => void;
   collectDebt: (id: string, amount: number, method: PaymentMethod, receiptId: string) => void;
+  collectCustomerDebt: (
+    customerId: string,
+    amount: number,
+    method: PaymentMethod,
+    receiptId: string,
+    debtId?: string,
+    details?: {
+      reference?: string | undefined;
+      source?: "manual" | "notification" | undefined;
+      bank?: string | undefined;
+    },
+  ) => void;
   saveStaff: (staff: Omit<Staff, "salt" | "verifier">, pin: string) => Promise<void>;
   unlockStaff: (id: string, pin: string) => Promise<void>;
   lockStaff: () => void;
@@ -711,7 +800,11 @@ export const useStore = create<StoreState>()(
           unlockedCart();
           const { staff: _staff, ...portable } = data;
           void _staff;
-          commit({ ...portable, staff: get().staff });
+          commit({
+            ...portable,
+            ...(portable.customers ? { customers: normalizeCustomers(portable.customers) } : {}),
+            staff: get().staff,
+          });
         },
         adjustStock: (barcode, delta, reason, loss = false) => {
           authorize("inventory");
@@ -1095,9 +1188,48 @@ export const useStore = create<StoreState>()(
         },
         upsertCustomer: (customer) => {
           authorize("sell");
+          const state = get();
+          const previous = state.customers.find((c) => c.id === customer.id);
           if (!customer.name.trim()) throw new Error("Informe o nome do cliente.");
-          const c = { ...customer, id: customer.id || id(), name: customer.name.trim() };
-          commit({ customers: [c, ...get().customers.filter((x) => x.id !== c.id)] });
+          const cpf = customer.cpf?.replace(/\D/g, "") || undefined;
+          if (
+            cpf &&
+            (!validCpf(cpf) ||
+              state.customers.some(
+                (c) => c.id !== customer.id && c.cpf?.replace(/\D/g, "") === cpf,
+              ))
+          )
+            throw new Error("CPF inválido ou já cadastrado.");
+          if (customer.creditLimit !== undefined)
+            assertAmount(customer.creditLimit, "Limite", true);
+          if (
+            customer.dueDay !== undefined &&
+            (!Number.isInteger(customer.dueDay) || customer.dueDay < 1 || customer.dueDay > 31)
+          )
+            throw new Error("Dia de vencimento deve estar entre 1 e 31.");
+          const enabled =
+            customer.creditEnabled ?? (previous ? (previous.creditEnabled ?? true) : false);
+          if (
+            enabled !== (previous ? (previous.creditEnabled ?? true) : false) ||
+            customer.creditLimit !== previous?.creditLimit ||
+            customer.dueDay !== previous?.dueDay
+          )
+            authorize("manage");
+          let n = 1;
+          while (state.customers.some((c) => c.code === `U-${String(n).padStart(4, "0")}`)) n++;
+          const c = {
+            ...previous,
+            ...customer,
+            id: previous?.id ?? customer.id ?? id(),
+            name: customer.name.trim(),
+            cpf,
+            code: previous?.code ?? `U-${String(n).padStart(4, "0")}`,
+            creditEnabled: enabled,
+            ...(customer.creditLimit !== undefined
+              ? { creditLimit: money(customer.creditLimit) }
+              : {}),
+          };
+          commit({ customers: [c, ...state.customers.filter((x) => x.id !== c.id)] });
         },
         selectCustomer: (customerId) => {
           authorize("sell");
@@ -1107,28 +1239,57 @@ export const useStore = create<StoreState>()(
           commit({ currentCustomerId: customerId });
         },
         collectDebt: (debtId, amount, method, receiptId) => {
+          const debt = get().receivables.find((d) => d.id === debtId);
+          if (!debt) throw new Error("Dívida não encontrada.");
+          get().collectCustomerDebt(debt.customerId, amount, method, receiptId, debtId);
+        },
+        collectCustomerDebt: (customerId, amount, method, receiptId, debtId, details = {}) => {
           authorize("cash");
           const state = get();
-          const debt = state.receivables.find((d) => d.id === debtId);
-          if (!debt) throw new Error("Dívida não encontrada.");
           if (state.receivables.some((d) => d.receipts.some((r) => r.id === receiptId))) return;
+          if (!receiptId || !(method in PAYMENT_LABELS)) throw new Error("Pagamento inválido.");
+          if (!state.customers.some((c) => c.id === customerId))
+            throw new Error("Cliente não encontrado.");
           assertAmount(amount);
-          if (money(amount) > debt.balance) throw new Error("Valor maior que o saldo da dívida.");
-          const s = requiredSession();
-          const receipt = { id: receiptId, timestamp: Date.now(), amount: money(amount), method };
+          if (money(amount) <= 0) throw new Error("Informe um valor maior que zero.");
+          const debts = state.receivables
+            .filter(
+              (d) => d.customerId === customerId && d.balance > 0 && (!debtId || d.id === debtId),
+            )
+            .sort(
+              (a, b) =>
+                a.dueAt.localeCompare(b.dueAt) ||
+                a.timestamp - b.timestamp ||
+                a.id.localeCompare(b.id),
+            );
+          const available = money(debts.reduce((n, d) => n + d.balance, 0));
+          if (money(amount) > available) throw new Error("Valor maior que o saldo da dívida.");
+          const session = requiredSession();
+          const timestamp = Date.now();
+          let remaining = money(amount);
+          const updates = new Map<string, Receivable>();
+          for (const debt of debts) {
+            const part = money(Math.min(debt.balance, remaining));
+            if (part <= 0) continue;
+            updates.set(debt.id, {
+              ...debt,
+              balance: money(debt.balance - part),
+              receipts: [
+                { id: receiptId, timestamp, amount: part, method, ...details },
+                ...debt.receipts,
+              ],
+            });
+            remaining = money(remaining - part);
+          }
           commit({
-            receivables: state.receivables.map((d) =>
-              d.id === debtId
-                ? { ...d, balance: money(d.balance - amount), receipts: [receipt, ...d.receipts] }
-                : d,
-            ),
+            receivables: state.receivables.map((d) => updates.get(d.id) ?? d),
             cashMovements: [
               {
                 id: id(),
-                sessionId: s.id,
-                timestamp: receipt.timestamp,
+                sessionId: session.id,
+                timestamp,
                 type: "debt",
-                amount: receipt.amount,
+                amount: money(amount),
                 method,
                 reason: "Recebimento de fiado",
                 documentId: receiptId,
@@ -1386,10 +1547,20 @@ export const useStore = create<StoreState>()(
           if (
             remaining > 0 &&
             (!creditDueAt ||
-              !/^\d{4}-\d{2}-\d{2}$/.test(creditDueAt) ||
+              !validLocalDate(creditDueAt) ||
               !state.customers.some((c) => c.id === selectedCustomer && c.active !== false))
           )
             throw new Error("Pagamento incompleto. Para fiado, selecione cliente e vencimento.");
+          if (remaining > 0) {
+            const customer = state.customers.find((c) => c.id === selectedCustomer)!;
+            if (customer.creditEnabled === false)
+              throw new Error("Fiado não habilitado para este cliente.");
+            if (
+              customer.creditLimit !== undefined &&
+              money(customerBalance(state, customer.id) + remaining) > customer.creditLimit
+            )
+              throw new Error("O saldo ultrapassa o limite de fiado do cliente.");
+          }
           const sale: Sale = {
             id:
               typeof crypto !== "undefined" && crypto.randomUUID
@@ -1530,7 +1701,7 @@ export const useStore = create<StoreState>()(
     },
     {
       name: "pdv-mercado",
-      version: 7,
+      version: 8,
       migrate: (persisted) => {
         const state = (persisted ?? {}) as Partial<StoreState>;
         const previousSettings = state.settings ?? defaultSettings;
@@ -1571,6 +1742,7 @@ export const useStore = create<StoreState>()(
           ...defaultManagement(),
           ...state,
           products,
+          customers: normalizeCustomers(state.customers ?? []),
           movements: state.movements ?? baseline,
           cashSessions:
             state.cashSessions ??

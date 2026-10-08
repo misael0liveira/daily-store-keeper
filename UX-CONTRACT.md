@@ -1,5 +1,15 @@
 # Contrato de interface
 
+## Fiados — autorização de 08/10/2026
+
+Primeira aba Fiados; Resumo da loja acessível em Ajustes. Cadastro exige nome, gera U-NNNN estável, admite telefone/CPF opcional e valida CPF/duplicidade. Cliente novo começa com fiado desabilitado; autorização, limite e dia habitual são configurados por proprietário/gerente. Legado conserva autorização anterior, sem limite inventado. Busca local por nome/código/telefone/CPF é transitória e não entra na URL; CPF mascarado na lista. Listas usam 20 registros e Ver mais. Arquivar exige confirmação e conserva extrato e recebimentos.
+
+Selecionar cliente → busca ou Ler QR → conferir nome → confirmar. O QR contém UNIAO:CLIENTE:id, sem CPF e sem autenticação externa. BarcodeScanner usa o mesmo scanner embutido html5-qrcode já empregado nesta versão, com modo cliente/produto explícito; desmonta a câmera de produto durante seleção. Câmera física e permissões continuam verificações em aparelho.
+
+Pagar parte e fiar o restante → entrada/vencimento/resumo → quatro abas cobrando só a entrada → retorno ao resumo → Registrar venda com fiado. Parcelas confirmadas persistem antes do fechamento; cliente/itens ficam bloqueados após recebimento. Limite bloqueia antes de cobrar entrada; atraso apenas avisa. Sem entrada registra fiado integral após confirmação. O sucesso informa saldo em aberto.
+
+Receber no extrato → valor parcial ou saldo integral → dívida específica ou vencimentos mais antigos → mesmos quatro meios. Campo vazio escolhe saldo disponível conforme o padrão de dinheiro; zero/negativo/excesso são recusados. Abatimentos e um movimento de caixa por confirmação são atômicos/idempotentes, sem nova venda ou estoque. Recibo agrupa abatimentos da mesma confirmação; PDF de compra/cartão permanece disponível no perfil. Documentos são não fiscais. Caixa fechado/sem permissão bloqueia recebimento. Migração v8 e backup portátil preservam registros antigos.
+
 ## Gestão local — autorização de 08/10/2026
 
 Fonte de negócio: MANAGEMENT-POLICY.md, aplicação autorizada pelo proprietário da análise OpenSourcePOS. As regras de estoque insuficiente, caixa fechado, cancelamento e identidade substituem explicitamente os comportamentos antigos descritos abaixo; não são alterações apenas de apresentação.

@@ -259,7 +259,7 @@ async function checkWidth(page) {
     await splash.waitFor({ state: "hidden" });
     assert.ok(Date.now() - visibleAt < 3500, "Splash still lasts four seconds");
     await page.waitForURL("**/vender");
-    await page.getByRole("link", { name: "Início", exact: true }).click();
+    await page.getByRole("link", { name: "Fiados", exact: true }).click();
     await page.waitForURL(origin + "/");
     await page.waitForTimeout(300);
     assert.ok(page.url().endsWith("/"), "Startup forces Caixa again on tab navigation");

@@ -13,7 +13,10 @@ do proprietário. Isso protege a continuidade da operação e o histórico da lo
 ### II. Continuidade das funcionalidades e do APK
 
 Mudanças DEVEM preservar funcionalidades existentes fora do escopo solicitado. O scanner
-Android DEVE manter o fluxo nativo ML Kit e os caminhos de entrada manual existentes.
+Android DEVE manter o caminho de leitura vigente e a entrada manual existente. Nesta versão,
+BarcodeScanner usa html5-qrcode embutido na área aprovada; o plugin ML Kit instalado permanece
+preservado. Reutilizar a câmera para identificar clientes NÃO DEVE substituir esse caminho
+por outra apresentação nem iniciar duas câmeras simultâneas.
 Alterações em Capacitor, Gradle, Manifest, Java/Kotlin, assinatura e permissões DEVEM ser
 revisadas antes do build. Atualizações DEVEM manter a compatibilidade da assinatura e da
 instalação sobre versões anteriores, para permitir atualizar sem perder dados.
@@ -76,4 +79,4 @@ Uma mudança de regra DEVE registrar motivo, impacto e atualizar os documentos r
 A versão usa SemVer: MAJOR para remoção ou redefinição incompatível de princípio, MINOR para
 novos princípios ou ampliação material, PATCH para esclarecimentos sem mudança de regra.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-08 | **Last Amended**: 2026-10-08
+**Version**: 1.0.1 | **Ratified**: 2026-10-08 | **Last Amended**: 2026-10-08

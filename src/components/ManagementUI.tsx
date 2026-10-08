@@ -58,11 +58,13 @@ export function Choice({
   value,
   onChange,
   options,
+  disabled = false,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   options: { value: string; label: string }[];
+  disabled?: boolean;
 }) {
   const id = useId();
   return (
@@ -71,6 +73,7 @@ export function Choice({
       <select
         id={id}
         value={value}
+        disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
         className="management-select"
       >
@@ -207,7 +210,12 @@ export function ConfirmAction({
       }}
     >
       <AlertDialogTrigger asChild>
-        <Button type="button" variant="outline" disabled={disabled}>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={disabled}
+          className="h-auto min-h-11 max-w-full whitespace-normal"
+        >
           {label}
         </Button>
       </AlertDialogTrigger>

@@ -23,7 +23,7 @@ O aplicativo é um PDV/ERP mobile para operação de um mini mercado. O foco é 
 2. Nunca considerar uma interface pronta apenas porque ela renderiza. Todo botão, link, scanner, formulário e ação importante deve possuir comportamento funcional.
 3. Preservar dados locais. Migrações devem preservar dados existentes sempre que possível.
 4. Offline first. Operações de PDV, estoque e vendas devem continuar funcionando sem internet, salvo recursos explicitamente remotos.
-5. Scanner é funcionalidade crítica. No Android, priorizar o fluxo nativo já existente com ML Kit e manter entrada manual como fallback.
+5. Scanner é funcionalidade crítica. No Android, preservar o leitor embutido vigente (html5-qrcode nesta versão), o plugin ML Kit instalado e a entrada manual como fallback.
 6. Não remover uma funcionalidade existente para implementar outra.
 7. Não expor segredos. Nunca gravar senhas, tokens privados, service-role keys ou secrets no código, logs, issues ou documentação.
 8. Supabase deve ser tratado como serviço remoto quando aplicável; não mover dados locais para a nuvem sem decisão explícita.

@@ -89,6 +89,7 @@ jobs:
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright AXE_MODULE=/tmp/mercadinho-browser/node_modules/@axe-core/playwright node tests/payment-dimensions-browser.cjs
 
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright AXE_MODULE=/tmp/mercadinho-browser/node_modules/@axe-core/playwright node tests/management-browser.cjs
+          PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright AXE_MODULE=/tmp/mercadinho-browser/node_modules/@axe-core/playwright node tests/fiados-browser.cjs
 
       - name: Upload navigation screenshots
         if: always()
@@ -157,6 +158,9 @@ jobs:
           prerelease: true
           make_latest: false
           body: |
+            Nova aba Fiados: cadastro com código próprio, CPF opcional, busca, cartão QR, limite e extrato.
+            Caixa: receber uma parte nos quatro meios e registrar o restante em fiado após revisar o saldo. Receber no cliente usa a mesma tela, com quitação parcial ou integral, sem criar nova venda.
+            Resumo da loja permanece acessível em Ajustes. Migração e backup preservam clientes e dívidas existentes.
             Correção do botão Dividir: cabeçalho com espaço próprio para título, divisão e fechamento, sem sobrepor textos ou QR. Campo da parcela rolável e teclado fixo preservados; geometria e abertura da divisão verificadas nos quatro meios, nos dois temas e em telas pequenas.
             Gestão inspirada nas referências do OpenSourcePOS, adaptada ao Mercadinho União e ao funcionamento local.
             Em Ajustes → Gestão: fornecedores, recebimento de mercadorias por embalagem, custo médio, lotes/validade, movimentos e contagem de estoque.

@@ -184,7 +184,7 @@ test("F11-H1: credit collections reduce debt without duplicating sales", () => {
   const state = () => useStore.getState();
   state().upsertProduct({ barcode: "01", name: "Arroz", price: 100, stock: 2 });
   state().addToCart("01");
-  state().upsertCustomer({ id: "c1", name: "Cliente" });
+  state().upsertCustomer({ id: "c1", name: "Cliente", creditEnabled: true });
   state().selectCustomer("c1");
   const quote = quoteCart(state().products, state().cart);
   const sale = state().checkout({

@@ -108,3 +108,35 @@ Nenhum S1/S2 reproduzido nesta revisão. Nenhum bug reproduzido permanece aberto
 - Commit: commit desta entrega; consultar `git log -1 -- src/lib/pwa-register.ts`.
 
 Bugs reproduzidos desta entrega: 3 S1 e 1 S3 corrigidos. Nenhum S1/S2 reproduzido permanece aberto. Cenários de câmera/instalação/notificações reais permanecem na lista de conferência física, sem bug atribuído sem reprodução.
+
+## FIA-01 — botão longo criava rolagem lateral após entrada
+
+- Severidade: S3, corrigido.
+- Reprodução: 320×740, compra100, receber50 em dinheiro e retornar ao resumo.
+- Esperado: resumo e conteúdo do Caixa sem rolagem lateral.
+- Real: Registrar devolução das parcelas ultrapassava a coluna; container do toast ultrapassava viewport.
+- Evidência: fiados-browser falhou em Horizontal overflow: Resumo da entrada Dinheiro; captura fiados-failure-Dinheiro.png.
+- Correção: quebra de linha no ConfirmAction canônico e limite responsivo do Sonner; cabeçalho do cliente reserva espaço para fechar.
+- Commit: commit desta edição; consultar git log -1 -- src/components/ManagementUI.tsx.
+
+## FIA-02 — fiado reutilizava cotação de pagamento abandonado
+
+- Severidade: S1, corrigido.
+- Reprodução: abrir pagamento da compra100, fechar sem receber, aumentar quantidade para200, receber entrada100 pelo fiado.
+- Esperado: dívida100 da compra, saldo anterior80 resulta180; venda200 e estoque8.
+- Real: cotação antiga100 ficava congelada na entrada; o resumo não oferecia Registrar venda com fiado.
+- Evidência: freshQuote em e2e/fiados.spec.cjs falhou antes da correção (timeout do botão); depois passou com venda200/saldo180/estoque8.
+- Correção: usar cotação/txid persistidos somente quando há parcelas recebidas; sem parcelas recotar carrinho atual.
+- Commit: commit desta edição; consultar git log -1 -- src/routes/vender.tsx.
+
+## FIA-03 — nome acessível da confirmação divergia do contrato existente
+
+- Severidade: S3, corrigido.
+- Reprodução: regressão payments-browser.cjs, pagamento em dinheiro confirmado.
+- Esperado: status acessível Pagamento recebido preservado e animação2s.
+- Real: nova parametrização incluía exclamação no nome do status, quebrando o contrato semântico anterior.
+- Evidência: waitSuccess falhou aguardando o nome anterior.
+- Correção: conservar nome acessível anterior; título visível e variante Venda registrada continuam parametrizados.
+- Commit: commit desta edição; consultar git log -1 -- src/components/PaymentSuccess.tsx.
+
+Nenhum S1 aberto nesta edição. Scanner real, atualização sobre APK46 e notificações bancárias permanecem na conferência física, sem bug presumido.

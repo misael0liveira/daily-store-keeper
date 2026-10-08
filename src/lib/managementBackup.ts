@@ -1,6 +1,13 @@
 import { z } from "zod";
 import { readProductPhoto, saveProductPhoto, deleteProductPhoto } from "@/lib/productPhotos";
-import { canOperate, useStore, type Product, type StoreState } from "@/store/useStore";
+import {
+  canOperate,
+  useStore,
+  validCpf,
+  normalizeCustomers,
+  type Product,
+  type StoreState,
+} from "@/store/useStore";
 
 const number = z.number().finite();
 const positive = number.nonnegative();
@@ -212,7 +219,15 @@ const schema = z
     drafts: z.array(
       z.object({ id: identifier, name: text, timestamp: number, cart, customerId: optionalId }),
     ),
-    customers: z.array(person),
+    customers: z.array(
+      person.extend({
+        code: identifier.optional(),
+        cpf: z.string().optional(),
+        creditEnabled: z.boolean().optional(),
+        creditLimit: positive.optional(),
+        dueDay: z.number().int().min(1).max(31).optional(),
+      }),
+    ),
     receivables: z.array(
       z.object({
         id: identifier,
@@ -223,7 +238,15 @@ const schema = z
         original: positive,
         balance: positive,
         receipts: z.array(
-          z.object({ id: identifier, timestamp: number, amount: positive, method }),
+          z.object({
+            id: identifier,
+            timestamp: number,
+            amount: positive,
+            method,
+            reference: text.optional(),
+            source: z.enum(["manual", "notification"]).optional(),
+            bank: text.optional(),
+          }),
         ),
       }),
     ),
@@ -350,6 +373,21 @@ export async function previewBackup(file: File): Promise<BackupPreview> {
     const ids = list.map((v) => v.id).filter(Boolean);
     if (new Set(ids).size !== ids.length) throw new Error("Identificadores duplicados no backup.");
   }
+  const codes = data.customers.map((c) => c.code).filter(Boolean);
+  const cpfs = data.customers.map((c) => c.cpf).filter(Boolean);
+  if (
+    new Set(codes).size !== codes.length ||
+    new Set(cpfs).size !== cpfs.length ||
+    cpfs.some((cpf) => !validCpf(cpf!)) ||
+    data.receivables.some(
+      (d) =>
+        !data.customers.some((c) => c.id === d.customerId) ||
+        !data.sales.some((s) => s.id === d.saleId) ||
+        d.balance > d.original,
+    )
+  )
+    throw new Error("Clientes ou dívidas inválidos no backup.");
+  data.customers = normalizeCustomers(data.customers);
   return { createdAt: String(value.payload.createdAt), data, photos };
 }
 export async function restoreBackup(preview: BackupPreview) {

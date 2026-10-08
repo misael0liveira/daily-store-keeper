@@ -42,7 +42,7 @@ async function verifyTheme(nav, theme) {
       const links = nav.getByRole("link");
       assert.equal(await links.count(), 5);
       for (const [label, path] of [
-        ["Início", "/"],
+        ["Fiados", "/"],
         ["Histórico", "/vendas"],
         ["Caixa", "/vender"],
         ["Estoque", "/estoque"],
@@ -78,7 +78,7 @@ async function verifyTheme(nav, theme) {
         assert.ok(geometry.top >= 44.99, "Dock contour has a raised pointed shoulder");
       }
       await page.screenshot({ path: `navigation-screenshots/ajustes-${width}.png` });
-      await nav.getByRole("link", { name: "Início", exact: true }).click();
+      await nav.getByRole("link", { name: "Fiados", exact: true }).click();
       await verifyTheme(nav, "claro");
       await page.screenshot({ path: `navigation-screenshots/inicio-${width}.png` });
       await page.evaluate(() => {

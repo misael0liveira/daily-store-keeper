@@ -10,9 +10,10 @@ import { closeScannerAfterStart } from "@/lib/scannerLifecycle";
 
 type Props = {
   onScan: (code: string) => void;
+  purpose?: "product" | "customer";
 };
 
-function ScannerInner({ onScan }: Props) {
+function ScannerInner({ onScan, purpose = "product" }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const scannerRef = useRef<import("html5-qrcode").Html5Qrcode | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -174,7 +175,9 @@ function ScannerInner({ onScan }: Props) {
             submitManual();
           }}
         >
-          <Label htmlFor={`${manualId}-input`}>Código de barras</Label>
+          <Label htmlFor={`${manualId}-input`}>
+            {purpose === "customer" ? "Código do cliente" : "Código de barras"}
+          </Label>
           <div className="flex gap-2">
             <Input
               id={`${manualId}-input`}
@@ -188,8 +191,12 @@ function ScannerInner({ onScan }: Props) {
               onKeyDown={(event) => {
                 if (event.key === "Enter" && event.nativeEvent.isComposing) event.preventDefault();
               }}
-              placeholder="Digite os números do código"
-              inputMode="numeric"
+              placeholder={
+                purpose === "customer"
+                  ? "Digite o código do cliente"
+                  : "Digite os números do código"
+              }
+              inputMode={purpose === "customer" ? "text" : "numeric"}
               enterKeyHint="done"
               autoComplete="off"
               autoCorrect="off"

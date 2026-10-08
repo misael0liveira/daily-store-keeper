@@ -84,6 +84,17 @@ function MorePage() {
         <h1>Ajustes</h1>
       </header>
       <div className="pos-card pos-settings-link">
+        <Link className="pos-settings-action" to="/resumo">
+          <span className="min-w-0 flex-1 text-left">
+            <strong className="block">Resumo da loja</strong>
+            <span className="block text-xs text-muted-foreground">
+              Vendas de hoje, reposição e últimas vendas
+            </span>
+          </span>
+          <ArrowRight className="size-5" />
+        </Link>
+      </div>
+      <div className="pos-card pos-settings-link">
         <Link className="pos-settings-action" to="/gestao" search={{ sec: "" }}>
           <span className="grid size-11 place-items-center rounded-xl bg-secondary">
             <Settings className="size-5 text-primary" />

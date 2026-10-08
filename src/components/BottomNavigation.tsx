@@ -1,9 +1,9 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
-import { Boxes, ScanBarcode, House, ReceiptText, Settings } from "lucide-react";
+import { Boxes, ScanBarcode, House, ReceiptText, Settings, NotebookPen } from "lucide-react";
 
 const navigation = [
-  { to: "/", label: "Início", icon: House },
+  { to: "/", label: "Fiados", icon: NotebookPen },
   { to: "/vendas", label: "Histórico", icon: ReceiptText },
   { to: "/vender", label: "Caixa", icon: ScanBarcode },
   { to: "/estoque", label: "Estoque", icon: Boxes },
@@ -29,7 +29,9 @@ function dockOutline(center: number) {
 export function BottomNavigation() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const selected =
-    pathname.startsWith("/vendas/configuracoes") || pathname.startsWith("/gestao")
+    pathname.startsWith("/vendas/configuracoes") ||
+    pathname.startsWith("/gestao") ||
+    pathname.startsWith("/resumo")
       ? 4
       : Math.max(
           0,
