@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { ClientOnly, useRouter } from "@tanstack/react-router";
 import { isNativeApp } from "@/lib/platform";
+import { NativeThemeBars } from "@/components/NativeThemeBars";
 
 export function AppStartup({ children }: { children: ReactNode }) {
   return (
@@ -21,7 +22,13 @@ function StartupGate({ children }: { children: ReactNode }) {
     return () => window.clearTimeout(timer);
   }, [router]);
 
-  if (ready) return <>{children}</>;
+  if (ready)
+    return (
+      <>
+        <NativeThemeBars />
+        {children}
+      </>
+    );
 
   return (
     <div className="app-startup" role="status" aria-label="Abrindo Mercadinho União">

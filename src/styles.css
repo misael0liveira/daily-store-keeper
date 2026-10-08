@@ -1,6 +1,7 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import "./theme/palette.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -23,6 +24,19 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-soft: var(--warning-soft);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-soft: var(--info-soft);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-image-surface: var(--image-surface);
+  --color-image-foreground: var(--image-foreground);
+  --color-scrim: var(--scrim);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -45,30 +59,6 @@
   --m3-space-5: 48px;
   --m3-space-6: 64px;
   --m3-space-7: 80px;
-  --background: #f5f8fb;
-  --foreground: #141b25;
-  --card: oklch(1 0 0);
-  --card-foreground: #172332;
-  --popover: oklch(1 0 0);
-  --popover-foreground: #172332;
-  --primary: #005baa;
-  --primary-foreground: oklch(1 0 0);
-  --primary-deep: #00477f;
-  --primary-darker: #00365f;
-  --primary-soft: #e7f2fa;
-  --brand-red: #e3062d;
-  --secondary: #f0f4f8;
-  --secondary-foreground: #26384a;
-  --muted: #f0f3f6;
-  --muted-foreground: #687180;
-  --accent: #e7f2fa;
-  --accent-foreground: #00477f;
-  --destructive: oklch(0.57 0.2 27);
-  --destructive-foreground: oklch(1 0 0);
-  --warning: oklch(0.72 0.16 70);
-  --border: oklch(0.92 0.006 150);
-  --input: oklch(0.91 0.008 150);
-  --ring: #1978bd;
 }
 
 /* Base resets must not override Tailwind component utilities. */
@@ -130,7 +120,7 @@
   justify-content: center;
   gap: 24px;
   padding: 32px;
-  background: #ffffff;
+  background: var(--image-surface);
   color-scheme: light;
 }
 .app-startup img {
@@ -143,7 +133,7 @@
   image-rendering: auto;
 }
 .app-startup span {
-  color: #5f6b7a;
+  color: var(--image-foreground);
   font-size: 13px;
 }
 .app-watermark {
@@ -175,7 +165,7 @@
   display: grid;
   place-items: center;
   padding: 0;
-  background: linear-gradient(160deg, #eff5fa, #e2edf6);
+  background: linear-gradient(160deg, var(--background), var(--secondary));
 }
 .phone {
   width: min(100%, 390px);
@@ -186,31 +176,9 @@
   flex-direction: column;
   background: var(--background);
   color: var(--foreground);
-  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 20px 70px color-mix(in srgb, var(--scrim) 18%, transparent);
 }
-:root.dark {
-  --background: #111b26;
-  --foreground: oklch(0.97 0.005 150);
-  --card-foreground: oklch(0.97 0.005 150);
-  --popover: #182634;
-  --popover-foreground: oklch(0.97 0.005 150);
-  --secondary-foreground: oklch(0.97 0.005 150);
-  --input: #405264;
-  --ring: #72b8e8;
-  --primary: #55a8df;
-  --primary-foreground: #071725;
-  --primary-deep: #8dc9ef;
-  --primary-darker: #b4ddf6;
-  --brand-red: #ff5b70;
-  --accent: #163a55;
-  --card: #182634;
-  --muted: #1d2b38;
-  --muted-foreground: #a8b5c2;
-  --border: #304150;
-  --secondary: #223343;
-  --primary-soft: #163a55;
-  --accent-foreground: #9fd2f2;
-}
+
 .statusbar {
   display: flex;
   align-items: center;
@@ -239,8 +207,8 @@
 
 /* ---------------- header ---------------- */
 .topbar {
-  background: var(--primary-deep);
-  color: #fff;
+  background: var(--brand-blue-deep);
+  color: var(--on-brand);
   min-height: var(--m3-top-app-bar);
   padding: env(safe-area-inset-top) var(--m3-margin) 0;
   display: flex;
@@ -248,10 +216,10 @@
   gap: 10px;
 }
 .topbar .statusbar {
-  color: #fff;
+  color: var(--on-brand);
 }
 .phone > .topbar-wrap {
-  background: var(--primary-deep);
+  background: var(--brand-blue-deep);
 }
 .topbar h1 {
   margin: 0;
@@ -268,7 +236,7 @@
   flex: 1;
 }
 .topbar button {
-  color: #fff;
+  color: var(--on-brand);
   display: grid;
   place-items: center;
   width: 32px;
@@ -276,7 +244,7 @@
   border-radius: 10px;
 }
 .topbar button:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: color-mix(in srgb, var(--on-brand) 14%, transparent);
 }
 .brand-dot {
   width: 34px;
@@ -284,8 +252,8 @@
   border-radius: 11px;
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.16);
-  color: #fff;
+  background: color-mix(in srgb, var(--on-brand) 16%, transparent);
+  color: var(--on-brand);
   flex: none;
 }
 
@@ -294,7 +262,7 @@
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 14px;
-  box-shadow: 0 1px 2px rgba(16, 40, 28, 0.04);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--scrim) 4%, transparent);
 }
 .sec-title {
   margin: 18px 2px 9px;
@@ -319,7 +287,7 @@
   height: 46px;
   border-radius: 12px;
   background: var(--primary);
-  color: #fff;
+  color: var(--primary-foreground);
   font-size: 14px;
   font-weight: 800;
   display: flex;
@@ -328,7 +296,8 @@
   gap: 8px;
 }
 .btn:hover {
-  background: var(--primary-deep);
+  background: var(--primary);
+  filter: brightness(0.95);
 }
 .btn.outline {
   background: transparent;
@@ -337,6 +306,7 @@
 }
 .btn.danger {
   background: var(--destructive);
+  color: var(--destructive-foreground);
 }
 .btn.ghost-green {
   background: var(--primary-soft);
@@ -408,7 +378,7 @@
 .chips button.on {
   background: var(--primary);
   border-color: var(--primary);
-  color: #fff;
+  color: var(--primary-foreground);
 }
 
 /* stat cards */
@@ -493,7 +463,7 @@
 .stepper button.solid {
   background: var(--primary);
   border-color: var(--primary);
-  color: #fff;
+  color: var(--primary-foreground);
 }
 .stepper b {
   min-width: 16px;
@@ -559,8 +529,8 @@
 /* login */
 .login {
   flex: 1;
-  background: var(--primary-darker);
-  color: #fff;
+  background: var(--brand-blue-darker);
+  color: var(--on-brand);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -572,7 +542,7 @@
   border-radius: 20px;
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.14);
+  background: color-mix(in srgb, var(--on-brand) 14%, transparent);
   margin-top: 18px;
 }
 .login h1 {
@@ -588,8 +558,8 @@
 }
 .login .panel {
   width: 100%;
-  background: #fff;
-  color: #172332;
+  background: var(--card);
+  color: var(--card-foreground);
   border-radius: 16px;
   padding: 16px;
 }
@@ -605,7 +575,7 @@
   padding: 0 12px;
   border-radius: 11px;
   border: 1px solid var(--input);
-  background: #fff;
+  background: var(--card);
   font-size: 14px;
   outline: 0;
 }
@@ -647,7 +617,7 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--image-surface);
   transition: transform 0.18s;
 }
 .switch.on i {
@@ -826,7 +796,7 @@
 /* PDV scanner: compact camera window, matching the approved green-frame layout. */
 .barcode-scanner-frame {
   height: 200px;
-  background: #111;
+  background: var(--scanner-surface);
 }
 .barcode-scanner-region,
 .barcode-scanner-region > div {
@@ -850,19 +820,19 @@
   width: 32px;
   height: 32px;
   place-items: center;
-  border: 1px solid rgb(255 255 255 / 0.3);
+  border: 1px solid color-mix(in srgb, var(--on-brand) 30%, transparent);
   border-radius: 999px;
-  color: white;
-  background: rgb(16 24 21 / 0.64);
+  color: var(--on-brand);
+  background: color-mix(in srgb, var(--scanner-surface) 80%, transparent);
   backdrop-filter: blur(6px);
   cursor: pointer;
 }
 .barcode-scanner-flash[aria-pressed="true"] {
-  color: #facc15;
-  background: rgb(16 24 21 / 0.82);
+  color: var(--scanner-flash-active);
+  background: var(--scanner-surface);
 }
 .barcode-scanner-flash:focus-visible {
-  outline: 2px solid white;
+  outline: 2px solid var(--on-brand);
   outline-offset: 2px;
 }
 .barcode-scanner-flash:disabled {
@@ -924,12 +894,8 @@
   border-radius: 50%;
 }
 .pos-status.is-open {
-  background: #e4f5ec;
-  color: #087d49;
-}
-.dark .pos-status.is-open {
-  background: #17392a;
-  color: #7bd5a6;
+  background: var(--success-soft);
+  color: var(--success);
 }
 .pos-card {
   background: var(--card);
@@ -1009,10 +975,7 @@
   flex-shrink: 0;
 }
 .pos-low-stock {
-  color: #ac6300;
-}
-.dark .pos-low-stock {
-  color: #ffc46b;
+  color: var(--warning);
 }
 .pos-empty {
   color: var(--muted-foreground);
@@ -1121,7 +1084,7 @@
 .barcode-scanner-frame {
   height: 180px;
   border-radius: 10px;
-  background: #26362e;
+  background: var(--scanner-surface);
 }
 .pdv-scan-guide {
   pointer-events: none;
@@ -1129,7 +1092,7 @@
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgb(0 0 0 / 0.06);
+  background: color-mix(in srgb, var(--scrim) 6%, transparent);
 }
 .pdv-scan-corners {
   position: absolute;
@@ -1143,7 +1106,7 @@
   position: absolute;
   width: 18px;
   height: 18px;
-  border-color: rgb(255 255 255 / 0.92);
+  border-color: color-mix(in srgb, var(--on-brand) 92%, transparent);
   border-style: solid;
 }
 .pdv-scan-corners .is-top-left {
@@ -1178,8 +1141,8 @@
   height: 2px;
   transform: translate(-50%, -50%);
   border-radius: 999px;
-  background: var(--brand-red);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--brand-red) 50%, transparent);
+  background: var(--scanner-accent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--scanner-accent) 50%, transparent);
 }
 .pdv-empty-cart {
   min-height: 150px;
@@ -1219,8 +1182,8 @@
   overflow: hidden;
   border-radius: 10px;
   border: 1px solid var(--border);
-  background: #ffffff;
-  color: #687180;
+  background: var(--image-surface);
+  color: var(--image-foreground);
 }
 .product-photo img {
   width: 100%;
@@ -1250,12 +1213,6 @@
 .product-original-price {
   color: var(--destructive);
   text-decoration-thickness: 1.5px;
-}
-:root {
-  --product-price-green: #087b3e;
-}
-.dark {
-  --product-price-green: #86efac;
 }
 .promotion-camera {
   position: absolute;
@@ -1418,10 +1375,10 @@ button.promotion-product:disabled {
   --dock-muted: color-mix(in srgb, var(--muted-foreground) 82%, var(--primary));
   --dock-active: var(--primary);
   --dock-active-ink: var(--primary-foreground);
-  --dock-highlight: color-mix(in srgb, var(--primary) 88%, white);
+  --dock-highlight: color-mix(in srgb, var(--primary) 88%, var(--on-brand));
   --dock-mid: var(--primary);
-  --dock-low: color-mix(in srgb, var(--primary) 88%, black);
-  --dock-edge: color-mix(in srgb, var(--primary) 82%, white);
+  --dock-low: color-mix(in srgb, var(--primary) 88%, var(--scrim));
+  --dock-edge: color-mix(in srgb, var(--primary) 82%, var(--on-brand));
   --dock-glow-near: color-mix(in srgb, var(--primary) 18%, transparent);
   --dock-glow-far: color-mix(in srgb, var(--primary) 22%, transparent);
 }
@@ -1465,8 +1422,8 @@ button.promotion-product:disabled {
     var(--dock-low) 85%
   );
   box-shadow:
-    inset 0 2px 6px rgb(255 255 255 / 0.27),
-    inset 0 -4px 5px rgb(0 0 0 / 0.2),
+    inset 0 2px 6px color-mix(in srgb, var(--on-brand) 27%, transparent),
+    inset 0 -4px 5px color-mix(in srgb, var(--scrim) 20%, transparent),
     0 0 12px 5px var(--dock-glow-near),
     0 0 28px 9px var(--dock-glow-far);
   pointer-events: none;
@@ -1768,8 +1725,6 @@ a:focus-visible {
 
 /* Payment references supplied by the shop owner: Pix, cash and card. */
 .payment-sheet {
-  --payment-blue: #102555;
-  --payment-green: #06b53d;
   inset: 0;
   display: flex;
   flex-direction: column;
@@ -1779,17 +1734,17 @@ a:focus-visible {
   margin: 0 auto;
   padding: calc(12px + env(safe-area-inset-top)) 12px calc(10px + env(safe-area-inset-bottom));
   border: 0;
-  background: transparent;
+  background: var(--background);
   box-shadow: none;
   animation: none !important;
-  color: var(--payment-blue);
+  color: var(--primary);
   overflow: hidden;
 }
 .payment-brand {
   flex: 0 1 27vh;
   min-height: 80px;
   border-radius: 30px;
-  background: #fff;
+  background: var(--image-surface);
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -1812,15 +1767,15 @@ a:focus-visible {
   justify-content: center;
   gap: 4px;
   border-radius: 10px;
-  background: #fff;
-  color: var(--payment-blue);
+  background: var(--card);
+  color: var(--primary);
   font-size: 12px;
   font-weight: 600;
 }
 .payment-methods button[aria-pressed="true"] {
-  background: var(--payment-blue);
-  color: #fff;
-  box-shadow: inset 0 0 0 2px #a5c1ff;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--primary-foreground) 35%, transparent);
 }
 .payment-sheet button {
   touch-action: manipulation;
@@ -1828,7 +1783,8 @@ a:focus-visible {
 }
 .payment-sheet button:focus-visible,
 .payment-sheet input:focus-visible {
-  outline: 3px solid #ffbf47;
+  outline: 3px solid var(--ring);
+  box-shadow: inset 0 0 0 2px var(--on-brand);
   outline-offset: -3px;
 }
 .payment-sheet button:disabled {
@@ -1842,7 +1798,8 @@ a:focus-visible {
   min-height: 0;
   flex: 1 1 auto;
   border-radius: 28px;
-  background: #fff;
+  background: var(--card);
+  color: var(--card-foreground);
   overflow: hidden;
 }
 .payment-close {
@@ -1854,7 +1811,7 @@ a:focus-visible {
   display: grid;
   place-items: center;
   z-index: 1;
-  color: #e53935;
+  color: var(--destructive);
   border-radius: 50%;
 }
 .payment-close svg {
@@ -1891,14 +1848,14 @@ a:focus-visible {
   max-width: 280px;
   font-size: 15px;
   line-height: 1.5;
-  color: #626262;
+  color: var(--muted-foreground);
 }
 .payment-waiting {
   width: min(100%, 330px);
   min-height: 56px;
   padding: 10px 12px;
   border-radius: 15px;
-  background: #f0f0f0;
+  background: var(--muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1914,7 +1871,7 @@ a:focus-visible {
   width: 7px;
   height: 7px;
   border-radius: 2px;
-  background: var(--payment-green);
+  background: var(--success);
 }
 .payment-copy {
   display: flex;
@@ -1954,8 +1911,13 @@ a:focus-visible {
 }
 .payment-debito .payment-panel,
 .payment-credito .payment-panel {
-  background: linear-gradient(160deg, #082446 0%, #223b90 52%, #7778da 100%);
-  color: white;
+  background: linear-gradient(
+    160deg,
+    var(--brand-blue-darker) 0%,
+    var(--brand-blue) 52%,
+    var(--brand-blue-deep) 100%
+  );
+  color: var(--on-brand);
 }
 .payment-debito .payment-wait-body,
 .payment-credito .payment-wait-body {
@@ -1969,8 +1931,8 @@ a:focus-visible {
 }
 .payment-card-amount {
   border-radius: 10px;
-  background: #e0e4ed;
-  color: #303340;
+  background: var(--card);
+  color: var(--card-foreground);
   font-size: 24px;
   padding: 4px 28px;
   margin-top: 8px;
@@ -1988,12 +1950,12 @@ a:focus-visible {
 }
 .payment-debito .payment-waiting,
 .payment-credito .payment-waiting {
-  color: var(--payment-blue);
-  background: #e6efff;
+  color: var(--primary);
+  background: var(--primary-soft);
 }
 .payment-dinheiro .payment-panel {
-  background: linear-gradient(#1e1e1e 0%, #585858 55%, #000 70%);
-  color: #fff;
+  background: linear-gradient(var(--cash-surface) 0%, var(--cash-key) 55%, var(--cash-base) 70%);
+  color: var(--on-brand);
 }
 .payment-cash-body {
   flex: 1 1 auto;
@@ -2017,18 +1979,18 @@ a:focus-visible {
   justify-content: space-between;
   gap: 6px;
   border-radius: 12px;
-  background: #fff;
+  background: var(--card);
   padding: 5px 8px 5px 12px;
   min-height: 54px;
   margin-bottom: 10px;
-  color: #202020;
+  color: var(--card-foreground);
   font-size: 16px;
 }
 .payment-cash-row strong,
 .payment-cash-row input {
   border: 0;
   border-radius: 8px;
-  background: #dedede;
+  background: var(--muted);
   width: 48%;
   min-width: 0;
   padding: 5px 7px;
@@ -2038,7 +2000,7 @@ a:focus-visible {
   color: inherit;
 }
 .payment-insufficient {
-  color: #ae1d21;
+  color: var(--destructive);
 }
 .payment-keypad {
   display: grid;
@@ -2047,22 +2009,22 @@ a:focus-visible {
   gap: 5px;
   flex: 0 0 clamp(212px, 31vh, 300px);
   padding: 10px;
-  background: #000;
+  background: var(--cash-base);
 }
 .payment-keypad button {
   line-height: 1;
   border-radius: 13px;
-  background: #464646;
+  background: var(--cash-key);
   font-size: 32px;
   font-weight: 600;
-  color: #fff;
+  color: var(--on-brand);
   display: grid;
   place-items: center;
-  box-shadow: inset 0 -2px 2px #333;
+  box-shadow: inset 0 -2px 2px var(--cash-base);
 }
 .payment-keypad .payment-paid {
   grid-column: span 3;
-  background: linear-gradient(#08712d, #08cd48);
+  background: linear-gradient(var(--success-solid-deep), var(--success-solid));
   font-size: 34px;
   font-weight: 800;
 }
@@ -2162,4 +2124,34 @@ a:focus-visible {
   .payment-cash-row input {
     font-size: 18px;
   }
+}
+
+/* Strong close affordance over the fixed dark payment illustrations. */
+.payment-dinheiro .payment-close,
+.payment-debito .payment-close,
+.payment-credito .payment-close {
+  color: var(--destructive-on-dark);
+}
+.payment-success {
+  background: var(--success-solid);
+  color: var(--on-brand);
+}
+.payment-success-accent {
+  color: var(--success-display-text);
+}
+.payment-success-glow {
+  background: color-mix(in srgb, var(--success-glow) 20%, transparent);
+}
+.payment-success-pulse {
+  border-color: color-mix(in srgb, var(--success-glow) 30%, transparent);
+}
+.payment-success-ring {
+  border-color: color-mix(in srgb, var(--success-glow) 20%, transparent);
+}
+.payment-success-icon {
+  filter: drop-shadow(0 0 28px color-mix(in srgb, var(--success-glow) 35%, transparent));
+}
+.payment-success-dot {
+  background: var(--success-glow);
+  box-shadow: 0 0 18px var(--success-glow);
 }

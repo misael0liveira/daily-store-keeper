@@ -20,7 +20,7 @@ export function PaymentSuccess({
 
   return (
     <div
-      className="absolute inset-0 flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-[#087B3E] px-6 text-white"
+      className="absolute inset-0 flex min-h-dvh flex-col items-center justify-center overflow-hidden payment-success px-6"
       role="status"
       aria-live="assertive"
       aria-label="Pagamento recebido"
@@ -47,20 +47,20 @@ export function PaymentSuccess({
         }
       `}</style>
       <div className="relative flex size-[260px] items-center justify-center sm:size-[300px]">
-        <div className="pix-success-glow absolute size-[230px] rounded-full bg-emerald-300/20 blur-3xl sm:size-[270px]" />
-        <div className="pix-success-pulse absolute size-[205px] rounded-full border border-emerald-200/30 sm:size-[245px]" />
-        <div className="pix-success-ring absolute size-[190px] rounded-full border border-emerald-200/20 sm:size-[220px]" />
+        <div className="pix-success-glow absolute size-[230px] rounded-full payment-success-glow blur-3xl sm:size-[270px]" />
+        <div className="pix-success-pulse absolute size-[205px] rounded-full border payment-success-pulse sm:size-[245px]" />
+        <div className="pix-success-ring absolute size-[190px] rounded-full border payment-success-ring sm:size-[220px]" />
         <svg
           viewBox="0 0 140 140"
-          className="relative size-[190px] drop-shadow-[0_0_28px_rgba(134,239,172,.35)] sm:size-[220px]"
+          className="relative size-[190px] payment-success-icon sm:size-[220px]"
           aria-hidden="true"
         >
           <circle
             cx="70"
             cy="70"
             r="52"
-            fill="rgba(255,255,255,.08)"
-            stroke="rgba(255,255,255,.24)"
+            fill="color-mix(in srgb, var(--on-brand) 8%, transparent)"
+            stroke="color-mix(in srgb, var(--on-brand) 24%, transparent)"
             strokeWidth="2"
           />
           <circle
@@ -68,7 +68,7 @@ export function PaymentSuccess({
             cy="70"
             r="52"
             fill="none"
-            stroke="#86EFAC"
+            stroke="var(--success-glow)"
             strokeWidth="8"
             strokeLinecap="round"
             className="pix-success-circle"
@@ -77,24 +77,24 @@ export function PaymentSuccess({
           <path
             d="M43 71.5 61 89 99 51"
             fill="none"
-            stroke="#fff"
+            stroke="var(--on-brand)"
             strokeWidth="10"
             strokeLinecap="round"
             strokeLinejoin="round"
             className="pix-success-check"
           />
         </svg>
-        <span className="pix-success-dot absolute left-1/2 top-1/2 size-3 -translate-x-1/2 rounded-full bg-emerald-200 shadow-[0_0_18px_rgba(167,243,208,.9)]" />
+        <span className="pix-success-dot absolute left-1/2 top-1/2 size-3 -translate-x-1/2 rounded-full payment-success-dot" />
       </div>
       <div className="pix-success-text -mt-3 text-center">
         <p className="text-[30px] font-semibold tracking-tight sm:text-[34px]">
           Pagamento recebido!
         </p>
-        <p className="mt-3 text-[28px] font-medium tracking-tight text-emerald-100">
+        <p className="mt-3 text-[28px] font-medium tracking-tight payment-success-accent">
           {formatBRL(amount)}
         </p>
-        {bank && <p className="mt-2 text-sm font-medium text-emerald-100/80">{bank}</p>}
-        <div className="mt-7 flex items-center justify-center gap-2 text-sm text-emerald-100/80">
+        {bank && <p className="mt-2 text-sm font-medium payment-success-accent">{bank}</p>}
+        <div className="mt-7 flex items-center justify-center gap-2 text-sm payment-success-accent">
           <Check className="size-4" />
           Venda confirmada
         </div>

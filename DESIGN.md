@@ -6,7 +6,7 @@ Reproduzir a proposta visual aprovada pelo usuário em 22/09/2026: interface de 
 
 ## Tokens e componentes
 
-Fonte canônica: src/styles.css. Roboto com fallback system-ui. Fundo #f5f8fb, ação azul #005BAA, assinatura vermelha #E3062D e texto #141b25; cartões brancos com borda discreta, raio 14px e margem de tela 16px. Azul identifica navegação e ações. Vermelho pertence à marca e à linha do scanner; estados semânticos preservam suas próprias cores. Tema escuro usa as variáveis existentes. Sem duplicação de tokens em JavaScript.
+Fonte canônica de cores: src/theme/palette.css, importada e mapeada para Tailwind por src/styles.css. Roboto com fallback system-ui. Fundo #f5f8fb, ação azul #005BAA, assinatura vermelha #E3062D e texto #141b25; cartões brancos com borda discreta, raio 14px e margem de tela 16px. Azul identifica navegação e ações. Vermelho pertence à marca e aos erros; a linha de leitura usa verde conforme a aprovação mais recente. Tema escuro usa as variáveis existentes. Sem duplicação de tokens em JavaScript.
 Logotipo oficial: “MERCADINHO” condensado em vermelho no alto à esquerda, carrinho com produtos coloridos ao lado direito e “União” grande em vermelho abaixo, com deslocamento azul. A composição completa aparece na abertura e no cabeçalho do Início. A abertura usa uma variante opaca sobre fundo fixo #ffffff para que transparência e tema escuro não alterem as cores. O ícone usa o carrinho acima de “UNIÃO”, exatamente como a referência aprovada. Uma marca-d’água central com opacidade mínima pode aparecer atrás das telas, sem competir com dados ou controles.
 
 A abertura nativa do Android usa fundo branco e drawable transparente, sem marca e sem animação de saída. Somente AppStartup apresenta a logo com “Abrindo…” por dois segundos. O cabeçalho do Início usa PNG com canal alfa para integrar a marca ao fundo da tela, sem retângulo branco.
@@ -38,10 +38,33 @@ Identidade aprovada em 02/10/2026: 98201.jpg inteira na abertura com “Abrindo�
 
 ## Fotos e promoções do APK teste — 06/10/2026
 
-ProductPhoto e ProductPrice são os proprietários compartilhados das imagens e preços no Estoque, Caixa e promoções. Fotos em quadros brancos com cantos arredondados; não mudar a cor da fotografia no tema escuro. Preço vigente em verde semântico (`--product-price-green` em src/styles.css); numa promoção ativa, valor original vermelho e riscado, desconto em verde ao lado. Isso não muda a cor azul das ações. Promoção fica ao lado de Todos e Estoque baixo. O modal segue Dialog/Radix, com cartões arredondados para múltiplos produtos, foto à esquerda, valor e desconto lado a lado e duração por datas ou estoque abaixo. Em telas estreitas, as datas se empilham para preservar a leitura.
+ProductPhoto e ProductPrice são os proprietários compartilhados das imagens e preços no Estoque, Caixa e promoções. Fotos em quadros brancos com cantos arredondados; não mudar a cor da fotografia no tema escuro. Preço vigente em verde semântico (`--product-price-green`, alias de `--success` em src/theme/palette.css); numa promoção ativa, valor original vermelho e riscado, desconto em verde ao lado. Isso não muda a cor azul das ações. Promoção fica ao lado de Todos e Estoque baixo. O modal segue Dialog/Radix, com cartões arredondados para múltiplos produtos, foto à esquerda, valor e desconto lado a lado e duração por datas ou estoque abaixo. Em telas estreitas, as datas se empilham para preservar a leitura.
 
 ## Pagamentos — referências Canva fornecidas em 07/10/2026
 
 As três referências SVG do proprietário definem a tela Pix branca com QR real, a tela de dinheiro em cinza/preto com teclado fixo e botão verde PAGO, e a tela de cartão com gradiente azul e ilustração da maquininha. A ilustração foi extraída com sua máscara de transparência do SVG de cartão; o logo completo aprovado continua sendo reutilizado. Os controles de troca de meio e confirmação manual preservam ações do fluxo anterior.
 
 `PaymentSheet` é a variante de pagamento do Sheet modal canônico; foco, Escape, fundo inerte e retorno de foco continuam sob Radix. O teclado ocupa uma área fixa na base; em aparelhos baixos o resumo rola sem esconder o teclado. Valores, QR e troco vêm da venda atual. `PaymentSuccess` reutiliza a animação verde existente para todos os meios durante 2 segundos, com movimento reduzido respeitado.
+
+## Paleta organizada — 08/10/2026
+
+A fonte única de valores é src/theme/palette.css. src/styles.css possui aliases Tailwind e aplicações por componente, sem valores hexadecimais próprios. Componentes consultam papéis semânticos; não criam uma paleta por tela. DESIGN.md registra intenção, não substitui os tokens executáveis.
+
+| Papel              | Claro                 | Escuro                     | Aplicação                                   |
+| ------------------ | --------------------- | -------------------------- | ------------------------------------------- |
+| Ação principal     | #005BAA / branco      | #72B8E8 / #071725          | botões, links, seleção e dock               |
+| Fundo / cartão     | #F5F8FB / branco      | #111B26 / #182634          | todas as rotas, campos e modais             |
+| Texto / secundário | #141B25 / #596777     | #F3F6FA / #A8B5C2          | títulos, labels, ajuda e filtros            |
+| Sucesso            | #087B3E sobre #E4F5EC | #86EFAC sobre #17392A      | preço vigente, caixa aberto e monitor ativo |
+| Aviso              | #8A4B00 sobre #FFF0D5 | #FFCC70 sobre #3B2D17      | estoque baixo e toast offline               |
+| Erro               | #C11C36 sobre #FFEDF0 | #FF8595 sobre #431D29      | validação, ações destrutivas e notificações |
+| Informação         | azul / azul suave     | azul claro / azul profundo | toasts e orientações                        |
+| Marca              | #005BAA e #E3062D     | mesma arte                 | logo e ilustração, sem recolorir pixels     |
+
+Os pares foreground são obrigatórios para fundos sólidos. Cor de texto semântica sobre superfície suave é diferente de texto sobre botão sólido. Estado continua identificável por nome/ícone, além da cor. Bordas dos campos e foco usam tokens com contraste; ajustes nativos de datas seguem color-scheme.
+
+Pagamentos mantêm as composições aprovadas. Cartão usa gradiente derivado do azul da marca; dinheiro mantém painel e teclado escuros, com cinzas azulados da família neutra; dados e abas acompanham o tema. PAGO e confirmação usam o mesmo verde sólido #087B3E, com texto legível. Branco fixo é reservado para a logo, fotografia e QR; a confirmação verde e os elementos da câmera também mantêm contraste independente do tema. O brilho decorativo não é usado como cor do texto secundário.
+
+Exceções técnicas intencionais: o raster QR é #0F172A sobre #FFFFFF, valores exigidos pelo gerador; a composição da foto continua branca; as cores de arranque/manifest nativos são valores estáticos compatíveis com a identidade. Esses pixels e metadados não são cores de controles. O fallback de erro do servidor importa a mesma paleta via CSS inline, sem segunda tabela de valores. ThemeApplier lê --background para a barra do navegador; NativeThemeBars usa a API SystemBars já incluída no Capacitor após a abertura branca e ao voltar ao app.
+
+Verificação de regressão: e2e/palette-*.spec.cjs, tests/palette-browser.cjs, testes anteriores de navegação/Pix/pagamentos/scanner/promoções e testes de unidade. Plano e bugs reproduzidos em replica/.

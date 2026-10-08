@@ -10,6 +10,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { BottomNavigation } from "@/components/BottomNavigation";
+import { NativeThemeBars } from "@/components/NativeThemeBars";
 import appCss from "../styles.css?url";
 import { AppStartup } from "@/components/AppStartup";
 import { AppUpdatePrompt } from "@/components/AppUpdatePrompt";
@@ -114,6 +115,12 @@ function ThemeApplier() {
   const theme = useStore((s) => s.theme);
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute(
+        "content",
+        getComputedStyle(document.documentElement).getPropertyValue("--background").trim(),
+      );
   }, [theme]);
   return null;
 }
@@ -138,6 +145,7 @@ function RootComponent() {
     return (
       <QueryClientProvider client={queryClient}>
         <ThemeApplier />
+        <NativeThemeBars />
         <BrandWatermark />
         <main className="mx-auto max-w-lg">
           <Outlet />

@@ -11,6 +11,10 @@ const config: CapacitorConfig = {
     backgroundColor: "#f5f8fb",
   },
   plugins: {
+    SystemBars: {
+      // The native and React startup surfaces are white in both themes.
+      style: "LIGHT",
+    },
     BarcodeScanning: {
       // Barcode model is bundled with the app instead of downloaded at runtime,
       // so scanning works offline right after install.

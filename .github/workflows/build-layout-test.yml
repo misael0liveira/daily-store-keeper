@@ -77,14 +77,15 @@ jobs:
 
       - name: Verify dock navigation in browser
         run: |
-          npm install --prefix /tmp/mercadinho-browser --no-audit --no-fund playwright
+          npm install --prefix /tmp/mercadinho-browser --no-audit --no-fund playwright @axe-core/playwright
           /tmp/mercadinho-browser/node_modules/.bin/playwright install --with-deps chromium --only-shell
-          python3 -m http.server 4173 --directory dist/client > /tmp/mercadinho-preview.log 2>&1 &
+          python3 tests/serve-preview.py > /tmp/mercadinho-preview.log 2>&1 &
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright node tests/navigation-browser.cjs
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright node tests/pix-browser.cjs
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright node tests/payments-browser.cjs
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright node tests/scanner-browser.cjs
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright node tests/promotions-browser.cjs
+          PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright AXE_MODULE=/tmp/mercadinho-browser/node_modules/@axe-core/playwright node tests/palette-browser.cjs
 
       - name: Upload navigation screenshots
         if: always()
@@ -153,6 +154,7 @@ jobs:
           prerelease: true
           make_latest: false
           body: |
+            Paleta centralizada em todas as telas: azul da marca nas ações, verde nos preços/sucesso, vermelho nos erros e âmbar nos avisos; temas claro e escuro, pagamentos e notificações revisados com testes de contraste e acessibilidade.
             Contorno da tab bar arredondado, sem pontas; movimento da bolinha entre as cinco abas preservado.
             Logo de abertura por 2 segundos; o APK abre diretamente no Caixa.
             Caixa sem o botão Digitar código; carrinho com foto e preços verde/vermelho riscado durante promoções.

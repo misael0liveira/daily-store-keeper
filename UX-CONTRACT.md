@@ -73,3 +73,11 @@ Em 06/10/2026, o usuário solicitou remover o botão “Digitar código”. A c�
 - Mesmas permissões, plugin e serviço Android; scanner, armazenamento, assinatura e identificador do APK oficial preservados. Compatibilidade real com cada formato de notificação exige teste no aparelho: fixtures Java são sintéticas, sem promessa de reconhecer todo texto de todas as versões dos provedores.
 
 Fontes dos identificadores: https://play.google.com/store/apps/details?id=com.mercadopago.wallet ; https://play.google.com/store/apps/details?id=br.com.uol.ps.myaccount ; https://play.google.com/store/apps/details?id=br.com.stone.ton ; https://play.google.com/store/apps/details?id=com.kaching.merchant .
+
+## Contrato de cores — 08/10/2026
+
+src/theme/palette.css é o proprietário dos valores de claro/escuro e das superfícies fixas de arte/QR/câmera/pagamento. src/styles.css é o adaptador para utilities e composição. Button, Input, Sheet, Dialog e Sonner compartilham esses papéis. Uma nova tela escolhe o papel de cada estado e não insere novos hexadecimais em JSX.
+
+Sonner acompanha o tema salvo e mapeia normal/sucesso/informação/aviso/erro para esses tokens. Avisos em superfície suave usam texto semântico, não foreground de um botão sólido. Status de monitoramento e preço usam o mesmo sucesso, sem tornar ações de navegação verdes.
+
+A apresentação não altera regras de venda, permissões, storage, identificador ou assinatura. A única revisão Android remove a reaplicação fixa de ícones escuros no MainActivity: SystemBars do Capacitor recebe o tema no NativeThemeBars e na retomada; a configuração inicial LIGHT preserva a abertura branca. Insets, barras transparentes e comportamento do scanner são mantidos. Build e assinatura são verificados; aparência física e atualização no aparelho permanecem verificações manuais.
