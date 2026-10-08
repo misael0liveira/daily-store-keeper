@@ -671,17 +671,32 @@ function CaixaPage() {
         </SheetContent>
       </Sheet>
       {creditDone && (
-        <PaymentSuccess
-          amount={creditDone.paid}
-          bank={undefined}
-          heading="Venda registrada"
-          detail={
-            creditDone.remaining > 0
-              ? `${formatBRL(creditDone.remaining)} em aberto`
-              : "Compra totalmente paga"
-          }
-          onDone={() => setCreditDone(null)}
-        />
+        <Sheet open>
+          <SheetContent
+            side="bottom"
+            className="payment-sheet"
+            showCloseButton={false}
+            onEscapeKeyDown={(e) => e.preventDefault()}
+            onPointerDownOutside={(e) => e.preventDefault()}
+            onInteractOutside={(e) => e.preventDefault()}
+          >
+            <SheetTitle className="sr-only">Venda registrada</SheetTitle>
+            <SheetDescription className="sr-only">
+              O saldo foi registrado no extrato do cliente.
+            </SheetDescription>
+            <PaymentSuccess
+              amount={creditDone.paid}
+              bank={undefined}
+              heading="Venda registrada"
+              detail={
+                creditDone.remaining > 0
+                  ? `${formatBRL(creditDone.remaining)} em aberto`
+                  : "Compra totalmente paga"
+              }
+              onDone={() => setCreditDone(null)}
+            />
+          </SheetContent>
+        </Sheet>
       )}
     </div>
   );

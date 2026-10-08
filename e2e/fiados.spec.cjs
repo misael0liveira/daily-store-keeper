@@ -89,6 +89,12 @@ async function purchase(page, method) {
   await scan(page, `Resumo da entrada ${method}`);
   await page.getByRole("button", { name: "Registrar venda com fiado", exact: true }).click();
   await page.getByRole("status", { name: "Venda registrada", exact: true }).waitFor();
+  assert(
+    await page
+      .getByRole("status", { name: "Venda registrada", exact: true })
+      .evaluate((el) => el.contains(document.elementFromPoint(innerWidth / 2, innerHeight - 36))),
+    "Confirmação do fiado deve cobrir os controles de fundo",
+  );
   state = await page.evaluate(() => JSON.parse(localStorage.getItem("pdv-mercado")).state);
   assert.equal(state.sales.length, 2);
   assert.equal(state.products["123"].stock, 9);
@@ -107,6 +113,12 @@ async function receive(page, method) {
     .getByRole("link", { name: "Fiados", exact: true })
     .click();
   await page.getByRole("button", { name: /Abrir cliente Joana Silva/ }).click();
+  assert(
+    await page
+      .getByRole("button", { name: "Receber", exact: true })
+      .evaluate((el) => el.getBoundingClientRect().height >= 44),
+    "Receber deve ter alvo de pelo menos44px",
+  );
   await page.getByRole("button", { name: "Receber", exact: true }).click();
   await page.getByLabel("Valor a receber (R$)").fill("50");
   await page.getByRole("button", { name: "Escolher forma de pagamento", exact: true }).click();
@@ -224,6 +236,12 @@ async function freshQuote(page) {
     .waitFor({ timeout: 8000 });
   await page.getByRole("button", { name: "Registrar venda com fiado", exact: true }).click();
   await page.getByRole("status", { name: "Venda registrada", exact: true }).waitFor();
+  assert(
+    await page
+      .getByRole("status", { name: "Venda registrada", exact: true })
+      .evaluate((el) => el.contains(document.elementFromPoint(innerWidth / 2, innerHeight - 36))),
+    "Confirmação do fiado deve cobrir os controles de fundo",
+  );
   const state = await page.evaluate(() => JSON.parse(localStorage.getItem("pdv-mercado")).state);
   assert.equal(state.sales[0].total, 200);
   assert.equal(state.products["123"].stock, 8);

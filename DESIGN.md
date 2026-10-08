@@ -23,7 +23,7 @@ omitted:
 
 Fiados substitui Início no primeiro destino; Histórico, Caixa, Estoque e Ajustes conservam as posições. O resumo anterior, com logo e Nova venda, fica em Ajustes → Resumo da loja. Essa decisão substitui as referências antigas a Início abaixo. CustomersPanel é compartilhado com Gestão → Clientes; cartões, formulários e feedback seguem ManagementUI e os tokens existentes. Listas mostram nome/código e saldo; documentos pessoais não compõem QR. O cartão do cliente usa superfície branca de mídia e legenda própria.
 
-Entrada da compra e recebimento da dívida são contextos do mesmo PaymentSheet. O cabeçalho reserva título, Dividir e fechar; nome longo fica no subtítulo truncado e permanece completo no nome acessível da folha. O resumo do fiado mostra compra, entrada, dívida anterior e novo saldo; só a confirmação registra venda/estoque. A barra do Caixa reserva altura adicional para a ação de fiado.
+Entrada da compra e recebimento da dívida são contextos do mesmo PaymentSheet. O cabeçalho reserva título, Dividir e fechar; nome longo fica no subtítulo truncado e permanece completo no nome acessível da folha. O resumo do fiado mostra compra, entrada, dívida anterior e novo saldo; só a confirmação registra venda/estoque. A barra do Caixa reserva altura adicional para a ação de fiado. A confirmação verde da venda fiada usa o Sheet canônico, sobrepondo navegação e controles durante os dois segundos. Ações de cliente têm alvos de pelo menos44px; o cabeçalho reserva o alvo de fechar.
 
 ## Gestão local — 08/10/2026
 

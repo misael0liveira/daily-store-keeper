@@ -140,3 +140,13 @@ Bugs reproduzidos desta entrega: 3 S1 e 1 S3 corrigidos. Nenhum S1/S2 reproduzid
 - Commit: commit desta edição; consultar git log -1 -- src/components/PaymentSuccess.tsx.
 
 Nenhum S1 aberto nesta edição. Scanner real, atualização sobre APK46 e notificações bancárias permanecem na conferência física, sem bug presumido.
+
+## FIA-04 — navegação aparecia por cima da confirmação de fiado
+
+- Severidade: S3, corrigido.
+- Reprodução: freshQuote, registrar compra com fiado e inspecionar o ponto inferior da confirmação verde.
+- Esperado: confirmação cobre controles de fundo e permanece durante2s.
+- Real: PaymentSuccess fora do Sheet não ultrapassava a camada do dock/barra do Caixa.
+- Evidência: teste elementFromPoint falhou antes da correção em Confirmação do fiado deve cobrir os controles de fundo.
+- Correção: usar Sheet canônico com variante payment-sheet, título/descrição acessíveis e fechamento bloqueado durante sucesso.
+- Commit: revisão de convergência desta edição; consultar git log -1 -- src/routes/vender.tsx.

@@ -43,7 +43,7 @@ export function CustomersPanel() {
     );
   if (creating || (editing && customer))
     return (
-      <section className="pos-card space-y-4">
+      <section className="pos-card space-y-4 customer-panel">
         <h2 className="management-heading">{creating ? "Cadastrar cliente" : "Editar cliente"}</h2>
         <CustomerForm
           customer={creating ? undefined : customer}
@@ -74,7 +74,7 @@ export function CustomersPanel() {
       }
     const balance = customerBalance(state, customer.id);
     return (
-      <div className="space-y-3">
+      <div className="space-y-3 customer-panel">
         <Button
           variant="outline"
           onClick={() => {
@@ -264,7 +264,7 @@ export function CustomersPanel() {
           ))),
   );
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 customer-panel">
       <section className="pos-card customer-totals">
         <div>
           <span>Total a receber</span>

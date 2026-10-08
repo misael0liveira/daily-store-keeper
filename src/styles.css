@@ -2349,8 +2349,17 @@ a:focus-visible {
   padding-bottom: max(24px, env(safe-area-inset-bottom));
 }
 .customer-sheet > h2 {
-  padding-right: 32px;
+  padding-right: 56px;
   overflow-wrap: anywhere;
+}
+.customer-panel button,
+.customer-sheet button {
+  min-height: 44px;
+}
+.customer-sheet > button {
+  min-width: 44px;
+  top: 8px;
+  right: 8px;
 }
 [data-sonner-toaster] {
   max-width: calc(100vw - 32px);

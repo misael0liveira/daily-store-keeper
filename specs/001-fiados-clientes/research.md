@@ -5,7 +5,7 @@
   Alternative: duplicar tela rejeitado por divergência de geometria/monitoramento.
 - Decision: coleta agrupada em um commit local, com recibo idempotente e movimento de caixa único.
   Rationale: collectDebt em sequência não garante atomicidade. Alternative: commits separados rejeitado.
-- Decision: migração aditiva v8 com código determinístico dos IDs antigos, crédito anterior mantido.
+- Decision: migração aditiva v8 com código sequencial estável associado aos IDs antigos, crédito anterior mantido.
   Rationale: preservar relações e backup sem alterar saldo. Alternative: recriar clientes rejeitado.
 - Decision: QR prefixado usa ID interno; picker confirma o perfil antes de selecionar.
   Rationale: não confundir produtos nem expor CPF no QR. Alternative: QR com CPF rejeitado.
