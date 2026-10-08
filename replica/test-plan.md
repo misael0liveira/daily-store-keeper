@@ -38,6 +38,8 @@ Entradas muito longas, duas abas concorrentes, fuso/DST e outra conta não tiver
 
 ## F05 — dimensões dos pagamentos
 
+Regressão F05-E3 (APK45, screenshot 100517.jpg): Dividir não intersecta título, fechar ou QR nos quatro meios; alvo mínimo de 44px. Abrir pelo teclado, editar valor e fechar o editor não desloca o cabeçalho. Editor fica dentro do card e abaixo dos controles; axe inspeciona também o estado aberto. Cobertura acrescentada a payment-dimensions.spec.cjs para a matriz existente de 48 combinações, inclusive áreas seguras e valores grandes.
+
 | Caso   | Caminho e resultado esperado                                                                                      | Verificação                                        |
 | ------ | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
 | F05-H1 | Trocar Dinheiro → Pix → Débito → Crédito: logo, abas, card e fechar conservam x/y/largura/altura                  | payment-dimensions.spec.cjs                        |

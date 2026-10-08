@@ -157,6 +157,7 @@ jobs:
           prerelease: true
           make_latest: false
           body: |
+            Correção do botão Dividir: cabeçalho com espaço próprio para título, divisão e fechamento, sem sobrepor textos ou QR. Campo da parcela rolável e teclado fixo preservados; geometria e abertura da divisão verificadas nos quatro meios, nos dois temas e em telas pequenas.
             Gestão inspirada nas referências do OpenSourcePOS, adaptada ao Mercadinho União e ao funcionamento local.
             Em Ajustes → Gestão: fornecedores, recebimento de mercadorias por embalagem, custo médio, lotes/validade, movimentos e contagem de estoque.
             Caixa: abertura/fundo de troco, suprimentos, retiradas, despesas, fechamento e diferença entre saldo esperado e contado.

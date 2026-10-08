@@ -1,5 +1,16 @@
 # Bugs reproduzidos — revisão da paleta
 
+## DIV-01 — Dividir sobrepunha o título do pagamento
+
+- Severidade: S3, corrigido.
+- Reprodução: APK45/6338816, abrir pagamento em dinheiro; botão Dividir ocupava a posição absoluta top:12px/left:12px no card. O proprietário confirmou em 100517.jpg.
+- Esperado: título, divisão e fechar em áreas distintas; alvos de 44px; editor sem esconder controles ou sair do card.
+- Real: Dividir cobria “Pagamento”. Teste de interseção falhou em light-320x568/Dinheiro antes da correção.
+- Evidência: F05-E3 em e2e/payment-dimensions.spec.cjs, erro `Dividir overlaps payment title`; capturas após correção em navigation-screenshots/payment-dimensions-*.
+- Correção: cabeçalho flexível compartilhado com colunas próprias para título, Dividir e fechar; editor abaixo do cabeçalho, limitado ao card com rolagem. Teclado, rodapé e moldura compartilhada preservados.
+- Verificação: 48/48 combinações de geometria e editor aberto nos quatro meios, claro/escuro, 320–430px e áreas seguras; axe e console/5xx sem falhas. Testes de fluxo de pagamento, gestão, unidade, TypeScript/build e lint também executados nesta revisão.
+- Commit: `fix(payments): reserve header space for split and close controls`; consultar `git log -1 -- e2e/payment-dimensions.spec.cjs`.
+
 ## PAL-01 — filtros do Histórico abaixo do contraste mínimo
 
 - Severidade: S3, corrigido.

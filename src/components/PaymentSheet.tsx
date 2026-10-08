@@ -259,16 +259,35 @@ export function PaymentSheet({
               ))}
             </div>
             <section className="payment-panel">
-              <button
-                type="button"
-                className="payment-split-toggle"
-                aria-expanded={splitOpen}
-                onClick={() => setSplitOpen((v) => !v)}
-              >
-                Dividir
-              </button>
+              <div className="payment-panel-header">
+                <div className="payment-panel-heading">
+                  {method === "dinheiro" && (
+                    <>
+                      <h2>Pagamento</h2>
+                      <p className="payment-subtitle">Dinheiro</p>
+                    </>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className="payment-split-toggle"
+                  aria-expanded={splitOpen}
+                  aria-controls="payment-split-editor"
+                  onClick={() => setSplitOpen((v) => !v)}
+                >
+                  Dividir
+                </button>
+                <button
+                  type="button"
+                  className="payment-close"
+                  aria-label="Fechar pagamento"
+                  onClick={close}
+                >
+                  <X aria-hidden="true" />
+                </button>
+              </div>
               {splitOpen && (
-                <div className="payment-split-editor">
+                <div className="payment-split-editor" id="payment-split-editor">
                   <Label htmlFor="payment-part">Valor desta parcela (R$)</Label>
                   <Input
                     id="payment-part"
@@ -286,19 +305,9 @@ export function PaymentSheet({
                   </Button>
                 </div>
               )}
-              <button
-                type="button"
-                className="payment-close"
-                aria-label="Fechar pagamento"
-                onClick={close}
-              >
-                <X aria-hidden="true" />
-              </button>
               {method === "dinheiro" ? (
                 <>
                   <div className="payment-cash-body">
-                    <h2>Pagamento</h2>
-                    <p className="payment-subtitle">Dinheiro</p>
                     <div className="payment-cash-row">
                       <span>Total a pagar</span>
                       <strong>{formatBRL(amount)}</strong>

@@ -1930,13 +1930,30 @@ a:focus-visible {
   gap: 10px;
   font-size: 0.875rem;
 }
+.payment-panel-header {
+  --payment-header-height: 64px;
+  flex: 0 0 var(--payment-header-height);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px var(--payment-content-gutter);
+}
+.payment-panel-heading {
+  min-width: 0;
+  flex: 1;
+}
+.payment-panel-header h2 {
+  font-size: clamp(20px, 5.5vw, 26px);
+  font-weight: 700;
+  line-height: 1.2;
+}
+.payment-panel-header .payment-subtitle {
+  margin: 2px 0 0;
+}
 .payment-split-toggle {
-  position: absolute;
-  z-index: 1;
-  top: 12px;
-  left: 12px;
+  flex: none;
   font-size: 0.8rem;
-  min-height: 36px;
+  min-height: 44px;
   padding: 4px 8px;
   background: var(--card);
   color: var(--foreground);
@@ -1946,7 +1963,7 @@ a:focus-visible {
 .payment-split-editor {
   position: absolute;
   z-index: 3;
-  top: 54px;
+  top: 64px;
   left: 12px;
   right: 12px;
   display: grid;
@@ -1956,6 +1973,8 @@ a:focus-visible {
   padding: 16px;
   border: 1px solid var(--border);
   border-radius: 12px;
+  max-height: calc(100% - 72px);
+  overflow-y: auto;
   box-shadow: 0 8px 24px color-mix(in srgb, var(--foreground) 15%, transparent);
 }
 @media (max-width: 350px) {
@@ -1964,9 +1983,7 @@ a:focus-visible {
   }
 }
 .payment-close {
-  position: absolute;
-  top: 8px;
-  right: 8px;
+  flex: none;
   width: 44px;
   height: 44px;
   display: grid;
@@ -1989,7 +2006,7 @@ a:focus-visible {
   min-height: 0;
   align-items: center;
   gap: 8px;
-  padding: 52px var(--payment-content-gutter) 12px;
+  padding: 12px var(--payment-content-gutter) 12px;
   overflow-y: auto;
   text-align: center;
 }
@@ -2144,12 +2161,6 @@ a:focus-visible {
   min-height: 0;
   padding: 16px var(--payment-content-gutter) 12px;
 }
-.payment-cash-body h2 {
-  font-size: 26px;
-  font-weight: 700;
-  line-height: 1.2;
-  padding-right: 44px;
-}
 .payment-subtitle {
   margin: 4px 0 12px;
   font-size: 14px;
@@ -2232,12 +2243,16 @@ a:focus-visible {
   .payment-cash-body {
     padding: 8px var(--payment-content-gutter) 4px;
   }
-  .payment-cash-body h2 {
-    font-size: 24px;
-    line-height: 28px;
+  .payment-panel-header {
+    --payment-header-height: 56px;
+    padding-top: 4px;
+    padding-bottom: 4px;
   }
-  .payment-subtitle {
-    margin: 2px 0 8px;
+  .payment-split-editor {
+    top: 56px;
+    max-height: calc(100% - 64px);
+  }
+  .payment-panel-header .payment-subtitle {
     font-size: 14px;
     line-height: 18px;
   }

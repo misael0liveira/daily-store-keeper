@@ -49,6 +49,14 @@ module.exports = async function dimensions(page, { label, baseline = false, safe
           };
         }),
         close: box(el.querySelector(".payment-close").getBoundingClientRect()),
+        split: box(el.querySelector(".payment-split-toggle").getBoundingClientRect()),
+        title: el.querySelector(".payment-cash-body h2, .payment-panel-header h2")
+          ? box(
+              el
+                .querySelector(".payment-cash-body h2, .payment-panel-header h2")
+                .getBoundingClientRect(),
+            )
+          : null,
         rows: [...el.querySelectorAll(".payment-cash-row")].map((row) => ({
           rect: box(row.getBoundingClientRect()),
           field: box(row.querySelector("strong, input").getBoundingClientRect()),
@@ -68,6 +76,20 @@ module.exports = async function dimensions(page, { label, baseline = false, safe
       path: `navigation-screenshots/payment-dimensions-${label}-${method}.png`,
     });
     if (baseline) continue;
+    const overlaps = (a, b) => a.x < b.right && a.right > b.x && a.y < b.bottom && a.bottom > b.y;
+    assert.ok(
+      !geometry.title || !overlaps(geometry.split, geometry.title),
+      `${label}/${method}: Dividir overlaps payment title`,
+    );
+    assert.ok(
+      !overlaps(geometry.split, geometry.close),
+      `${label}/${method}: Dividir overlaps close`,
+    );
+    assert.ok(
+      !geometry.qr || !overlaps(geometry.split, geometry.qr),
+      `${label}/${method}: Dividir overlaps QR`,
+    );
+    assert.ok(geometry.split.height >= 44, `${label}/${method}: Dividir touch target too short`);
     const reference = measurements[0];
     for (const name of ["brand", "logo", "methods", "panel", "close"]) {
       for (const key of ["x", "y", "width", "height"]) {
@@ -145,6 +167,34 @@ module.exports = async function dimensions(page, { label, baseline = false, safe
       }
     }
     await scan(page, `${label} ${method} dimensions`);
+    const divide = sheet.getByRole("button", { name: "Dividir", exact: true });
+    await divide.focus();
+    await page.keyboard.press("Enter");
+    const installment = sheet.getByLabel("Valor desta parcela (R$)", { exact: true });
+    await installment.fill("1,24");
+    const editor = await installment.evaluate((input) => {
+      const rect = input.closest(".payment-split-editor").getBoundingClientRect();
+      return { x: rect.x, y: rect.y, right: rect.right, bottom: rect.bottom };
+    });
+    assert.ok(
+      editor.y >= geometry.split.bottom && editor.y >= geometry.close.bottom,
+      `${label}/${method}: installment editor hides header controls`,
+    );
+    assert.ok(
+      editor.x >= geometry.panel.x &&
+        editor.right <= geometry.panel.right &&
+        editor.bottom <= geometry.panel.bottom,
+      `${label}/${method}: installment editor outside panel`,
+    );
+    await scan(page, `${label} ${method} installment editor`);
+    await installment.fill("");
+    await sheet.getByRole("button", { name: "Usar valor da parcela", exact: true }).click();
+    await installment.waitFor({ state: "hidden" });
+    const restored = await divide.boundingBox();
+    assert.ok(
+      Math.abs(restored.x - geometry.split.x) <= 1 && Math.abs(restored.y - geometry.split.y) <= 1,
+      `${label}/${method}: Dividir shifts after editing installment`,
+    );
   }
   console.log(
     JSON.stringify({

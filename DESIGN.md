@@ -94,6 +94,8 @@ Verificação de regressão: e2e/palette-*.spec.cjs, tests/palette-browser.cjs, 
 
 ## Dimensões dos pagamentos — 08/10/2026
 
+Correção após conferência do APK45 no aparelho: o card reserva um cabeçalho de 64px (56px até 700px de altura). No dinheiro, título/subtítulo ficam na coluna flexível à esquerda; Dividir e fechar têm alvos de 44px e colunas próprias à direita. Todos os meios mantêm esse cabeçalho na mesma posição. O editor da parcela abre abaixo dele e rola dentro do card. Nenhuma ação flutua sobre título ou QR; teclado e rodapé de confirmação continuam separados do conteúdo rolável.
+
 PaymentSheet continua o proprietário único dos quatro meios. A geometria compartilhada está em src/styles.css: margem de 12px, logo contida sem deformação, quatro abas de mesma largura, ícones de 18×18px acima dos nomes e card flexível até a área segura inferior. A altura da logo é clamp(96px, 16dvh, 144px); abas de 60px. Em telas de até 700px de altura, a logo ocupa 80px, as abas 56px e os intervalos 8px. Essas medidas não dependem do meio selecionado: trocar dinheiro/Pix/débito/crédito não desloca logo, abas, card ou fechar.
 
 Os três campos monetários do dinheiro compartilham largura de 55% e alinhamento à direita; os rótulos ocupam a outra coluna. Teclado fixo com quatro linhas e botão PAGO permanece na base do card; somente o resumo pode rolar em alturas insuficientes. O QR mantém proporção quadrada e reserva espaço para fechar. Cartão contém a ilustração sem deformá-la e alinha valor/status à margem interna do card.
