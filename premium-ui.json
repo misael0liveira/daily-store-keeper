@@ -4,6 +4,7 @@
   "locale": "pt-BR",
   "canonicalMap": "UX-CONTRACT.md",
   "ownership": {
-    "Date": "native"
+    "Date": "native",
+    "Select/Listbox": "native"
   }
 }

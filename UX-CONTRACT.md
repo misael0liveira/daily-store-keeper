@@ -1,5 +1,26 @@
 # Contrato de interface
 
+## Gestão local — autorização de 08/10/2026
+
+Fonte de negócio: MANAGEMENT-POLICY.md, aplicação autorizada pelo proprietário da análise OpenSourcePOS. As regras de estoque insuficiente, caixa fechado, cancelamento e identidade substituem explicitamente os comportamentos antigos descritos abaixo; não são alterações apenas de apresentação.
+
+| Capacidade     | Proprietário                   | Fonte                    | Variantes                                                          | Verificação        |
+| -------------- | ------------------------------ | ------------------------ | ------------------------------------------------------------------ | ------------------ |
+| Form           | ManagementUI.LocalForm e Field | política e este contrato | criação/edição, validação própria, campos preservados em erro      | management E2E     |
+| Select/Listbox | ManagementUI.Choice            | DESIGN.md                | native, popup do sistema aceito                                    | teclado e viewport |
+| Date           | Input/Field                    | política de datas local  | native date/month                                                  | filtros e entrada  |
+| Toast          | Sonner                         | paleta existente         | sucesso/aviso/erro                                                 | axe e console      |
+| CRUD           | useStore/gestao                | MANAGEMENT-POLICY.md     | salvar no painel; arquivar com confirmação; eventos compensatórios | unitários e E2E    |
+| Scrollbar      | styles.css                     | tokens existentes        | global, formulários com scroll do documento                        | overflow e foco    |
+
+Listas de gestão exibem 20 registros e Ver mais. Busca local é transitória; não coloca contatos, motivos ou documentos comerciais na URL. Seção da gestão usa parâmetro sec para Voltar/Avançar. Alterações de outra aba reidratam dados; commit verifica revisão e rejeita sobrescrita stale. O app não promete sincronização entre aparelhos.
+
+Equipe é opcional e identificada em Gestão; autorização é conferida no domínio. Bloquear ou recarregar encerra a identificação. Área sem permissão informa a restrição e encaminha à equipe. PIN não é incluído em backup portátil. Venda não requer cadastro de cliente; fiado exige cliente e vencimento.
+
+Cancelamento/devolução usa Dialog com motivo, quantidade restante, destino e reembolso conferido. Produtos arquivados e fotos ficam preservados. Backup mostra prévia antes de confirmação app-owned; falha não destrói dados atuais. Importação CSV inválida não grava linhas parciais.
+
+Parcelas recebidas e cotação ficam persistidas; fechar a folha não apaga recebimento. Alterar carrinho com parcelas exige devolução conferida. Notificação aguarda o valor da parcela, e só conclusão integral mostra confirmação verde de 2s. Fechamento bloqueia pagamentos pendentes. Uma parcela não é uma segunda venda.
+
 ## Fontes
 
 AGENTS.md: preservar dados, fluxo offline, scanner e atualização Android. Aprovação do usuário em 22/09/2026: aplicar a proposta visual. Implementação existente em useStore.ts: regras de quantidade, venda, estoque e exclusão. A apresentação não cria novas regras de negócio.

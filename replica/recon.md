@@ -1,5 +1,21 @@
 # Mercadinho União — mapa dos fluxos locais
 
+## Gestão local solicitada em 08/10/2026
+
+F06 Dados e estoque: migração v6→v7, identidade fixa, bloqueio de falta, movimentos, contagem, perda e arquivamento.
+F07 Devoluções: parcial, total, cancelamento, recompensação única, custo original e comprovante PDF.
+F08 Caixa: fundo inicial, suprimento, sangria, despesa dinheiro/Pix, fechamento e diferença.
+F09 Recebimentos: fornecedor, caixas×unidades, custo médio, lote, validade e gravação atômica.
+F10 Parcelas: dinheiro+Pix/cartão, valor restante no monitor, retomada, devolução e duplicação.
+F11 Clientes/fiado: cliente opcional, dívida, vencimento, recebimento parcial sem nova venda.
+F12 Atendimento: guardar, retomar, código corrigido, produto arquivado.
+F13 Quantidades: kg/l, combos, consumo por componentes, vencidos e perdas.
+F14 Backup/CSV: fotos, integridade, prévia, restauração, erros, duplicados e zeros iniciais.
+F15 Equipe: proprietário/gerente/caixa, identificação local, PIN incorreto, acesso negado.
+F16 Relatórios: mês fechado/30 dias, custos desconhecidos, margem histórica, categorias e perdas.
+
+Todos os testes usam dados sintéticos e o app local. Não testam servidores do OpenSourcePOS nem enviam pagamentos. Matriz comum: vazio, acentos/emoji, duplo envio, erro de armazenamento, Voltar/reload, offline, 320–430px, tema, teclado, nomes acessíveis, console/5xx e axe. Login remoto, Stripe e OAuth não se aplicam. Notificação real, impressora e WebView físico são verificação em aparelho, não presumida a partir do bridge sintético.
+
 Escopo: paleta e dimensões dos pagamentos do APK teste, solicitações de 08/10/2026. Aplicativo próprio existente, não uma cópia de serviço externo. A skill replica-test foi lida em https://github.com/Jakeschincariol/replica-skill/blob/main/replica-test/SKILL.md. Nenhum teste é enviado a bancos ou outros servidores.
 
 | Fluxo                     | Telas e estados                                                                         | Proprietário                                          | Dados                                        |

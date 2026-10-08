@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { formatBRL, PAYMENT_LABELS, useStore } from "@/store/useStore";
+import { formatBRL, isLowStock, saleNet, saleMethodLabel, useStore } from "@/store/useStore";
 
 export const Route = createFileRoute("/")({ component: Dashboard });
 
@@ -7,9 +7,9 @@ function Dashboard() {
   const { products, sales, cashOpen, settings } = useStore();
   const start = new Date();
   start.setHours(0, 0, 0, 0);
-  const today = sales.filter((s) => s.timestamp >= start.getTime());
-  const productList = Object.values(products);
-  const lowStock = productList.filter((p) => p.stock <= 5);
+  const today = sales.filter((s) => s.timestamp >= start.getTime() && s.status !== "cancelled");
+  const productList = Object.values(products).filter((p) => p.active !== false);
+  const lowStock = productList.filter(isLowStock);
   const recent = [...sales].sort((a, b) => b.timestamp - a.timestamp).slice(0, 2);
   return (
     <div className="pos-page pos-home">
@@ -28,7 +28,7 @@ function Dashboard() {
       </header>
       <section className="pos-card pos-summary" aria-labelledby="today-title">
         <h2 id="today-title">Resumo de hoje</h2>
-        <strong>{formatBRL(today.reduce((sum, s) => sum + s.total, 0))}</strong>
+        <strong>{formatBRL(today.reduce((sum, s) => sum + saleNet(s), 0))}</strong>
         <p>
           {today.length} vendas ·{" "}
           {today.reduce((sum, s) => sum + s.items.reduce((n, i) => n + i.qty, 0), 0)} itens
@@ -72,7 +72,8 @@ function Dashboard() {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}{" "}
-                  · {PAYMENT_LABELS[s.method]}
+                  · {saleMethodLabel(s)}
+                  {s.status === "cancelled" ? " · Cancelada" : ""}
                 </span>
                 <span>{formatBRL(s.total)}</span>
               </li>

@@ -28,14 +28,15 @@ function dockOutline(center: number) {
 
 export function BottomNavigation() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const selected = pathname.startsWith("/vendas/configuracoes")
-    ? 4
-    : Math.max(
-        0,
-        navigation.findIndex((item) =>
-          item.to === "/" ? pathname === "/" : pathname.startsWith(item.to),
-        ),
-      );
+  const selected =
+    pathname.startsWith("/vendas/configuracoes") || pathname.startsWith("/gestao")
+      ? 4
+      : Math.max(
+          0,
+          navigation.findIndex((item) =>
+            item.to === "/" ? pathname === "/" : pathname.startsWith(item.to),
+          ),
+        );
   const navRef = useRef<HTMLElement>(null);
   const pathRef = useRef<SVGPathElement>(null);
   const centerRef = useRef(0.15 + selected * 0.175);

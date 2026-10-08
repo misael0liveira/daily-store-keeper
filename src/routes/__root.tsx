@@ -139,6 +139,11 @@ function RootComponent() {
   const isAdminCodes = pathname.replace(/\/+$/, "") === "/codigos";
   useEffect(() => {
     registerPWA();
+    const refresh = (event: StorageEvent) => {
+      if (event.key === "pdv-mercado") void useStore.persist.rehydrate();
+    };
+    window.addEventListener("storage", refresh);
+    return () => window.removeEventListener("storage", refresh);
   }, []);
 
   if (isAdminCodes) {

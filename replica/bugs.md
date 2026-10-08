@@ -55,3 +55,45 @@ Nenhum S1/S2 reproduzido nesta revisão. Nenhum bug reproduzido permanece aberto
 - Evidência: primeira execução falhou em `light-320x568/Dinheiro: compressed payment icon`; inspeção da geometria do SVG no navegador.
 - Correção: ícone não encolhe e o nome fica abaixo do ícone. Teste inspeciona dimensões, alinhamento e limites do rótulo.
 - Commit: o commit desta revisão; consultar `git log -1 -- e2e/payment-dimensions.spec.cjs`.
+
+## GES-01 — estoque insuficiente concluía venda e truncava saldo
+
+- Severidade: S1, corrigido.
+- Reprodução: baseline c06c46f, cadastrar duas unidades, montar cotação com três e finalizar.
+- Esperado: bloquear fechamento, mantendo saldo e carrinho.
+- Real: documento era salvo e saldo era limitado a zero.
+- Evidência: F06-N1 falhou antes da implementação; regressão agora exige throw, saldo 2 e nenhuma venda.
+- Correção: validação de estoque de todos os itens/componentes antes do commit único.
+- Commit: commit desta entrega; consultar `git log -1 -- tests/management.test.mjs`.
+
+## GES-02 — exclusão apagava o documento sem compensar estoque
+
+- Severidade: S1, corrigido.
+- Reprodução: baseline c06c46f, vender uma das duas unidades e excluir a venda pelo Histórico.
+- Esperado: conservar documento cancelado e compensar estoque uma única vez.
+- Real: venda sumia do histórico e saldo permanecia reduzido.
+- Evidência: F07-H1 falhou antes da implementação; novo teste verifica histórico, status e repetição da operação.
+- Correção: cancelamento/devolução compensatórios, limite ao saldo ainda vendido e idempotência.
+- Commit: commit desta entrega; consultar `git log -1 -- src/store/useStore.ts`.
+
+## GES-03 — caixa fechado aceitava fechamento de venda
+
+- Severidade: S1, corrigido.
+- Reprodução: baseline c06c46f, definir caixa fechado e finalizar carrinho.
+- Esperado: solicitar abertura de caixa antes de registrar pagamento/venda.
+- Real: documento era concluído sem caixa aberto.
+- Evidência: F08-N1 falhou antes da implementação. Unidade e navegador agora verificam o bloqueio.
+- Correção: sessão aberta exigida no domínio para pagamento, venda e dinheiro físico.
+- Commit: commit desta entrega; consultar `git log -1 -- src/store/useStore.ts`.
+
+## GES-04 — cache tentava buscar páginas já salvas ao entrar offline
+
+- Severidade: S3, corrigido.
+- Reprodução: regressão local F01-N1, cache aquecido, desligar rede e verificar atualização.
+- Esperado: continuar no app sem pedidos redundantes nem console.error.
+- Real: seis recursos retornavam ERR_INTERNET_DISCONNECTED durante o aquecimento de rotas.
+- Evidência: palette-browser.cjs falhou no monitor de console durante esta implementação.
+- Correção: aquecimento reutiliza resposta já presente e não inicia requisições sem rede.
+- Commit: commit desta entrega; consultar `git log -1 -- src/lib/pwa-register.ts`.
+
+Bugs reproduzidos desta entrega: 3 S1 e 1 S3 corrigidos. Nenhum S1/S2 reproduzido permanece aberto. Cenários de câmera/instalação/notificações reais permanecem na lista de conferência física, sem bug atribuído sem reprodução.

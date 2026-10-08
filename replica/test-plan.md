@@ -50,3 +50,40 @@ Entradas muito longas, duas abas concorrentes, fuso/DST e outra conta não tiver
 Capturas do baseline demonstraram deslocamentos ao trocar de meio. Os testes definitivos verificam a geometria, os nomes acessíveis, axe e erros de console/5xx. O teste falhou antes da correção por ícone comprimido em 320×568. Teste físico em Android permanece pendente; não atribuir bug ao aparelho sem reprodução.
 
 Resultado F05: 48 combinações de meio/tema/dimensões aprovadas, incluindo insets simulados e valor ampliado; 48 inspeções axe adicionais sem violações A/AA, sem console.error/pageerror/5xx. Os seis testes de navegador anteriores, as 14 combinações de paleta, os 18 testes de unidade, TypeScript, lint do componente e build web passaram. Auditoria estática estrita: zero erros/avisos. Dois bugs S3 de geometria reproduzidos e corrigidos; nenhum bug reproduzido permanece aberto. Capturas locais de dinheiro/Pix/cartão nos extremos foram conferidas visualmente. Validação física continua pendente.
+
+## Gestão local — aplicação OpenSourcePOS, 08/10/2026
+
+| Caso   | Resultado esperado                                                        | Teste                                               |
+| ------ | ------------------------------------------------------------------------- | --------------------------------------------------- |
+| F06-N1 | Falta de estoque bloqueia venda sem alterar saldo/documentos              | management.test.mjs                                 |
+| F06-H1 | Perda/contagem exige motivo e registra antes/depois                       | management-inventory.spec.cjs                       |
+| F06-E1 | Revisão de outra aba impede sobrescrita e reidrata                        | management.test.mjs                                 |
+| F06-E2 | Falha de gravação desfaz recebimento inteiro em memória e disco           | management.test.mjs                                 |
+| F06-E3 | Custo digitado 7,50 permanece editável e salva 7.5                        | management-inventory.spec.cjs                       |
+| F07-H1 | Cancelar preserva documento, recompõe apenas saldo não devolvido          | management.test.mjs + management-payments.spec.cjs  |
+| F07-E1 | Devolução parcial preserva custo original, limite e idempotência          | management.test.mjs                                 |
+| F07-E2 | Devoluções em gramas somam exatamente o valor arredondado da venda        | management.test.mjs                                 |
+| F08-H1 | Abertura, suprimento, retirada, despesa e diferença de fechamento         | management-cash.spec.cjs + management.test.mjs      |
+| F08-N1 | Caixa fechado bloqueia venda, sem perda de carrinho                       | management-cash.spec.cjs + management.test.mjs      |
+| F09-H1 | Caixas×unidades, custo médio, lote e movimento únicos                     | management-inventory.spec.cjs + management.test.mjs |
+| F09-E1 | Duplo clique/mesmo id não duplica recebimento                             | management-inventory.spec.cjs + management.test.mjs |
+| F09-N1 | Linha inválida impede todas as linhas                                     | management.test.mjs                                 |
+| F10-H1 | Dinheiro + Pix, saldo correto, cotação persistida e baixa única           | management-payments.spec.cjs + management.test.mjs  |
+| F10-E1 | Fechar/recarregar mantém parcela; só saldo integral exibe sucesso         | management-payments.spec.cjs                        |
+| F10-E2 | Promoção de 100% conclui venda de total zero                              | management.test.mjs                                 |
+| F11-H1 | Fiado e recebimento parcial não duplicam receita; retorno reduz dívida    | management.test.mjs                                 |
+| F11-N1 | PIN errado e caixa sem permissão não acessam backup                       | management-team.spec.cjs                            |
+| F11-N2 | Código reservado e fração de componente em unidades são rejeitados        | management.test.mjs                                 |
+| F12-H1 | Suspensão e troca de código preservam id e carrinho guardado              | management.test.mjs                                 |
+| F13-H1 | Kg/l e combos baixam componentes exatos; lote vencido é bloqueado         | management.test.mjs                                 |
+| F14-H1 | Exportação/preview/restauração com foto em IndexedDB, sem equipe portátil | management-data.spec.cjs                            |
+| F14-E1 | CSV preserva zeros iniciais e dados de custo/estoque                      | management-data.spec.cjs                            |
+| F14-N1 | CSV duplicado e checksum adulterado não alteram dados                     | management-data.spec.cjs                            |
+| F15-H1 | Proprietário/caixa, identificação local e verificador sem PIN em texto    | management-team.spec.cjs                            |
+| F16-E1 | Dez telas em 320×568 nos dois temas sem overflow/violações axe            | management-browser.cjs                              |
+
+Matriz comum aplicada: vazio/erro, nomes com acento e emoji, duplo envio, reload, duas abas concorrentes, armazenamento indisponível, acessibilidade, viewport pequeno e dois temas. As regressões antigas cobrem offline, teclado, notificações sintéticas por sessão/valor, câmeras e confirmação de 2s. O teste de CSV verifica o arquivo inteiro antes de salvar; teste de fotos compara bytes antes/depois da restauração e exige nova chave local.
+
+Verificação manual disponível: inspeção das capturas da Gestão clara, caixa escuro e estados de pagamento/estoque. Limites mantidos: instalação Android, recebimentos bancários reais, lanterna/foco físico e impressão no aparelho. Não se declara sincronização remota, estorno bancário, emissão fiscal ou impressão Bluetooth.
+
+Resultados: 48/48 cenários novos de navegador, 14/14 combinações de paleta, 48/48 combinações de geometria, mais navegação, Pix, pagamentos, scanner e promoções aprovados. Evidências em management-browser-results.json e no workflow do APK. Unidade: 34/34; TypeScript e lint dos arquivos alterados sem erros/avisos; build web aprovado; auditoria estrita 0 erros/avisos; DESIGN.md lint 0 erros/avisos.

@@ -1,0 +1,12 @@
+{
+  "cases": 48,
+  "passed": 48,
+  "failed": 0,
+  "viewport": "320x568,390x844",
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "bridge": "synthetic",
+  "screenshots": "navigation-screenshots"
+}

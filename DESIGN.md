@@ -1,4 +1,27 @@
+---
+version: alpha
+colors:
+  primary: "#005baa"
+  signature: "#e3062d"
+  background: "#f5f8fb"
+  foreground: "#141b25"
+typography:
+  sans:
+    fontFamily: "Roboto, system-ui, sans-serif"
+rounded:
+  card: "14px"
+omitted:
+  - section: spacing
+    reason: "Mantida na implementação canônica src/styles.css."
+  - section: components
+    reason: "Primitivos e proprietários documentados abaixo e em UX-CONTRACT.md."
+---
+
 # Mercadinho União — visual aprovado
+
+## Gestão local — 08/10/2026
+
+A gestão utiliza a identidade aprovada, tokens de src/theme/palette.css, cartões pos-card e coluna mobile existente. A assinatura visual continua sendo logo e dock; novas telas priorizam dados e ações, sem nova paleta ou decoração. Ajustes dá acesso a Gestão sem adicionar abas ao dock. Painéis de entrada, inventário, caixa, custos, clientes, atendimentos, backup e equipe compartilham ManagementUI. Native select/date/month aceitam popup do Android/navegador; não prometem geometria ou idioma controlados pelo app. Campos extras do produto ficam em disclosure opcional. Documentos históricos exibem situação e valores; cancelamento não apaga a venda. Pagamento dividido usa controle discreto dentro do enquadramento aprovado, mantendo logo, quatro abas e teclado.
 
 ## Direção
 

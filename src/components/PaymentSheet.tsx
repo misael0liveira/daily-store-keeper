@@ -1,12 +1,14 @@
 import { Link } from "@tanstack/react-router";
 import { Banknote, Copy, CreditCard, Delete, QrCode, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { PaymentSuccess } from "@/components/PaymentSuccess";
 import { PixQr } from "@/components/PixQr";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
-import { buildPixPayload } from "@/lib/pix";
+import { buildPixPayload, createPixTxid } from "@/lib/pix";
 import { PixNotification } from "@/lib/pix-notification";
 import { editCashAmount, cashAmount } from "@/lib/cash-keypad";
 import { PAYMENT_LABELS, formatBRL, useStore, type PaymentMethod } from "@/store/useStore";
@@ -18,7 +20,15 @@ const methods: { key: PaymentMethod; icon: typeof Banknote }[] = [
   { key: "credito", icon: CreditCard },
 ];
 const keys = ["1", "2", "3", "backspace", "4", "5", "6", "clear", "7", "8", "9", "0"];
-type Confirmation = { method: PaymentMethod; paidAmount?: number; change?: number };
+export type Confirmation = {
+  method: PaymentMethod;
+  paidAmount?: number;
+  change?: number;
+  amount?: number;
+  source?: "manual" | "notification";
+  reference?: string;
+  bank?: string | undefined;
+};
 
 export function PaymentSheet({
   open,
@@ -31,7 +41,7 @@ export function PaymentSheet({
   onOpenChange: (open: boolean) => void;
   total: number;
   pixTxid: string;
-  onConfirm: (payload: Confirmation) => boolean;
+  onConfirm: (payload: Confirmation) => boolean | "partial";
 }) {
   const settings = useStore((s) => s.settings);
   const [method, setMethod] = useState<PaymentMethod>("dinheiro");
@@ -39,11 +49,22 @@ export function PaymentSheet({
   const [success, setSuccess] = useState<{ amount: number; bank: string | undefined } | null>(null);
   const [notificationAccess, setNotificationAccess] = useState<boolean | null>(null);
   const [manualOpen, setManualOpen] = useState(false);
+  const [splitOpen, setSplitOpen] = useState(false);
+  const [splitRaw, setSplitRaw] = useState("");
+  const splitValue = Number(splitRaw.replace(",", "."));
+  const amount = splitRaw.trim() ? Math.round(splitValue * 100) / 100 : total;
+  const invalidSplit =
+    !Number.isFinite(amount) || amount < 0 || (amount === 0 && total > 0) || amount > total;
+  const splitPayment = splitRaw.trim().length > 0;
+  const effectiveTxid = useMemo(
+    () => (splitPayment ? createPixTxid() : pixTxid),
+    [splitPayment, pixTxid],
+  );
   const locked = useRef(false);
   const onConfirmRef = useRef(onConfirm);
   onConfirmRef.current = onConfirm;
-  const paid = cashAmount(paidRaw, total);
-  const change = Math.round((paid - total) * 100) / 100;
+  const paid = cashAmount(paidRaw, amount);
+  const change = Math.round((paid - amount) * 100) / 100;
   const insufficient = change < 0;
   const pixReady = settings.pixKey.trim().length > 0;
   const pixPayload =
@@ -52,8 +73,8 @@ export function PaymentSheet({
           key: settings.pixKey,
           merchantName: settings.merchantName || settings.storeName,
           city: settings.city,
-          amount: total,
-          txid: pixTxid,
+          amount,
+          txid: effectiveTxid,
         })
       : "";
 
@@ -62,8 +83,33 @@ export function PaymentSheet({
   acceptRef.current = (payload, bank) => {
     if (locked.current || !open) return;
     locked.current = true;
-    if (!onConfirmRef.current(payload)) {
+    let result: boolean | "partial";
+    try {
+      result = onConfirmRef.current({
+        ...payload,
+        amount,
+        source: payload.source ?? "manual",
+        ...(payload.method === "pix" ? { reference: effectiveTxid } : {}),
+        bank,
+      });
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Não foi possível registrar o pagamento.",
+      );
       locked.current = false;
+      return;
+    }
+    if (!result) {
+      locked.current = false;
+      return;
+    }
+    if (result === "partial") {
+      locked.current = false;
+      setPaidRaw("");
+      setSplitRaw("");
+      setSplitOpen(false);
+      setManualOpen(false);
+      toast.success("Parcela recebida. Escolha como pagar o restante.");
       return;
     }
     setSuccess({ amount: total, bank });
@@ -75,21 +121,23 @@ export function PaymentSheet({
       setPaidRaw("");
       setMethod("dinheiro");
       setManualOpen(false);
+      setSplitRaw("");
+      setSplitOpen(false);
     }
   }, [open]);
 
   useEffect(() => {
     setManualOpen(false);
     setNotificationAccess(null);
-    if (!open || method === "dinheiro" || total <= 0 || success) return;
-    const monitorId = `${pixTxid}:${method}:${crypto.randomUUID()}`;
+    if (!open || method === "dinheiro" || invalidSplit || amount <= 0 || success) return;
+    const monitorId = `${effectiveTxid}:${method}:${crypto.randomUUID()}`;
     let active = true;
     let polling = false;
     let timer: number | undefined;
     const startMonitor = async () => {
       try {
         const { startedAt } = await PixNotification.setExpectedAmount({
-          amount: total,
+          amount,
           method,
           monitorId,
         });
@@ -113,10 +161,10 @@ export function PaymentSheet({
               payment.method !== method ||
               !payment.timestamp ||
               payment.timestamp < startedAt ||
-              Math.abs(payment.amount - total) > 0.009
+              Math.abs(payment.amount - amount) > 0.009
             )
               return;
-            acceptRef.current({ method }, payment.bank);
+            acceptRef.current({ method, source: "notification" }, payment.bank);
           } catch {
             /* The native service may temporarily be unavailable. */
           } finally {
@@ -133,9 +181,10 @@ export function PaymentSheet({
       if (timer !== undefined) window.clearInterval(timer);
       void PixNotification.clearExpectedAmount({ monitorId }).catch(() => undefined);
     };
-  }, [open, method, total, pixTxid, success]);
+  }, [open, method, amount, effectiveTxid, success, invalidSplit]);
 
   const confirm = () => {
+    if (invalidSplit) return;
     if (method === "dinheiro" && insufficient) return;
     if (method === "pix" && !pixReady) return;
     acceptRef.current({ method, ...(method === "dinheiro" ? { paidAmount: paid, change } : {}) });
@@ -212,6 +261,33 @@ export function PaymentSheet({
             <section className="payment-panel">
               <button
                 type="button"
+                className="payment-split-toggle"
+                aria-expanded={splitOpen}
+                onClick={() => setSplitOpen((v) => !v)}
+              >
+                Dividir
+              </button>
+              {splitOpen && (
+                <div className="payment-split-editor">
+                  <Label htmlFor="payment-part">Valor desta parcela (R$)</Label>
+                  <Input
+                    id="payment-part"
+                    value={splitRaw}
+                    onChange={(e) => setSplitRaw(e.target.value)}
+                    inputMode="decimal"
+                    placeholder={String(total)}
+                  />
+                  <p>
+                    Saldo: {formatBRL(total)}
+                    {invalidSplit ? " · Confira o valor." : ""}
+                  </p>
+                  <Button variant="outline" onClick={() => setSplitOpen(false)}>
+                    Usar valor da parcela
+                  </Button>
+                </div>
+              )}
+              <button
+                type="button"
                 className="payment-close"
                 aria-label="Fechar pagamento"
                 onClick={close}
@@ -225,7 +301,7 @@ export function PaymentSheet({
                     <p className="payment-subtitle">Dinheiro</p>
                     <div className="payment-cash-row">
                       <span>Total a pagar</span>
-                      <strong>{formatBRL(total)}</strong>
+                      <strong>{formatBRL(amount)}</strong>
                     </div>
                     <label className="payment-cash-row">
                       <span>Valor Recebido</span>
@@ -290,7 +366,7 @@ export function PaymentSheet({
                       className="payment-paid"
                       type="button"
                       onClick={confirm}
-                      disabled={insufficient}
+                      disabled={insufficient || invalidSplit}
                     >
                       PAGO
                     </button>
@@ -309,7 +385,7 @@ export function PaymentSheet({
                             <PixQr payload={pixPayload} size={280} />
                           </div>
                           <p className="payment-pix-instruction">
-                            O cliente escaneia o código para pagar {formatBRL(total)}.
+                            O cliente escaneia o código para pagar {formatBRL(amount)}.
                           </p>
                           <div className="payment-waiting" role="status">
                             AGUARDANDO PIX{" "}
@@ -339,7 +415,7 @@ export function PaymentSheet({
                     ) : (
                       <>
                         <h2>Receber</h2>
-                        <strong className="payment-card-amount">{formatBRL(total)}</strong>
+                        <strong className="payment-card-amount">{formatBRL(amount)}</strong>
                         <p className="payment-card-method">{PAYMENT_LABELS[method]}</p>
                         <img
                           className="payment-terminal"

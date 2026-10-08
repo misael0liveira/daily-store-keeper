@@ -88,6 +88,8 @@ jobs:
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright AXE_MODULE=/tmp/mercadinho-browser/node_modules/@axe-core/playwright node tests/palette-browser.cjs
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright AXE_MODULE=/tmp/mercadinho-browser/node_modules/@axe-core/playwright node tests/payment-dimensions-browser.cjs
 
+          PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright AXE_MODULE=/tmp/mercadinho-browser/node_modules/@axe-core/playwright node tests/management-browser.cjs
+
       - name: Upload navigation screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -155,28 +157,18 @@ jobs:
           prerelease: true
           make_latest: false
           body: |
-            Pagamentos com logo, abas e cards nas mesmas posições entre dinheiro, Pix, débito e crédito. Ícones e campos alinhados; teclado fixo e confirmação manual acessível em telas pequenas. Dimensões verificadas em 320–430 px, nos dois temas e com áreas seguras simuladas.
-            Paleta centralizada em todas as telas: azul da marca nas ações, verde nos preços/sucesso, vermelho nos erros e âmbar nos avisos; temas claro e escuro, pagamentos e notificações revisados com testes de contraste e acessibilidade.
-            Contorno da tab bar arredondado, sem pontas; movimento da bolinha entre as cinco abas preservado.
-            Logo de abertura por 2 segundos; o APK abre diretamente no Caixa.
-            Caixa sem o botão Digitar código; carrinho com foto e preços verde/vermelho riscado durante promoções.
-            Fotos pela câmera ou arquivos, com armazenamento local e opção de fundo branco para fotos com fundo liso.
-            Promoção no Estoque: busca por nome/código, scanner, seleção de produtos e descontos por período ou até o estoque acabar.
-            Descontos usados no pagamento e registrados no histórico; os preços ficam estáveis durante o pagamento aberto.
-            Barra de navegação com a paleta do APK: superfície branca e bolha azul no tema claro; cores adaptadas ao tema escuro. Curva, brilho e animação CODEXURE preservados.
-            Layouts Pix, dinheiro com teclado fixo/PAGO e cartão conforme referências; confirmação verde por 2 segundos em todos os meios.
-            Cartão: regras conservadoras para notificações de Mercado Pago, PagBank, Ton e SumUp; formatos reais ainda precisam de validação no aparelho.
-            Pix com identificador único por novo pagamento, mesmo quando duas vendas têm o mesmo valor; identificador salvo na venda.
-            Scanner solicita foco contínuo quando suportado e imagem 1280 × 720; busca por nome/código no Caixa e entrada numérica de reserva quando a câmera está indisponível.
-            Cinco abas funcionais: Início, Histórico, Caixa, Estoque e Ajustes.
-            Versão de teste sem OCR, com o mesmo logotipo, ícone e abertura do APK oficial.
-            Leitura de código de barras executada no aparelho; cadastro dos demais dados manual.
-            Empacotamento release; a chave de teste passa a ser preservada no diretório usado pelo Android Gradle Plugin.
-            A chave das versões anteriores não foi salva pelo cache antigo; o Android pode exigir reinstalação do teste.
-            A prévia da câmera tem controle de lanterna quando o aparelho oferece suporte.
-            Instala separadamente como Mercadinho União — Teste.
-            Dados locais próprios; não substitui a versão oficial.
-            Estoque e vendas permanecem locais.
+            Gestão inspirada nas referências do OpenSourcePOS, adaptada ao Mercadinho União e ao funcionamento local.
+            Em Ajustes → Gestão: fornecedores, recebimento de mercadorias por embalagem, custo médio, lotes/validade, movimentos e contagem de estoque.
+            Caixa: abertura/fundo de troco, suprimentos, retiradas, despesas, fechamento e diferença entre saldo esperado e contado.
+            Vendas: pagamento dividido com recuperação de parcelas confirmadas, atendimentos suspensos, cliente/fiado, recebimento de dívida, devolução parcial e cancelamento com histórico preservado.
+            Cadastro: categorias, estoque mínimo, produtos por kg/l, serviços e combos; arquivamento sem apagar o histórico.
+            Relatórios locais de estoque, vendas, margem sobre custos conhecidos e despesas; comprovante não fiscal e etiquetas em PDF.
+            Backup com fotos, prévia e verificação de integridade; importação/exportação CSV com validação antes de salvar.
+            Equipe local opcional com PIN protegido e permissões por perfil. Não substitui autenticação de servidor.
+            Paleta, alinhamento das abas de pagamento, scanner e confirmação verde por 2 segundos preservados e verificados.
+            Pix/cartão mantêm o monitor de notificações existente; recebimentos reais precisam ser conferidos no aparelho. Não adiciona integração bancária, fiscal ou sincronização entre aparelhos.
+            Instala separadamente como Mercadinho União — Teste. Dados locais próprios; não substitui a versão oficial.
+            APK com empacotamento release e chave de teste preservada.
           files: |
             Mercadinho-Uniao-Teste.apk
             Mercadinho-Uniao-Teste.sha256

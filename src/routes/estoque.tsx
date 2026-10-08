@@ -15,6 +15,7 @@ import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { ProductPhoto } from "@/components/ProductPhoto";
 import { ProductPhotoEditor } from "@/components/ProductPhotoEditor";
 import { ProductPrice } from "@/components/ProductPrice";
+import { ProductManagementFields } from "@/components/ProductManagementFields";
 import { PromotionManager } from "@/components/PromotionManager";
 import { usePricingTime } from "@/hooks/usePricingTime";
 import { saveProductPhoto, deleteProductPhoto } from "@/lib/productPhotos";
@@ -39,7 +40,7 @@ import {
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { beep, unlockAudio, vibrate } from "@/lib/feedback";
-import { useStore } from "@/store/useStore";
+import { isLowStock, useStore, type Product } from "@/store/useStore";
 
 export const Route = createFileRoute("/estoque")({
   head: () => ({
@@ -78,17 +79,22 @@ function EstoquePage() {
   const [packageSize, setPackageSize] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
+  const [editingId, setEditingId] = useState<string | undefined>();
+  const [extra, setExtra] = useState<Partial<Product>>({});
   const [search, setSearch] = useState("");
   const lastScanRef = useRef<string | null>(null);
   const savingRef = useRef(false);
 
-  const existing = barcode.trim() ? products[barcode.trim()] : undefined;
+  const existing =
+    Object.values(products).find((p) => editingId && p.id === editingId) ??
+    (barcode.trim() ? products[barcode.trim()] : undefined);
   const list = useMemo(() => {
     const all = Object.values(products).sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
     const q = search.trim().toLowerCase();
     return all.filter(
       (p) =>
-        (!lowOnly || p.stock <= 5) &&
+        p.active !== false &&
+        (!lowOnly || isLowStock(p)) &&
         (!q || p.name.toLowerCase().includes(q) || p.barcode.toLowerCase().includes(q)),
     );
   }, [products, search, lowOnly]);
@@ -102,6 +108,8 @@ function EstoquePage() {
       setPhoto(undefined);
       setPhotoBusy(false);
       const p = products[code];
+      setEditingId(p?.id);
+      setExtra({});
       if (p) {
         setName(p.name);
         setBrand(p.brand ?? "");
@@ -131,7 +139,7 @@ function EstoquePage() {
     if (savingRef.current || photoBusy) return;
     const code = barcode.trim();
     const priceNum = Number(String(price).replace(",", "."));
-    const stockNum = Number(stock);
+    const stockNum = Number(stock.replace(",", "."));
     if (!code || !name.trim() || !price || !stock) {
       toast.error("Preencha todos os campos");
       return;
@@ -140,7 +148,11 @@ function EstoquePage() {
       toast.error("Preço inválido");
       return;
     }
-    if (!Number.isInteger(stockNum) || stockNum < 0) {
+    if (
+      !Number.isFinite(stockNum) ||
+      stockNum < 0 ||
+      ((extra.unit ?? existing?.unit ?? "un") === "un" && !Number.isInteger(stockNum))
+    ) {
       toast.error("Quantidade inválida");
       return;
     }
@@ -152,6 +164,7 @@ function EstoquePage() {
       if (photo) newPhotoId = await saveProductPhoto(photo);
       upsertProduct({
         ...existing,
+        ...extra,
         barcode: code,
         name: name.trim(),
         price: priceNum,
@@ -177,9 +190,9 @@ function EstoquePage() {
       setPhoto(undefined);
 
       lastScanRef.current = null;
-    } catch {
+    } catch (error) {
       if (newPhotoId) void deleteProductPhoto(newPhotoId).catch(() => undefined);
-      toast.error("Não foi possível salvar o produto", {
+      toast.error(error instanceof Error ? error.message : "Não foi possível salvar o produto", {
         description: "Confira os dados salvos neste aparelho antes de tentar novamente.",
       });
     } finally {
@@ -190,12 +203,13 @@ function EstoquePage() {
 
   const remove = () => {
     if (!existing) return;
-    {
+    try {
       deleteProduct(existing.barcode);
-      if (existing.photoId) void deleteProductPhoto(existing.photoId).catch(() => undefined);
-      toast.success("Produto excluído", { description: existing.name });
+      toast.success("Produto arquivado", { description: existing.name });
       setEditorOpen(false);
       setScannerOpen(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível arquivar");
     }
   };
 
@@ -203,6 +217,8 @@ function EstoquePage() {
     const p = products[code];
     if (!p) return;
     setBarcode(p.barcode);
+    setEditingId(p.id);
+    setExtra({});
     setName(p.name);
     setBrand(p.brand ?? "");
     setPackageSize(p.packageSize ?? "");
@@ -222,6 +238,8 @@ function EstoquePage() {
           variant="ghost"
           className="text-primary px-0"
           onClick={() => {
+            setEditingId(undefined);
+            setExtra({});
             setBarcode("");
             setName("");
             setBrand("");
@@ -317,7 +335,13 @@ function EstoquePage() {
                   <strong>{p.name}</strong>
                   <span className="pos-stock-detail">
                     <ProductPrice product={p} now={now} /> ·{" "}
-                    <span className={p.stock <= 5 ? "pos-low-stock" : ""}>{p.stock} un.</span>
+                    <span className={isLowStock(p) ? "pos-low-stock" : ""}>
+                      {p.components?.length
+                        ? "Combo"
+                        : p.stockControlled === false
+                          ? "Sem estoque físico"
+                          : `${p.stock} ${p.unit ?? "un"}`}
+                    </span>
                   </span>
                   {(p.brand || p.packageSize) && (
                     <span className="mt-1 block text-xs text-muted-foreground">
@@ -389,6 +413,7 @@ function EstoquePage() {
                 onChange={(e) => {
                   const code = e.target.value;
                   setBarcode(code);
+                  if (editingId) return;
                   setPhoto(undefined);
                   setPhotoBusy(false);
                   lastScanRef.current = null;
@@ -478,6 +503,12 @@ function EstoquePage() {
                 />
               </div>
             </div>
+            <ProductManagementFields
+              key={existing?.id ?? existing?.barcode ?? "new"}
+              product={existing}
+              value={extra}
+              onChange={setExtra}
+            />
             <Button
               className="h-14 w-full gap-2 text-lg"
               disabled={saving || photoBusy}
@@ -491,18 +522,18 @@ function EstoquePage() {
                 <AlertDialogTrigger asChild>
                   <Button disabled={saving} variant="destructive" className="h-12 w-full gap-2">
                     <Trash2 className="size-5" />
-                    Excluir produto
+                    Arquivar produto
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
-                  <AlertDialogTitle>Excluir {existing.name}?</AlertDialogTitle>
+                  <AlertDialogTitle>Arquivar {existing.name}?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    O produto será removido do estoque e do carrinho. Esta ação não pode ser
-                    desfeita.
+                    O produto sairá da lista de venda. Histórico, foto e saldo serão preservados.
+                    Você pode reativá-lo em Gestão.
                   </AlertDialogDescription>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={remove}>Excluir produto</AlertDialogAction>
+                    <AlertDialogAction onClick={remove}>Arquivar produto</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>

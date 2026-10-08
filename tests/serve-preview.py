@@ -10,7 +10,7 @@ from urllib.parse import urlsplit
 class PreviewHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if urlsplit(self.path).path.rstrip("/") in {
-            "", "/vender", "/estoque", "/mais", "/vendas", "/vendas/configuracoes", "/codigos"
+            "", "/vender", "/estoque", "/mais", "/vendas", "/vendas/configuracoes", "/codigos", "/gestao"
         }:
             self.path = "/index.html"
         super().do_GET()

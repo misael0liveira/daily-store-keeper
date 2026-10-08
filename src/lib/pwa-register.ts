@@ -19,14 +19,8 @@ function isBlockedContext(): boolean {
   if (hostname.startsWith("id-preview--") || hostname.startsWith("preview--")) {
     return true;
   }
-  const blockedHosts = [
-    "lovableproject.com",
-    "lovableproject-dev.com",
-    "beta.lovable.dev",
-  ];
-  if (
-    blockedHosts.some((h) => hostname === h || hostname.endsWith(`.${h}`))
-  ) {
+  const blockedHosts = ["lovableproject.com", "lovableproject-dev.com", "beta.lovable.dev"];
+  if (blockedHosts.some((h) => hostname === h || hostname.endsWith(`.${h}`))) {
     return true;
   }
   return false;
@@ -39,14 +33,10 @@ async function unregisterAppWorkers() {
     await Promise.allSettled(
       regs
         .filter((r) => {
-          const url =
-            r.active?.scriptURL ??
-            r.waiting?.scriptURL ??
-            r.installing?.scriptURL ??
-            "";
+          const url = r.active?.scriptURL ?? r.waiting?.scriptURL ?? r.installing?.scriptURL ?? "";
           return url.endsWith("/sw.js");
         })
-        .map((r) => r.unregister())
+        .map((r) => r.unregister()),
     );
   } catch {
     // ignore
@@ -60,6 +50,7 @@ const OFFLINE_PAGES = [
   "/mais",
   "/vendas",
   "/vendas/configuracoes",
+  "/gestao",
 ];
 
 async function warmPagesCache() {
@@ -70,12 +61,13 @@ async function warmPagesCache() {
     await Promise.allSettled(
       OFFLINE_PAGES.map(async (path) => {
         const url = `${BASE_PATH}${path}`;
+        if (navigator.onLine === false || (await cache.match(url))) return;
         const response = await fetch(url, {
           cache: "reload",
           credentials: "same-origin",
         });
         if (response.ok) await cache.put(url, response.clone());
-      })
+      }),
     );
   } catch {
     // offline or storage full — the app still works with what is cached

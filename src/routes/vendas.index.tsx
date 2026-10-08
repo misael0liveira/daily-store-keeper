@@ -1,23 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ChevronDown, ChevronUp, FileDown, Receipt, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, FileDown, Receipt } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SaleReturnAction } from "@/components/SaleReturnAction";
 import { PERIOD_LABELS, formatDateTime, periodRange, type PeriodKey } from "@/lib/periods";
 import { generateSalesPdf } from "@/lib/salesPdf";
-import { PAYMENT_LABELS, formatBRL, useStore, type PaymentMethod } from "@/store/useStore";
+import {
+  PAYMENT_LABELS,
+  canOperate,
+  formatBRL,
+  saleNet,
+  salePayments,
+  saleMethodLabel,
+  useStore,
+  type PaymentMethod,
+} from "@/store/useStore";
 
 export const Route = createFileRoute("/vendas/")({
   head: () => ({
@@ -45,7 +46,7 @@ const periods: PeriodKey[] = ["semanal", "quinzenal", "mensal", "personalizado",
 function VendasPage() {
   const sales = useStore((s) => s.sales);
   const settings = useStore((s) => s.settings);
-  const deleteSale = useStore((s) => s.deleteSale);
+  const state = useStore();
   const [period, setPeriod] = useState<PeriodKey>("semanal");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -61,9 +62,14 @@ function VendasPage() {
     [sales, start, end],
   );
 
-  const total = filtered.reduce((sum, s) => sum + s.total, 0);
+  const total = filtered.reduce((sum, s) => sum + saleNet(s), 0);
   const byMethod = filtered.reduce<Record<string, number>>((acc, s) => {
-    acc[s.method] = (acc[s.method] ?? 0) + s.total;
+    for (const p of salePayments(s)) {
+      acc[p.method] = (acc[p.method] ?? 0) + p.amount;
+    }
+    for (const r of state.returns.filter((r) => r.saleId === s.id)) {
+      acc[r.refundMethod] = (acc[r.refundMethod] ?? 0) - (r.amount - r.debtReduction);
+    }
     return acc;
   }, {});
 
@@ -128,7 +134,7 @@ function VendasPage() {
       <section className="pos-card pos-history-summary" aria-labelledby="history-total-title">
         <div className="flex items-baseline justify-between gap-4">
           <span className="text-sm font-medium text-muted-foreground">
-            <span id="history-total-title">Total vendido</span>
+            <span id="history-total-title">Total vendido líquido</span>
           </span>
           <strong className="pos-history-total">{formatBRL(total)}</strong>
         </div>
@@ -174,8 +180,7 @@ function VendasPage() {
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">{formatDateTime(sale.timestamp)}</p>
                   <p className="text-sm text-muted-foreground">
-                    {PAYMENT_LABELS[sale.method]} · {sale.items.reduce((n, i) => n + i.qty, 0)}{" "}
-                    itens
+                    {saleMethodLabel(sale)} · {sale.items.reduce((n, i) => n + i.qty, 0)} itens
                   </p>
                 </div>
                 <span className="pos-sale-value">{formatBRL(sale.total)}</span>
@@ -203,32 +208,35 @@ function VendasPage() {
                       Pago {formatBRL(sale.paidAmount)} · Troco {formatBRL(sale.change ?? 0)}
                     </p>
                   )}
-                  <AlertDialog>
-                    <AlertDialogTrigger className="pos-delete-sale">
-                      <Trash2 className="size-5" />
-                      Excluir registro
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogTitle>Excluir esta venda?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        O registro de {formatBRL(sale.total)} feito em{" "}
-                        {formatDateTime(sale.timestamp)} será removido. Esta ação não pode ser
-                        desfeita.
-                      </AlertDialogDescription>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          onClick={() => {
-                            deleteSale(sale.id);
-                            toast.success("Venda excluída");
-                          }}
-                        >
-                          Excluir venda
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <p className="text-sm font-semibold">
+                    {sale.status === "cancelled"
+                      ? "Venda cancelada"
+                      : sale.refundedAmount
+                        ? `Devolvido: ${formatBRL(sale.refundedAmount)}`
+                        : "Venda registrada"}{" "}
+                    · Líquido {formatBRL(saleNet(sale))}
+                  </p>
+                  {salePayments(sale).map((p) => (
+                    <p key={p.id} className="text-sm text-muted-foreground">
+                      {PAYMENT_LABELS[p.method]} · {formatBRL(p.amount)} ·{" "}
+                      {p.source === "notification" ? "Notificação" : "Conferência manual"}
+                      {p.bank ? ` · ${p.bank}` : ""}
+                    </p>
+                  ))}
+                  {canOperate(state, "returns") ? (
+                    <SaleReturnAction sale={sale} />
+                  ) : (
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        void import("@/lib/receipts")
+                          .then((m) => m.generateReceiptPdf(sale, settings.storeName))
+                          .catch(() => toast.error("Não foi possível gerar comprovante."))
+                      }
+                    >
+                      Comprovante PDF
+                    </Button>
+                  )}
                 </div>
               )}
             </li>
