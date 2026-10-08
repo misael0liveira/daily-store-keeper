@@ -35,7 +35,7 @@
 
 - [x] T015 Executar plano replica em replica/fiados-test-plan.md e e2e/fiados.spec.cjs.
 - [x] T016 Atualizar contratos/resultados em DESIGN.md, UX-CONTRACT.md e replica/bugs.md.
-- [ ] T017 Reconciliar Spec Kit em specs/001-fiados-clientes/verification.md e gerar APK teste pelo workflow.
+- [x] T017 Reconciliar Spec Kit em specs/001-fiados-clientes/verification.md e gerar APK teste pelo workflow.
 
 ## Dependencies and parallel opportunities
 
@@ -47,4 +47,4 @@ Entrega incremental completa os três fluxos antes do APK; nenhuma tarefa fora d
 
 - [x] T018 Conter a confirmação de fiado no Sheet canônico, cobrindo controles de fundo e bloqueando fechamento durante os dois segundos, per US2 (partial).
 - [x] T019 Ajustar os alvos das ações de cliente para pelo menos44px, preservando geometria e scroll, per plan: touch targets (partial).
-- [ ] T020 Verificar o workflow Android, assinatura e release publicado e registrar a evidência em verification.md, per FR009/T017 (partial).
+- [x] T020 Verificar o workflow Android, assinatura e release publicado e registrar a evidência em verification.md, per FR009/T017 (partial).

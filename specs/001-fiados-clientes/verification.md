@@ -34,6 +34,10 @@ Primeira revisão apontou camada da confirmação, alvos44px e build APK pendent
 
 ## APK e aparelho
 
-Workflow build-layout-test.yml mantém app de teste separado, empacotamento release, chave de teste e verificação apksigner/Java. Resultado e link serão registrados após a compilação.
+Workflow build-layout-test.yml mantém app de teste separado, empacotamento release, chave de teste e verificação apksigner/Java. Workflow48 concluído com sucesso: https://github.com/misael0liveira/daily-store-keeper/actions/runs/37852302579.
+
+APK assinado e publicado: https://github.com/misael0liveira/daily-store-keeper/releases/download/layout-test-48/Mercadinho-Uniao-Teste.apk. Fonte: commit7cfce06051cc9101c204316bf5b59bd4a9388814. SHA-256 do APK:172100c495ac5d1fc6fec50b91ce58d49624f0fc397c7b7b0566e4829ca37b96. Chave recuperada do cache mercadinho-vision-test-signing-v1; Gradle testDebugUnitTest/assembleRelease e apksigner passaram. Testes de navegador do workflow passaram, incluindo49 casos Fiados,48 gestão,48 dimensões e14 paleta.
+
+Convergência final: 14 FR/SC, três histórias,20 tarefas e cinco princípios conferidos; nenhum gap de implementação restante. Sem mudanças em spec/plan durante converge.
 
 Verificação física pendente: instalar sobre APK46 sem desinstalar, alternar leitura de produtos e QR de cliente real, conferir troco e notificações reais, testar recebimento parcial/integral. O navegador usa câmera sintética/fallback e bridge sem transação bancária real.
