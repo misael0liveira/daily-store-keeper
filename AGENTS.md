@@ -67,3 +67,11 @@ Informar o que mudou, o que foi verificado e o que não pôde ser verificado.
 Uma tarefa só deve ser considerada concluída quando o código compila quando aplicável, as ações afetadas têm comportamento funcional, não há regressão evidente, dados locais não foram descartados e mudanças Android foram verificadas quando aplicável.
 
 Consulte `.devmasteria/` para checklists e agentes especializados.
+
+## Spec Kit — próximas edições do APK
+
+Por solicitação do proprietário em 08/10/2026, usar Spec Kit nas próximas edições do APK.
+Ler `SPEC-KIT.md` e `.specify/memory/constitution.md` antes de planejar a mudança.
+As skills Codex estão em `.agents/skills/speckit-*`. Registrar especificação, plano e tarefas
+do escopo solicitado; verificar os fluxos afetados com a skill `replica-test` e os testes
+existentes antes de entregar. Manter as regras deste arquivo e os contratos do projeto.

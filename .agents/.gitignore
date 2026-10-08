@@ -1,0 +1,5 @@
+# Compartilhar somente skills; outros arquivos do agente são locais.
+*
+!.gitignore
+!skills/
+!skills/**
