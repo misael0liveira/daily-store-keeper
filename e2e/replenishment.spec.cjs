@@ -65,6 +65,9 @@ async function geometry(page, label) {
   const before = await read(page);
   await close.click();
   await sheet.waitFor({ state: "hidden" });
+  await page.waitForFunction((el) => el === document.activeElement, await trigger.elementHandle(), {
+    timeout: 2000,
+  });
   assert(await trigger.evaluate((el) => el === document.activeElement));
   const after = await read(page);
   assert.deepEqual(after.cart, before.cart);
