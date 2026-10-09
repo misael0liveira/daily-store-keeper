@@ -162,3 +162,12 @@ Nenhum S1 aberto nesta edição. Scanner real, atualização sobre APK46 e notif
 - Commit: edição de reposição; consultar git log -1 -- src/components/ui/sheet.tsx.
 
 O pedido visual do X foi localizado no print100683.jpg; círculo, alvo e centro são verificados por geometry. Falha inicialmente observada no teste de backup era espera do teste: a modal ocultava o heading antes de completar a operação. Corrigida espera pelo fechamento da modal, sem atribuir bug ao produto.
+
+## Escolha de pagamento — teste 50
+
+Pedido do proprietário: retirar Dividir e apresentar escolha antes da cobrança. Cobertura F21 verifica seleção,
+validação, cancelamento, foco, duas parcelas em meios distintos, persistência e conclusão única offline.
+Nenhum bug novo do aplicativo reproduzido nesta revisão; limitações iniciais do ambiente de navegador local
+foram corrigidas e os cenários correspondentes passaram. Conferência física segue pendente.
+
+Teste 50: workflow 37970695624 concluído com sucesso; todas as suítes de navegador e Android passaram, APK assinado publicado.
