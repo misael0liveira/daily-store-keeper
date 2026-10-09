@@ -26,8 +26,8 @@ instalação sobre versões anteriores, para permitir atualizar sem perder dados
 Telas DEVEM seguir DESIGN.md e UX-CONTRACT.md, reutilizando componentes e tokens existentes.
 Botões, formulários e navegação DEVEM executar suas ações; renderizar não comprova conclusão.
 Valores e estados DEVEM vir dos dados reais da operação. Controles DEVEM respeitar foco,
-rolagem, temas e áreas seguras em telas móveis. Cabeçalhos de pagamento DEVEM manter título,
-Dividir e fechar separados, conforme a geometria já corrigida e documentada.
+rolagem, temas e áreas seguras em telas móveis. Por decisão do proprietário em 09/10/2026, a escolha entre um ou dois meios DEVE ocorrer
+antes da cobrança; o cabeçalho DEVE manter título e fechar separados, sem Dividir.
 
 ### IV. Escopo explícito e implementação mínima
 
@@ -79,4 +79,4 @@ Uma mudança de regra DEVE registrar motivo, impacto e atualizar os documentos r
 A versão usa SemVer: MAJOR para remoção ou redefinição incompatível de princípio, MINOR para
 novos princípios ou ampliação material, PATCH para esclarecimentos sem mudança de regra.
 
-**Version**: 1.0.1 | **Ratified**: 2026-10-08 | **Last Amended**: 2026-10-08
+**Version**: 1.1.0 | **Ratified**: 2026-10-08 | **Last Amended**: 2026-10-09

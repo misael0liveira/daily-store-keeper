@@ -36,7 +36,9 @@ const assert = require("node:assert/strict");
     const page = await context.newPage();
     await page.goto("http://127.0.0.1:4173/", { waitUntil: "networkidle" });
     await page.getByRole("link", { name: "Caixa", exact: true }).click();
-    await page.getByRole("button", { name: "Ir para pagamento" }).click();
+    await page.getByRole("button", { name: "Pagamento" }).click();
+    if (await page.getByRole("button", { name: "Um meio de pagamento", exact: true }).count())
+      await page.getByRole("button", { name: "Um meio de pagamento", exact: true }).click();
     const sheet = page.getByRole("dialog", { name: "Pagamento" });
     await sheet.getByRole("button", { name: "Pix", exact: true }).click();
     const qr = sheet.getByRole("img", { name: "QR Code do pagamento Pix" });
@@ -66,7 +68,9 @@ const assert = require("node:assert/strict");
     const search = page.getByRole("textbox", { name: "Digitar código ou nome do produto" });
     await search.fill("123");
     await search.press("Enter");
-    await page.getByRole("button", { name: "Ir para pagamento" }).click();
+    await page.getByRole("button", { name: "Pagamento" }).click();
+    if (await page.getByRole("button", { name: "Um meio de pagamento", exact: true }).count())
+      await page.getByRole("button", { name: "Um meio de pagamento", exact: true }).click();
     await sheet.getByRole("button", { name: "Pix", exact: true }).click();
     await qr.waitFor();
     const secondQr = await qr.getAttribute("src");

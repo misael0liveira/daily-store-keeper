@@ -91,6 +91,7 @@ jobs:
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright AXE_MODULE=/tmp/mercadinho-browser/node_modules/@axe-core/playwright node tests/management-browser.cjs
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright AXE_MODULE=/tmp/mercadinho-browser/node_modules/@axe-core/playwright node tests/fiados-browser.cjs
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright AXE_MODULE=/tmp/mercadinho-browser/node_modules/@axe-core/playwright node tests/replenishment-browser.cjs
+          PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright AXE_MODULE=/tmp/mercadinho-browser/node_modules/@axe-core/playwright node tests/payment-choice-browser.cjs
 
       - name: Upload navigation screenshots
         if: always()
@@ -159,12 +160,11 @@ jobs:
           prerelease: true
           make_latest: false
           body: |
-            Estoque baixo dinâmico: média líquida de vendas dos últimos30dias, ciclo de atacado e margem de segurança configuráveis (padrão7/2), cálculo integralmente local.
-            Cards mostram sugestão de compra; exportação dos resultados visíveis em texto para WhatsApp e PDF local para impressão. Migração e backup preservam dados e parâmetros; Resumo/Gestão usam a mesma regra.
-            Botão de fechar em Selecionar cliente circular44px, ícone centralizado e retorno do foco ao controle de origem.
-            Spec Kit, Ponytail full e replica-test aplicados. Scanner, pagamentos, Fiados, paleta e assinatura de teste preservados.
-            Instale sobre o APK teste existente sem desinstalar. Instala separadamente da versão oficial como Mercadinho União — Teste.
-            Câmera, notificações bancárias, clipboard/impressão e instalação reais exigem conferência no aparelho. Não adiciona servidor, processamento bancário ou integração fiscal.
+            Caixa: botão Pagamento abre escolha entre Um meio de pagamento e Dois meios de pagamento.
+            Dois meios pede a primeira parte, calcula o restante e segue para outro meio após confirmar. Recebimentos persistem ao fechar/reabrir ou recarregar.
+            Remove Dividir do cabeçalho; preserva os quatro meios, troco, Pix, monitor, Fiados, scanner, reposição e dados locais.
+            Spec Kit, Ponytail full, replica-test e auditoria premium aplicados. Mesma chave de teste; instale sobre o teste existente sem desinstalar.
+            Instala separadamente da versão oficial. Câmera, notificações bancárias e atualização física exigem conferência no aparelho.
           files: |
             Mercadinho-Uniao-Teste.apk
             Mercadinho-Uniao-Teste.sha256

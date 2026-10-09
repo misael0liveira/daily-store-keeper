@@ -3,7 +3,9 @@ const { scan, assertReadable } = require("./palette-support.cjs");
 
 module.exports = async function payments(page, _context, label) {
   await page.getByRole("link", { name: "Caixa", exact: true }).click();
-  await page.getByRole("button", { name: "Ir para pagamento" }).click();
+  await page.getByRole("button", { name: "Pagamento" }).click();
+  if (await page.getByRole("button", { name: "Um meio de pagamento", exact: true }).count())
+    await page.getByRole("button", { name: "Um meio de pagamento", exact: true }).click();
   const sheet = page.getByRole("dialog", { name: "Pagamento", exact: true });
   for (const method of ["Dinheiro", "Pix", "Débito", "Crédito"]) {
     await sheet.getByRole("button", { name: method, exact: true }).click();

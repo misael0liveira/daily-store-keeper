@@ -25,3 +25,12 @@ Pedido do proprietário: substituir alerta estático por vendas locais dos últi
 DC inteiro1–365 padrão7; MS inteiro0–365 padrão2. Mínimo=VMD×MS; alvo=VMD×(DC+MS). Estoque baixo quando saldo<=mínimo. Compra=max(0,alvo−saldo), arredondada para cima em un ou até3decimais em kg/l. Zero giro gera mínimo/alvo0; saldo0 aparece com compra0 e aviso para conferência. Não inferir consumo perdido nem estoque ideal quando não há histórico.
 Parâmetros persistem offline e no backup; migração9 adiciona defaults sem apagar mínimos manuais históricos, vendas, carrinho, produtos ou demais configurações. O antigo campo manual deixa de governar alertas. Cálculo derivado não escreve médias/estoques, usa uma passagem e atualiza com fontes, abertura/retomada e relógio de1minuto. Recibos de dívida não aumentam vendas; devoluções são descontadas uma vez.
 Exportar lista contém somente resultados visíveis, unidades e parâmetros, como sugestão para conferência; não cria compra, fornecedor ou movimentação. Cópia serve para colar no WhatsApp e PDF para impressão pelo sistema. Integração nativa de compartilhamento/impressora não é simulada.
+
+## Escolha de pagamento — 09/10/2026
+
+Caixa → Pagamento → Um meio de pagamento ou Dois meios de pagamento. PaymentSheet é o proprietário
+compartilhado: escolha usa Sheet/Button/Input/Label e tokens existentes; sem Dividir sobre o card.
+Dois meios pede primeira parte >0 e <saldo em centavos, mostra restante, recebe e segue para outro meio.
+Primeiro meio fica indisponível na segunda parte. Parcela confirmada continua persistida ao fechar/recarregar,
+com retomada direta do saldo. Fiado preserva resumo e registro; entrada e recebimento compartilham a escolha.
+Cancelar a escolha não registra venda ou pagamento; foco retorna ao acionador. Sem alteração de paleta/schema.

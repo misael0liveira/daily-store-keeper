@@ -94,3 +94,11 @@ Resultados: 48/48 cenários novos de navegador, 14/14 combinações de paleta, 4
 
 F20-H1:300vendas/30=10, DC7 MS2 saldo20 → mínimo20 alvo90 comprar70; saldo21 fora. F20-E1: janela inclusiva, antigo/futuro/cancelamento. F20-E2: devolução parcial, compra ceil emun e3casas kg/l, sem mutação. F20-E3: zero giro, arquivado/serviço/combo. F20-E4: código alterado/reutilizado/legado. F20-E5: consumo snapshot componentes. F20-E6: migração8/defaults/restauração. F20-P1:10milvendas/2milprodutos<200ms medidos.
 F20-H2: salvarDC4 altera compra para40, persistir/recarregar offline. F20-N1: DC0/fracionado/forafaixa, erro inline e aria-invalid, dados intactos. F20-H3: busca/clear e exportar somente visíveis; copy sucesso/falha com texto preservado; PDF real. F20-E7: vazio desabilita exportar; backup novo conserva4/2, antigo volta7/2 sem perdervendas/saldo. F21-H1: X44×44,círculo/centro≤1px, clique/Escape e foco/carrinho intactos. Matriz320/360/430,claro/escuro,reduzidomovimento,axe,console/5xx. Autenticação remota,Stripe/OAuth não se aplicam. Câmera/notificações/impressão no aparelho permanecem checklistfísico.
+
+## F21 — Escolha de pagamento
+F21-H1: Pagamento → um meio → total e troco; quatro meios e contextos de fiado.
+F21-H2: dois meios → primeira parte → saldo → venda única e estoque uma vez.
+F21-E1: vazio/zero/negativo/excesso/total/fração de centavo; total pequeno bloqueia divisão.
+F21-E2: Escape/Cancelar/Voltar, foco, teclado, temas320/360/430px; console/5xx/axe.
+F21-E3: fechar/refresh depois da primeira parte, saldo e meio anterior, offline.
+F21-N1: notificações atrasadas e erro de armazenamento pelas regressões existentes.

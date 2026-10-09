@@ -45,13 +45,13 @@ async function pay(page, method, label) {
   const sheet = page.getByRole("dialog", { name: label });
   await sheet.waitFor();
   const methods = Array.isArray(method) ? method : [method];
-  for (const [index, current] of methods.entries()) {
+  if (methods.length > 1) {
+    await sheet.getByRole("button", { name: "Dois meios de pagamento", exact: true }).click();
+    await sheet.getByLabel("Valor no primeiro meio (R$)", { exact: true }).fill("25");
+    await sheet.getByRole("button", { name: "Receber primeira parte", exact: true }).click();
+  } else await sheet.getByRole("button", { name: "Um meio de pagamento", exact: true }).click();
+  for (const current of methods) {
     await sheet.getByRole("button", { name: current, exact: true }).click();
-    if (methods.length > 1 && index === 0) {
-      await sheet.getByRole("button", { name: "Dividir", exact: true }).click();
-      await sheet.getByLabel("Valor desta parcela (R$)", { exact: true }).fill("25");
-      await sheet.getByRole("button", { name: "Usar valor da parcela", exact: true }).click();
-    }
     if (current === "Pix") {
       await sheet.getByRole("img", { name: "QR Code do pagamento Pix" }).waitFor();
       await sheet
@@ -224,12 +224,15 @@ async function freshQuote(page) {
   await page.goto("http://127.0.0.1:4173/", { waitUntil: "networkidle" });
   await page.getByRole("button", { name: /Abrir cliente Joana Silva/ }).click();
   await page.getByRole("button", { name: "Nova compra", exact: true }).click();
-  await page.getByRole("button", { name: "Ir para pagamento", exact: true }).click();
+  await page.getByRole("button", { name: "Pagamento", exact: true }).click();
+  if (await page.getByRole("button", { name: "Um meio de pagamento", exact: true }).count())
+    await page.getByRole("button", { name: "Um meio de pagamento", exact: true }).click();
   await page.getByRole("button", { name: "Fechar pagamento", exact: true }).click();
   await page.getByRole("button", { name: "Aumentar Compra teste", exact: true }).click();
   await page.getByRole("button", { name: "Pagar parte e fiar o restante", exact: true }).click();
   await page.getByLabel("Valor a receber agora (R$)").fill("100");
   await page.getByRole("button", { name: "Receber entrada", exact: true }).click();
+  await page.getByRole("button", { name: "Um meio de pagamento", exact: true }).click();
   await page.getByRole("button", { name: "PAGO", exact: true }).click();
   await page
     .getByRole("button", { name: "Registrar venda com fiado", exact: true })

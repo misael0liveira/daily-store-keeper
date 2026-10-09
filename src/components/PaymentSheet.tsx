@@ -38,6 +38,7 @@ export function PaymentSheet({
   onConfirm,
   contextTitle,
   successDetail,
+  previousMethod,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -46,6 +47,7 @@ export function PaymentSheet({
   onConfirm: (payload: Confirmation) => boolean | "partial" | "collected";
   contextTitle?: string | undefined;
   successDetail?: string | undefined;
+  previousMethod?: PaymentMethod | undefined;
 }) {
   const settings = useStore((s) => s.settings);
   const [method, setMethod] = useState<PaymentMethod>("dinheiro");
@@ -53,12 +55,19 @@ export function PaymentSheet({
   const [success, setSuccess] = useState<{ amount: number; bank: string | undefined } | null>(null);
   const [notificationAccess, setNotificationAccess] = useState<boolean | null>(null);
   const [manualOpen, setManualOpen] = useState(false);
+  const [choosing, setChoosing] = useState(!previousMethod);
+  const [firstMethod, setFirstMethod] = useState<PaymentMethod | undefined>(previousMethod);
+  const choiceAction = useRef<HTMLButtonElement>(null);
+  const paymentAction = useRef<HTMLButtonElement>(null);
+  const firstAmountInput = useRef<HTMLInputElement>(null);
   const [splitOpen, setSplitOpen] = useState(false);
   const [splitRaw, setSplitRaw] = useState("");
   const splitValue = Number(splitRaw.replace(",", "."));
   const amount = splitRaw.trim() ? Math.round(splitValue * 100) / 100 : total;
   const invalidSplit =
     !Number.isFinite(amount) || amount < 0 || (amount === 0 && total > 0) || amount > total;
+  const invalidFirstPart =
+    invalidSplit || amount >= total || !/^\d+(?:[,.]\d{1,2})?$/.test(splitRaw.trim());
   const splitPayment = splitRaw.trim().length > 0;
   const effectiveTxid = useMemo(
     () => (splitPayment ? createPixTxid() : pixTxid),
@@ -85,7 +94,8 @@ export function PaymentSheet({
   // Save before displaying success; the receipt cannot disappear if Android interrupts the animation.
   const acceptRef = useRef<(payload: Confirmation, bank?: string) => void>(() => {});
   acceptRef.current = (payload, bank) => {
-    if (locked.current || !open) return;
+    if (locked.current || !open || choosing || payload.method === (firstMethod ?? previousMethod))
+      return;
     locked.current = true;
     let result: boolean | "partial" | "collected";
     try {
@@ -119,7 +129,10 @@ export function PaymentSheet({
       setSplitRaw("");
       setSplitOpen(false);
       setManualOpen(false);
-      toast.success("Parcela recebida. Escolha como pagar o restante.");
+      setFirstMethod(payload.method);
+      setMethod(payload.method === "dinheiro" ? "pix" : "dinheiro");
+      paymentAction.current?.focus();
+      toast.success("Primeira parte recebida. Receba o restante em outro meio.");
       return;
     }
     setSuccess({ amount, bank });
@@ -129,17 +142,28 @@ export function PaymentSheet({
     if (!open) {
       locked.current = false;
       setPaidRaw("");
-      setMethod("dinheiro");
       setManualOpen(false);
       setSplitRaw("");
       setSplitOpen(false);
+      setChoosing(!previousMethod);
+      setFirstMethod(previousMethod);
+      setMethod(previousMethod === "dinheiro" ? "pix" : "dinheiro");
     }
-  }, [open]);
+  }, [open, previousMethod]);
+
+  useEffect(() => {
+    if (open) {
+      if (choosing && splitOpen) firstAmountInput.current?.focus();
+      else if (choosing) choiceAction.current?.focus();
+      else paymentAction.current?.focus();
+    }
+  }, [choosing, splitOpen, open, method]);
 
   useEffect(() => {
     setManualOpen(false);
     setNotificationAccess(null);
-    if (!open || method === "dinheiro" || invalidSplit || amount <= 0 || success) return;
+    if (!open || choosing || method === "dinheiro" || invalidSplit || amount <= 0 || success)
+      return;
     const monitorId = `${effectiveTxid}:${method}:${crypto.randomUUID()}`;
     let active = true;
     let polling = false;
@@ -191,7 +215,7 @@ export function PaymentSheet({
       if (timer !== undefined) window.clearInterval(timer);
       void PixNotification.clearExpectedAmount({ monitorId }).catch(() => undefined);
     };
-  }, [open, method, amount, effectiveTxid, success, invalidSplit]);
+  }, [open, method, amount, effectiveTxid, success, invalidSplit, choosing]);
 
   const confirm = () => {
     if (invalidSplit) return;
@@ -221,7 +245,7 @@ export function PaymentSheet({
     >
       <SheetContent
         side="bottom"
-        className={`payment-sheet payment-${method}`}
+        className={choosing ? "customer-sheet" : `payment-sheet payment-${method}`}
         showCloseButton={false}
         onEscapeKeyDown={(e) => {
           if (locked.current) e.preventDefault();
@@ -230,11 +254,90 @@ export function PaymentSheet({
           if (locked.current) e.preventDefault();
         }}
       >
-        <SheetTitle className="sr-only">{contextTitle || "Pagamento"}</SheetTitle>
-        <SheetDescription className="sr-only">
+        <SheetTitle className={choosing ? "" : "sr-only"}>{contextTitle || "Pagamento"}</SheetTitle>
+        <SheetDescription className={choosing ? "" : "sr-only"}>
           Escolha a forma de pagamento e confirme o recebimento de {formatBRL(total)}.
         </SheetDescription>
-        {success ? (
+        {choosing ? (
+          <div className="space-y-4 mt-4">
+            <p>
+              Valor a receber <strong>{formatBRL(total)}</strong>
+            </p>
+            {!splitOpen ? (
+              <>
+                <p>Como o cliente vai pagar?</p>
+                <Button
+                  ref={choiceAction}
+                  className="w-full"
+                  onClick={() => {
+                    setSplitRaw("");
+                    setChoosing(false);
+                  }}
+                >
+                  Um meio de pagamento
+                </Button>
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  disabled={total < 0.02}
+                  onClick={() => setSplitOpen(true)}
+                >
+                  Dois meios de pagamento
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  Um meio recebe o total. Dois meios recebe uma parte em cada forma de pagamento.
+                </p>
+                <Button className="w-full" variant="ghost" onClick={close}>
+                  Cancelar
+                </Button>
+              </>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="payment-part">Valor no primeiro meio (R$)</Label>
+                  <Input
+                    id="payment-part"
+                    ref={firstAmountInput}
+                    value={splitRaw}
+                    onChange={(e) => setSplitRaw(e.target.value)}
+                    inputMode="decimal"
+                    aria-invalid={splitRaw.trim() !== "" && invalidFirstPart}
+                    aria-describedby="payment-part-help"
+                  />
+                  <p id="payment-part-help" className="text-sm text-muted-foreground">
+                    Informe um valor maior que zero e menor que {formatBRL(total)}, com até dois
+                    decimais.
+                  </p>
+                </div>
+                <p aria-live="polite">
+                  {invalidFirstPart
+                    ? "Confira o valor da primeira parte."
+                    : `Restante no segundo meio: ${formatBRL(Math.round((total - amount) * 100) / 100)}.`}
+                </p>
+                <Button
+                  ref={choiceAction}
+                  className="w-full"
+                  disabled={invalidFirstPart}
+                  onClick={() => {
+                    if (!invalidFirstPart) setChoosing(false);
+                  }}
+                >
+                  Receber primeira parte
+                </Button>
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  onClick={() => {
+                    setSplitOpen(false);
+                    setSplitRaw("");
+                  }}
+                >
+                  Voltar
+                </Button>
+              </>
+            )}
+          </div>
+        ) : success ? (
           <PaymentSuccess
             amount={success.amount}
             bank={success.bank}
@@ -255,6 +358,8 @@ export function PaymentSheet({
                 <button
                   key={key}
                   type="button"
+                  ref={key === method ? paymentAction : undefined}
+                  disabled={key === (firstMethod ?? previousMethod)}
                   aria-pressed={method === key}
                   onClick={() => setMethod(key)}
                 >
@@ -275,22 +380,26 @@ export function PaymentSheet({
                   {method === "dinheiro" && (
                     <>
                       <h2>{contextTitle ? "Recebimento" : "Pagamento"}</h2>
-                      <p className="payment-subtitle">{contextTitle || "Dinheiro"}</p>
+                      <p className="payment-subtitle">
+                        {firstMethod || previousMethod
+                          ? "Segundo meio · Dinheiro"
+                          : splitPayment
+                            ? "Primeiro meio · Dinheiro"
+                            : contextTitle || "Dinheiro"}
+                      </p>
                     </>
                   )}
-                  {method !== "dinheiro" && contextTitle && (
-                    <p className="payment-subtitle">{contextTitle}</p>
-                  )}
+                  {method !== "dinheiro" &&
+                    (contextTitle || splitPayment || firstMethod || previousMethod) && (
+                      <p className="payment-subtitle">
+                        {firstMethod || previousMethod
+                          ? "Segundo meio de pagamento"
+                          : splitPayment
+                            ? "Primeiro meio de pagamento"
+                            : contextTitle}
+                      </p>
+                    )}
                 </div>
-                <button
-                  type="button"
-                  className="payment-split-toggle"
-                  aria-expanded={splitOpen}
-                  aria-controls="payment-split-editor"
-                  onClick={() => setSplitOpen((v) => !v)}
-                >
-                  Dividir
-                </button>
                 <button
                   type="button"
                   className="payment-close"
@@ -300,25 +409,6 @@ export function PaymentSheet({
                   <X aria-hidden="true" />
                 </button>
               </div>
-              {splitOpen && (
-                <div className="payment-split-editor" id="payment-split-editor">
-                  <Label htmlFor="payment-part">Valor desta parcela (R$)</Label>
-                  <Input
-                    id="payment-part"
-                    value={splitRaw}
-                    onChange={(e) => setSplitRaw(e.target.value)}
-                    inputMode="decimal"
-                    placeholder={String(total)}
-                  />
-                  <p>
-                    Saldo: {formatBRL(total)}
-                    {invalidSplit ? " · Confira o valor." : ""}
-                  </p>
-                  <Button variant="outline" onClick={() => setSplitOpen(false)}>
-                    Usar valor da parcela
-                  </Button>
-                </div>
-              )}
               {method === "dinheiro" ? (
                 <>
                   <div className="payment-cash-body">

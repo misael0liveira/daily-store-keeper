@@ -125,3 +125,12 @@ As áreas seguras de 24px são simuladas no navegador para verificar geometria, 
 
 Fonte comercial: MANAGEMENT-POLICY.md, seção Reposição por ciclo do atacado, e specs/002-estoque-reposicao/spec.md. Estoque, Resumo e Gestão usam useReplenishment/calculateReplenishment. Estoque baixo limita aos produtos físicos ativos elegíveis; busca continua transitória. Sugestão aparece no card somente nesse filtro. Configuração global na própria tela, sem exigir chave Pix: Field/LocalForm validam dias, guardam valores e mostram erro associado ao campo; permissão manage conserva proprietário/gerente.
 Exportação é snapshot dos resultados visíveis ao abrir; mostra texto rotulado selecionável, Copiar lista e Baixar PDF. Falha de clipboard orienta cópia manual sem perder lista; PDF local usa jsPDF/autotable com paginação. Não registra pedidos nem movimentos. Sheet conserva foco, Escape e fundo inerte. customer-sheet > button recebe círculo44px e centro compartilhado; header/descrição reservam espaço.
+
+## Escolha de pagamento — 09/10/2026
+
+Caixa → Pagamento → Um meio de pagamento ou Dois meios de pagamento. PaymentSheet é o proprietário
+compartilhado: escolha usa Sheet/Button/Input/Label e tokens existentes; sem Dividir sobre o card.
+Dois meios pede primeira parte >0 e <saldo em centavos, mostra restante, recebe e segue para outro meio.
+Primeiro meio fica indisponível na segunda parte. Parcela confirmada continua persistida ao fechar/recarregar,
+com retomada direta do saldo. Fiado preserva resumo e registro; entrada e recebimento compartilham a escolha.
+Cancelar a escolha não registra venda ou pagamento; foco retorna ao acionador. Sem alteração de paleta/schema.

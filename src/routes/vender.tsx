@@ -492,7 +492,7 @@ function CaixaPage() {
             setPayOpen(true);
           }}
         >
-          Ir para pagamento
+          Pagamento
         </Button>
         <Button
           variant="outline"
@@ -520,6 +520,7 @@ function CaixaPage() {
         total={paymentTotal}
         pixTxid={pixTxid}
         onConfirm={confirmPayment}
+        previousMethod={!creditMode ? state.pendingPayments.at(-1)?.method : undefined}
         contextTitle={creditMode ? `Entrada da compra · ${customer?.name ?? "Cliente"}` : undefined}
       />
       {pickerOpen && (

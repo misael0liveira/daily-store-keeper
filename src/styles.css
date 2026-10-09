@@ -1950,33 +1950,6 @@ a:focus-visible {
 .payment-panel-header .payment-subtitle {
   margin: 2px 0 0;
 }
-.payment-split-toggle {
-  flex: none;
-  font-size: 0.8rem;
-  min-height: 44px;
-  padding: 4px 8px;
-  background: var(--card);
-  color: var(--foreground);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-.payment-split-editor {
-  position: absolute;
-  z-index: 3;
-  top: 64px;
-  left: 12px;
-  right: 12px;
-  display: grid;
-  gap: 12px;
-  background: var(--card);
-  color: var(--foreground);
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  max-height: calc(100% - 72px);
-  overflow-y: auto;
-  box-shadow: 0 8px 24px color-mix(in srgb, var(--foreground) 15%, transparent);
-}
 @media (max-width: 350px) {
   .management-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -2248,10 +2221,6 @@ a:focus-visible {
     padding-top: 4px;
     padding-bottom: 4px;
   }
-  .payment-split-editor {
-    top: 56px;
-    max-height: calc(100% - 64px);
-  }
   .payment-panel-header .payment-subtitle {
     font-size: 14px;
     line-height: 18px;
@@ -2416,4 +2385,9 @@ a:focus-visible {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+}
+
+.payment-methods button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }

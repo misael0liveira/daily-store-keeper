@@ -36,3 +36,5 @@ F18 Compra parcial: identificar cliente, produtos, entrada nos quatro meios, rev
 F19 Receber dívida: valor, alocação, quatro meios, idempotência, recibo e caixa sem nova venda/estoque.
 
 F20 Reposição por giro: janela30dias, devoluções/combos/identidade, parâmetros globais, limite/card, busca, texto/PDF e backup/offline. Proprietário calculateReplenishment/useReplenishment e Estoque; dados locais. F21 Fechar cliente: geometria circular44px, centralização, foco, Escape e carrinho preservado; proprietário customer-sheet/Sheet.
+
+F21: Caixa → Pagamento → um/dois meios → receber → saldo/confirmar; proprietário PaymentSheet.

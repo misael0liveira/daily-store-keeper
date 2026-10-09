@@ -23,11 +23,11 @@ omitted:
 
 Fiados substitui Início no primeiro destino; Histórico, Caixa, Estoque e Ajustes conservam as posições. O resumo anterior, com logo e Nova venda, fica em Ajustes → Resumo da loja. Essa decisão substitui as referências antigas a Início abaixo. CustomersPanel é compartilhado com Gestão → Clientes; cartões, formulários e feedback seguem ManagementUI e os tokens existentes. Listas mostram nome/código e saldo; documentos pessoais não compõem QR. O cartão do cliente usa superfície branca de mídia e legenda própria.
 
-Entrada da compra e recebimento da dívida são contextos do mesmo PaymentSheet. O cabeçalho reserva título, Dividir e fechar; nome longo fica no subtítulo truncado e permanece completo no nome acessível da folha. O resumo do fiado mostra compra, entrada, dívida anterior e novo saldo; só a confirmação registra venda/estoque. A barra do Caixa reserva altura adicional para a ação de fiado. A confirmação verde da venda fiada usa o Sheet canônico, sobrepondo navegação e controles durante os dois segundos. Ações de cliente têm alvos de pelo menos44px; o cabeçalho reserva o alvo de fechar.
+Entrada da compra e recebimento da dívida são contextos do mesmo PaymentSheet. O cabeçalho reserva título e fechar; nome longo fica no subtítulo truncado e permanece completo no nome acessível da folha. O resumo do fiado mostra compra, entrada, dívida anterior e novo saldo; só a confirmação registra venda/estoque. A barra do Caixa reserva altura adicional para a ação de fiado. A confirmação verde da venda fiada usa o Sheet canônico, sobrepondo navegação e controles durante os dois segundos. Ações de cliente têm alvos de pelo menos44px; o cabeçalho reserva o alvo de fechar.
 
 ## Gestão local — 08/10/2026
 
-A gestão utiliza a identidade aprovada, tokens de src/theme/palette.css, cartões pos-card e coluna mobile existente. A assinatura visual continua sendo logo e dock; novas telas priorizam dados e ações, sem nova paleta ou decoração. Ajustes dá acesso a Gestão sem adicionar abas ao dock. Painéis de entrada, inventário, caixa, custos, clientes, atendimentos, backup e equipe compartilham ManagementUI. Native select/date/month aceitam popup do Android/navegador; não prometem geometria ou idioma controlados pelo app. Campos extras do produto ficam em disclosure opcional. Documentos históricos exibem situação e valores; cancelamento não apaga a venda. Pagamento dividido usa controle discreto dentro do enquadramento aprovado, mantendo logo, quatro abas e teclado.
+A gestão utiliza a identidade aprovada, tokens de src/theme/palette.css, cartões pos-card e coluna mobile existente. A assinatura visual continua sendo logo e dock; novas telas priorizam dados e ações, sem nova paleta ou decoração. Ajustes dá acesso a Gestão sem adicionar abas ao dock. Painéis de entrada, inventário, caixa, custos, clientes, atendimentos, backup e equipe compartilham ManagementUI. Native select/date/month aceitam popup do Android/navegador; não prometem geometria ou idioma controlados pelo app. Campos extras do produto ficam em disclosure opcional. Documentos históricos exibem situação e valores; cancelamento não apaga a venda. Pagamento dividido usa escolha inicial de dois meios, mantendo logo, quatro abas e teclado na cobrança.
 
 ## Direção
 
@@ -100,7 +100,7 @@ Verificação de regressão: e2e/palette-*.spec.cjs, tests/palette-browser.cjs, 
 
 ## Dimensões dos pagamentos — 08/10/2026
 
-Correção após conferência do APK45 no aparelho: o card reserva um cabeçalho de 64px (56px até 700px de altura). No dinheiro, título/subtítulo ficam na coluna flexível à esquerda; Dividir e fechar têm alvos de 44px e colunas próprias à direita. Todos os meios mantêm esse cabeçalho na mesma posição. O editor da parcela abre abaixo dele e rola dentro do card. Nenhuma ação flutua sobre título ou QR; teclado e rodapé de confirmação continuam separados do conteúdo rolável.
+Correção após conferência do APK45 no aparelho: o card reserva um cabeçalho de 64px (56px até 700px de altura). No dinheiro, título/subtítulo ficam na coluna flexível à esquerda; fechar tem alvo de 44px e coluna própria à direita. Todos os meios mantêm esse cabeçalho na mesma posição. A escolha e o valor da primeira parte ficam na etapa anterior à cobrança. Nenhuma ação flutua sobre título ou QR; teclado e rodapé de confirmação continuam separados do conteúdo rolável.
 
 PaymentSheet continua o proprietário único dos quatro meios. A geometria compartilhada está em src/styles.css: margem de 12px, logo contida sem deformação, quatro abas de mesma largura, ícones de 18×18px acima dos nomes e card flexível até a área segura inferior. A altura da logo é clamp(96px, 16dvh, 144px); abas de 60px. Em telas de até 700px de altura, a logo ocupa 80px, as abas 56px e os intervalos 8px. Essas medidas não dependem do meio selecionado: trocar dinheiro/Pix/débito/crédito não desloca logo, abas, card ou fechar.
 
@@ -111,3 +111,12 @@ Pix e cartão usam rolagem no conteúdo central; confirmação manual fica em um
 ## Reposição e folhas de cliente — 09/10/2026
 
 Estoque baixo usa a média líquida dos últimos30dias com ciclo do atacado e segurança globais, conforme MANAGEMENT-POLICY.md. Preserva busca, filtros, fotos/preços e editor. Sugestão de compra usa texto azul semântico no card somente no filtro baixo; ausência de vendas é explicada. Configurar reposição usa details e LocalForm; exportar abre Sheet com texto readonly e ações de copiar/PDF local. Não adicionar FAB sobre o dock. customer-sheet é o proprietário das folhas de cliente/exportação: fechar44×44px, circular, borda semântica e ícone centralizado; título e descrição reservam espaço à direita.
+
+## Escolha de pagamento — 09/10/2026
+
+Caixa → Pagamento → Um meio de pagamento ou Dois meios de pagamento. PaymentSheet é o proprietário
+compartilhado: escolha usa Sheet/Button/Input/Label e tokens existentes; sem Dividir sobre o card.
+Dois meios pede primeira parte >0 e <saldo em centavos, mostra restante, recebe e segue para outro meio.
+Primeiro meio fica indisponível na segunda parte. Parcela confirmada continua persistida ao fechar/recarregar,
+com retomada direta do saldo. Fiado preserva resumo e registro; entrada e recebimento compartilham a escolha.
+Cancelar a escolha não registra venda ou pagamento; foco retorna ao acionador. Sem alteração de paleta/schema.

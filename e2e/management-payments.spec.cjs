@@ -1,6 +1,55 @@
-const assert=require('node:assert/strict');const {scan}=require('./palette-support.cjs');
-module.exports=async page=>{
- await page.goto('http://127.0.0.1:4173/vender',{waitUntil:'networkidle'});await page.getByRole('button',{name:'Ir para pagamento',exact:true}).click();await page.getByRole('button',{name:'Dividir',exact:true}).click();await page.getByLabel('Valor desta parcela (R$)',{exact:true}).fill('1,24');await page.getByRole('button',{name:'Usar valor da parcela',exact:true}).click();await page.getByRole('button',{name:'PAGO',exact:true}).click();
- await page.waitForFunction(()=>JSON.parse(localStorage.getItem('pdv-mercado')).state.pendingPayments.length===1);assert.equal(await page.getByText('Pagamento confirmado',{exact:false}).count(),0);await page.getByRole('button',{name:'Pix',exact:true}).click();await page.getByText('O cliente escaneia o código para pagar R$ 3,00.',{exact:true}).waitFor();await scan(page,'F10 Pix restante');await page.getByRole('button',{name:'Fechar pagamento',exact:true}).click();await page.reload({waitUntil:'networkidle'});await page.getByRole('heading',{name:'Pagamentos já recebidos: R$ 1,24',exact:true}).waitFor();await page.getByRole('button',{name:'Ir para pagamento',exact:true}).click();await page.getByRole('button',{name:'Pix',exact:true}).click();await page.getByRole('button',{name:'Confirmar manualmente',exact:true}).click();await page.getByRole('button',{name:'Confirmar pagamento',exact:true}).click();await page.waitForFunction(()=>JSON.parse(localStorage.getItem('pdv-mercado')).state.sales.length===1);const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('pdv-mercado')).state);assert.equal(state.sales[0].payments.length,2);assert.equal(state.sales[0].payments[0].amount,1.24);assert.equal(state.sales[0].payments[1].amount,3);assert.equal(state.products['123'].stock,1);await page.getByRole('button',{name:'Ir para pagamento',exact:true}).waitFor({timeout:5000});
- await page.goto('http://127.0.0.1:4173/vendas',{waitUntil:'networkidle'});await page.getByRole('button',{expanded:false}).filter({hasText:'Dinheiro + Pix'}).click();await page.getByRole('button',{name:'Devolver ou cancelar',exact:true}).click();await page.getByLabel('Operação sobre a venda',{exact:true}).selectOption('cancel');await page.getByLabel('Motivo da devolução',{exact:true}).fill('Venda registrada por engano');await page.getByRole('checkbox').check();await scan(page,'F07 cancelamento preenchido');await page.getByRole('button',{name:'Registrar devolução',exact:true}).click();await page.waitForFunction(()=>JSON.parse(localStorage.getItem('pdv-mercado')).state.sales[0].status==='cancelled');const cancelled=await page.evaluate(()=>JSON.parse(localStorage.getItem('pdv-mercado')).state);assert.equal(cancelled.sales.length,1);assert.equal(cancelled.products['123'].stock,2);await scan(page,'F07 cancelamento preservado');return 6;
+const assert = require("node:assert/strict");
+const { scan } = require("./palette-support.cjs");
+module.exports = async (page) => {
+  await page.goto("http://127.0.0.1:4173/vender", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Pagamento", exact: true }).click();
+  await page.getByRole("button", { name: "Dois meios de pagamento", exact: true }).click();
+  await page.getByLabel("Valor no primeiro meio (R$)", { exact: true }).fill("1,24");
+  await page.getByRole("button", { name: "Receber primeira parte", exact: true }).click();
+  await page.getByRole("button", { name: "PAGO", exact: true }).click();
+  await page.waitForFunction(
+    () => JSON.parse(localStorage.getItem("pdv-mercado")).state.pendingPayments.length === 1,
+  );
+  assert.equal(await page.getByText("Pagamento confirmado", { exact: false }).count(), 0);
+  await page.getByRole("button", { name: "Pix", exact: true }).click();
+  await page
+    .getByText("O cliente escaneia o código para pagar R$ 3,00.", { exact: true })
+    .waitFor();
+  await scan(page, "F10 Pix restante");
+  await page.getByRole("button", { name: "Fechar pagamento", exact: true }).click();
+  await page.reload({ waitUntil: "networkidle" });
+  await page
+    .getByRole("heading", { name: "Pagamentos já recebidos: R$ 1,24", exact: true })
+    .waitFor();
+  await page.getByRole("button", { name: "Pagamento", exact: true }).click();
+  await page.getByRole("button", { name: "Pix", exact: true }).click();
+  await page.getByRole("button", { name: "Confirmar manualmente", exact: true }).click();
+  await page.getByRole("button", { name: "Confirmar pagamento", exact: true }).click();
+  await page.waitForFunction(
+    () => JSON.parse(localStorage.getItem("pdv-mercado")).state.sales.length === 1,
+  );
+  const state = await page.evaluate(() => JSON.parse(localStorage.getItem("pdv-mercado")).state);
+  assert.equal(state.sales[0].payments.length, 2);
+  assert.equal(state.sales[0].payments[0].amount, 1.24);
+  assert.equal(state.sales[0].payments[1].amount, 3);
+  assert.equal(state.products["123"].stock, 1);
+  await page.getByRole("button", { name: "Pagamento", exact: true }).waitFor({ timeout: 5000 });
+  await page.goto("http://127.0.0.1:4173/vendas", { waitUntil: "networkidle" });
+  await page.getByRole("button", { expanded: false }).filter({ hasText: "Dinheiro + Pix" }).click();
+  await page.getByRole("button", { name: "Devolver ou cancelar", exact: true }).click();
+  await page.getByLabel("Operação sobre a venda", { exact: true }).selectOption("cancel");
+  await page.getByLabel("Motivo da devolução", { exact: true }).fill("Venda registrada por engano");
+  await page.getByRole("checkbox").check();
+  await scan(page, "F07 cancelamento preenchido");
+  await page.getByRole("button", { name: "Registrar devolução", exact: true }).click();
+  await page.waitForFunction(
+    () => JSON.parse(localStorage.getItem("pdv-mercado")).state.sales[0].status === "cancelled",
+  );
+  const cancelled = await page.evaluate(
+    () => JSON.parse(localStorage.getItem("pdv-mercado")).state,
+  );
+  assert.equal(cancelled.sales.length, 1);
+  assert.equal(cancelled.products["123"].stock, 2);
+  await scan(page, "F07 cancelamento preservado");
+  return 6;
 };

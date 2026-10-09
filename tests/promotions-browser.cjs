@@ -205,7 +205,9 @@ async function checkWidth(page) {
       );
       await page.screenshot({ path: `navigation-screenshots/caixa-foto-${width}.png` });
       await context.setOffline(true);
-      await page.getByRole("button", { name: "Ir para pagamento" }).click();
+      await page.getByRole("button", { name: "Pagamento" }).click();
+      if (await page.getByRole("button", { name: "Um meio de pagamento", exact: true }).count())
+        await page.getByRole("button", { name: "Um meio de pagamento", exact: true }).click();
       await page
         .getByRole("dialog", { name: "Pagamento", exact: true })
         .getByRole("button", { name: "PAGO", exact: true })
@@ -218,7 +220,9 @@ async function checkWidth(page) {
       assert.equal(stored.sales[0].items[0].originalPrice, 20);
       await search.fill("00123");
       await search.press("Enter");
-      await page.getByRole("button", { name: "Ir para pagamento" }).click();
+      await page.getByRole("button", { name: "Pagamento" }).click();
+      if (await page.getByRole("button", { name: "Um meio de pagamento", exact: true }).count())
+        await page.getByRole("button", { name: "Um meio de pagamento", exact: true }).click();
       await page
         .getByRole("dialog", { name: "Pagamento", exact: true })
         .getByRole("button", { name: "PAGO", exact: true })
