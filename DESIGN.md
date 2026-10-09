@@ -120,3 +120,6 @@ Dois meios pede primeira parte >0 e <saldo em centavos, mostra restante, recebe 
 Primeiro meio fica indisponível na segunda parte. Parcela confirmada continua persistida ao fechar/recarregar,
 com retomada direta do saldo. Fiado preserva resumo e registro; entrada e recebimento compartilham a escolha.
 Cancelar a escolha não registra venda ou pagamento; foco retorna ao acionador. Sem alteração de paleta/schema.
+
+## Fiado sem redundâncias — 09/10/2026
+Marcar na Conta oferece total ou entrada parcial na folha existente. Vencimento calculado pelo dia cadastrado aparece como texto; Alterar vencimento desta compra é opcional e não altera o cadastro. Cadastros sem dia conservam a regra atual de 30 dias. Saldo previsto após confirmar deixa explícito que a dívida ainda não foi registrada. A entrada inicia diretamente nos quatro meios; Usar dois meios na entrada é uma ação secundária opcional que reutiliza o editor existente. Pagamento normal e recebimento de dívida conservam seus fluxos.

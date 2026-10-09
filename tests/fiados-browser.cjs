@@ -1,6 +1,7 @@
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE);
 const { mkdirSync, writeFileSync } = require("node:fs");
 const {
+  creditOptions,
   freshQuote,
   fiadoSeed,
   purchase,
@@ -76,6 +77,19 @@ const {
       } finally {
         await context.close();
       }
+    }
+    const options = await browser.newContext({
+      viewport: { width: 320, height: 740 },
+      reducedMotion: "reduce",
+    });
+    try {
+      await fiadoSeed(options, "dark");
+      const page = await options.newPage();
+      const check = watchErrors(page);
+      cases += await creditOptions(page);
+      check();
+    } finally {
+      await options.close();
     }
     const fresh = await browser.newContext({
       viewport: { width: 320, height: 740 },

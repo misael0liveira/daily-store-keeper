@@ -102,3 +102,5 @@ F21-E1: vazio/zero/negativo/excesso/total/fração de centavo; total pequeno blo
 F21-E2: Escape/Cancelar/Voltar, foco, teclado, temas320/360/430px; console/5xx/axe.
 F21-E3: fechar/refresh depois da primeira parte, saldo e meio anterior, offline.
 F21-N1: notificações atrasadas e erro de armazenamento pelas regressões existentes.
+
+F22: Marcar na Conta total/parcial, vencimento cadastral automático/override, ausência de escolha redundante na entrada, cancelamento, limites, parcelas e revisão antes de gravar. Testes em e2e/fiados.spec.cjs e runner existente.

@@ -6,7 +6,7 @@ Primeira aba Fiados; Resumo da loja acessível em Ajustes. Cadastro exige nome, 
 
 Selecionar cliente → busca ou Ler QR → conferir nome → confirmar. O QR contém UNIAO:CLIENTE:id, sem CPF e sem autenticação externa. BarcodeScanner usa o mesmo scanner embutido html5-qrcode já empregado nesta versão, com modo cliente/produto explícito; desmonta a câmera de produto durante seleção. Câmera física e permissões continuam verificações em aparelho.
 
-Pagar parte e fiar o restante → entrada/vencimento/resumo → quatro abas cobrando só a entrada → retorno ao resumo → Registrar venda com fiado. Parcelas confirmadas persistem antes do fechamento; cliente/itens ficam bloqueados após recebimento. Limite bloqueia antes de cobrar entrada; atraso apenas avisa. Sem entrada registra fiado integral após confirmação. O sucesso informa saldo em aberto.
+Marcar na Conta → total ou entrada parcial → vencimento cadastral exibido no resumo → quatro abas diretamente cobrando só a entrada quando houver → retorno ao resumo → Registrar venda com fiado. Parcelas confirmadas persistem antes do fechamento; cliente/itens ficam bloqueados após recebimento. Limite bloqueia antes de cobrar entrada; atraso apenas avisa. Sem entrada registra fiado integral após confirmação. O sucesso informa saldo em aberto.
 
 Receber no extrato → valor parcial ou saldo integral → dívida específica ou vencimentos mais antigos → mesmos quatro meios. Campo vazio escolhe saldo disponível conforme o padrão de dinheiro; zero/negativo/excesso são recusados. Abatimentos e um movimento de caixa por confirmação são atômicos/idempotentes, sem nova venda ou estoque. Recibo agrupa abatimentos da mesma confirmação; PDF de compra/cartão permanece disponível no perfil. Documentos são não fiscais. Caixa fechado/sem permissão bloqueia recebimento. Migração v8 e backup portátil preservam registros antigos.
 
@@ -134,3 +134,6 @@ Dois meios pede primeira parte >0 e <saldo em centavos, mostra restante, recebe 
 Primeiro meio fica indisponível na segunda parte. Parcela confirmada continua persistida ao fechar/recarregar,
 com retomada direta do saldo. Fiado preserva resumo e registro; entrada e recebimento compartilham a escolha.
 Cancelar a escolha não registra venda ou pagamento; foco retorna ao acionador. Sem alteração de paleta/schema.
+
+## Fiado sem redundâncias — 09/10/2026
+Marcar na Conta oferece total ou entrada parcial na folha existente. Vencimento calculado pelo dia cadastrado aparece como texto; Alterar vencimento desta compra é opcional e não altera o cadastro. Cadastros sem dia conservam a regra atual de 30 dias. Saldo previsto após confirmar deixa explícito que a dívida ainda não foi registrada. A entrada inicia diretamente nos quatro meios; Usar dois meios na entrada é uma ação secundária opcional que reutiliza o editor existente. Pagamento normal e recebimento de dívida conservam seus fluxos.

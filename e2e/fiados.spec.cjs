@@ -14,6 +14,7 @@ async function fiadoSeed(context, theme) {
         contact: "(12) 99999-0001",
         creditEnabled: true,
         creditLimit: 200,
+        dueDay: 28,
       },
     ];
     raw.state.sales = [
@@ -45,11 +46,19 @@ async function pay(page, method, label) {
   const sheet = page.getByRole("dialog", { name: label });
   await sheet.waitFor();
   const methods = Array.isArray(method) ? method : [method];
+  const isEntry = label.startsWith("Entrada");
+  assert.equal(
+    await sheet.getByRole("button", { name: "Um meio de pagamento", exact: true }).count(),
+    isEntry ? 0 : 1,
+  );
   if (methods.length > 1) {
-    await sheet.getByRole("button", { name: "Dois meios de pagamento", exact: true }).click();
+    if (isEntry)
+      await sheet.getByRole("button", { name: "Usar dois meios na entrada", exact: true }).click();
+    else await sheet.getByRole("button", { name: "Dois meios de pagamento", exact: true }).click();
     await sheet.getByLabel("Valor no primeiro meio (R$)", { exact: true }).fill("25");
     await sheet.getByRole("button", { name: "Receber primeira parte", exact: true }).click();
-  } else await sheet.getByRole("button", { name: "Um meio de pagamento", exact: true }).click();
+  } else if (!isEntry)
+    await sheet.getByRole("button", { name: "Um meio de pagamento", exact: true }).click();
   for (const current of methods) {
     await sheet.getByRole("button", { name: current, exact: true }).click();
     if (current === "Pix") {
@@ -62,6 +71,11 @@ async function pay(page, method, label) {
         .waitFor();
     }
     await scan(page, `${label} ${current}`);
+    if (isEntry && current === "Dinheiro")
+      await page.screenshot({
+        path: "navigation-screenshots/fiado-entry-light-320.png",
+        fullPage: true,
+      });
     if (current === "Dinheiro")
       await sheet.getByRole("button", { name: "PAGO", exact: true }).click();
     else {
@@ -73,9 +87,10 @@ async function pay(page, method, label) {
 async function purchase(page, method) {
   await page.getByRole("button", { name: /Abrir cliente Joana Silva/ }).click();
   await page.getByRole("button", { name: "Nova compra", exact: true }).click();
-  await page.getByRole("button", { name: "Pagar parte e fiar o restante", exact: true }).click();
+  await page.getByRole("button", { name: "Marcar na Conta", exact: true }).click();
+  await page.getByRole("button", { name: "Receber uma parte", exact: true }).click();
   await page.getByLabel("Valor a receber agora (R$)").fill("50");
-  await page.getByLabel("Vencimento do fiado").fill("2099-12-01");
+  assert.equal(await page.getByLabel("Vencimento do fiado").count(), 0);
   await page.getByRole("button", { name: "Receber entrada", exact: true }).click();
   await pay(page, method, "Entrada da compra · Joana Silva");
   await page.getByRole("button", { name: "Registrar venda com fiado", exact: true }).waitFor();
@@ -96,6 +111,7 @@ async function purchase(page, method) {
     "Confirmação do fiado deve cobrir os controles de fundo",
   );
   state = await page.evaluate(() => JSON.parse(localStorage.getItem("pdv-mercado")).state);
+  assert.equal(state.receivables.find((d) => d.saleId !== "old-sale").dueAt.slice(-3), "-28");
   assert.equal(state.sales.length, 2);
   assert.equal(state.products["123"].stock, 9);
   assert.equal(
@@ -229,10 +245,14 @@ async function freshQuote(page) {
     await page.getByRole("button", { name: "Um meio de pagamento", exact: true }).click();
   await page.getByRole("button", { name: "Fechar pagamento", exact: true }).click();
   await page.getByRole("button", { name: "Aumentar Compra teste", exact: true }).click();
-  await page.getByRole("button", { name: "Pagar parte e fiar o restante", exact: true }).click();
+  await page.getByRole("button", { name: "Marcar na Conta", exact: true }).click();
+  await page.getByRole("button", { name: "Receber uma parte", exact: true }).click();
   await page.getByLabel("Valor a receber agora (R$)").fill("100");
   await page.getByRole("button", { name: "Receber entrada", exact: true }).click();
-  await page.getByRole("button", { name: "Um meio de pagamento", exact: true }).click();
+  assert.equal(
+    await page.getByRole("button", { name: "Um meio de pagamento", exact: true }).count(),
+    0,
+  );
   await page.getByRole("button", { name: "PAGO", exact: true }).click();
   await page
     .getByRole("button", { name: "Registrar venda com fiado", exact: true })
@@ -253,4 +273,109 @@ async function freshQuote(page) {
     180,
   );
 }
-module.exports = { freshQuote, fiadoSeed, purchase, receive, identity, backup, scan, watchErrors };
+async function creditOptions(page) {
+  const read = () => page.evaluate(() => JSON.parse(localStorage.getItem("pdv-mercado")).state);
+  await page.goto("http://127.0.0.1:4173/", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: /Abrir cliente Joana Silva/ }).click();
+  await page.getByRole("button", { name: "Nova compra", exact: true }).click();
+  const trigger = page.getByRole("button", { name: "Marcar na Conta", exact: true });
+  const sheet = page.getByRole("dialog", { name: "Marcar na Conta — Joana Silva", exact: true });
+  await trigger.click();
+  await sheet.getByRole("button", { name: "Marcar valor total", exact: true }).click();
+  assert.equal(await sheet.getByLabel("Vencimento do fiado").count(), 0);
+  const expected = await page.evaluate(() => {
+    const n = new Date();
+    const month = n.getDate() < 28 ? n.getMonth() : n.getMonth() + 1;
+    const d = new Date(n.getFullYear(), month, 28);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-28`;
+  });
+  await sheet
+    .getByText(`Vencimento desta compra ${expected.split("-").reverse().join("/")}`, {
+      exact: true,
+    })
+    .waitFor();
+  await scan(page, "Fiado integral e vencimento cadastral");
+  await page.screenshot({
+    path: "navigation-screenshots/fiado-summary-dark-320.png",
+    fullPage: true,
+  });
+  const original = await read();
+  await sheet.getByRole("button", { name: "Voltar ao carrinho", exact: true }).click();
+  assert.deepEqual((await read()).receivables, original.receivables);
+  assert.equal((await read()).sales.length, original.sales.length);
+  await trigger.click();
+  await sheet.getByRole("button", { name: "Receber uma parte", exact: true }).click();
+  const input = sheet.getByLabel("Valor a receber agora (R$)");
+  const receive = sheet.getByRole("button", { name: "Receber entrada", exact: true });
+  for (const invalid of ["", "0", "-1", "100", "101", "1,001", "abc"]) {
+    await input.fill(invalid);
+    await receive.click();
+    await sheet.getByRole("alert").waitFor();
+    assert.equal((await read()).pendingPayments.length, 0);
+  }
+  await input.fill("1");
+  await page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem("pdv-mercado"));
+    s.state.customers[0].creditLimit = 100;
+    localStorage.setItem("pdv-mercado", JSON.stringify(s));
+  });
+  await page.reload({ waitUntil: "networkidle" });
+  await trigger.click();
+  await sheet.getByRole("button", { name: "Receber uma parte", exact: true }).click();
+  await input.fill("1");
+  await receive.click();
+  await sheet
+    .getByRole("alert")
+    .filter({ hasText: "O novo saldo ultrapassa o limite de fiado." })
+    .waitFor();
+  assert.equal((await read()).pendingPayments.length, 0);
+  await input.fill("90");
+  await receive.click();
+  const payment = page.getByRole("dialog", {
+    name: "Entrada da compra · Joana Silva",
+    exact: true,
+  });
+  await payment.getByRole("button", { name: "PAGO", exact: true }).waitFor();
+  assert.equal(
+    await payment.getByRole("button", { name: "Um meio de pagamento", exact: true }).count(),
+    0,
+  );
+  await payment.getByRole("button", { name: "Usar dois meios na entrada", exact: true }).click();
+  await payment.getByRole("button", { name: "Voltar", exact: true }).click();
+  await payment.getByRole("button", { name: "PAGO", exact: true }).waitFor();
+  await payment.getByRole("button", { name: "Fechar pagamento", exact: true }).click();
+  // Restore the credit limit, preserving all local records; preview cancellation charged nothing.
+  await page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem("pdv-mercado"));
+    s.state.customers[0].creditLimit = 200;
+    localStorage.setItem("pdv-mercado", JSON.stringify(s));
+  });
+  await page.reload({ waitUntil: "networkidle" });
+  await trigger.click();
+  await sheet.getByRole("button", { name: "Marcar valor total", exact: true }).click();
+  await sheet.getByRole("button", { name: "Alterar vencimento desta compra", exact: true }).click();
+  await sheet.getByLabel("Vencimento do fiado").fill("2099-12-01");
+  await sheet.getByRole("button", { name: "Registrar venda com fiado", exact: true }).click();
+  await page.getByRole("status", { name: "Venda registrada", exact: true }).waitFor();
+  const saved = await read();
+  assert.equal(saved.customers[0].dueDay, 28);
+  assert.equal(saved.sales.length, original.sales.length + 1);
+  assert.equal(saved.products["123"].stock, 9);
+  assert.equal(saved.receivables.find((d) => d.saleId !== "old-sale").dueAt, "2099-12-01");
+  assert.equal(
+    saved.receivables.reduce((n, d) => n + d.balance, 0),
+    180,
+  );
+  return 12;
+}
+module.exports = {
+  creditOptions,
+  freshQuote,
+  fiadoSeed,
+  purchase,
+  receive,
+  identity,
+  backup,
+  scan,
+  watchErrors,
+};

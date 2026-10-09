@@ -39,6 +39,7 @@ export function PaymentSheet({
   contextTitle,
   successDetail,
   previousMethod,
+  chooseBeforePayment = true,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -48,6 +49,7 @@ export function PaymentSheet({
   contextTitle?: string | undefined;
   successDetail?: string | undefined;
   previousMethod?: PaymentMethod | undefined;
+  chooseBeforePayment?: boolean;
 }) {
   const settings = useStore((s) => s.settings);
   const [method, setMethod] = useState<PaymentMethod>("dinheiro");
@@ -55,7 +57,7 @@ export function PaymentSheet({
   const [success, setSuccess] = useState<{ amount: number; bank: string | undefined } | null>(null);
   const [notificationAccess, setNotificationAccess] = useState<boolean | null>(null);
   const [manualOpen, setManualOpen] = useState(false);
-  const [choosing, setChoosing] = useState(!previousMethod);
+  const [choosing, setChoosing] = useState(chooseBeforePayment && !previousMethod);
   const [firstMethod, setFirstMethod] = useState<PaymentMethod | undefined>(previousMethod);
   const choiceAction = useRef<HTMLButtonElement>(null);
   const paymentAction = useRef<HTMLButtonElement>(null);
@@ -145,11 +147,11 @@ export function PaymentSheet({
       setManualOpen(false);
       setSplitRaw("");
       setSplitOpen(false);
-      setChoosing(!previousMethod);
+      setChoosing(chooseBeforePayment && !previousMethod);
       setFirstMethod(previousMethod);
       setMethod(previousMethod === "dinheiro" ? "pix" : "dinheiro");
     }
-  }, [open, previousMethod]);
+  }, [open, previousMethod, chooseBeforePayment]);
 
   useEffect(() => {
     if (open) {
@@ -330,6 +332,7 @@ export function PaymentSheet({
                   onClick={() => {
                     setSplitOpen(false);
                     setSplitRaw("");
+                    if (!chooseBeforePayment) setChoosing(false);
                   }}
                 >
                   Voltar
@@ -374,6 +377,23 @@ export function PaymentSheet({
                 </button>
               ))}
             </div>
+            {!chooseBeforePayment &&
+              !splitPayment &&
+              !firstMethod &&
+              !previousMethod &&
+              total >= 0.02 && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    setPaidRaw("");
+                    setSplitOpen(true);
+                    setChoosing(true);
+                  }}
+                >
+                  Usar dois meios na entrada
+                </Button>
+              )}
             <section className="payment-panel">
               <div className="payment-panel-header">
                 <div className="payment-panel-heading" title={contextTitle}>

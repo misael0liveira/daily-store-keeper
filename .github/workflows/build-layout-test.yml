@@ -160,7 +160,9 @@ jobs:
           prerelease: true
           make_latest: false
           body: |
-            Caixa: botão Pagamento abre escolha entre Um meio de pagamento e Dois meios de pagamento.
+            Caixa: Marcar na Conta oferece valor total ou entrada parcial. Vencimento vem do cadastro e aparece só no resumo; alteração por compra é opcional.
+            Entrada segue diretamente aos quatro meios, com divisão da entrada como opção secundária. Saldo previsto e confirmação final preservam venda, estoque e dívida.
+            Pagamento normal conserva a escolha entre Um meio de pagamento e Dois meios de pagamento.
             Dois meios pede a primeira parte, calcula o restante e segue para outro meio após confirmar. Recebimentos persistem ao fechar/reabrir ou recarregar.
             Remove Dividir do cabeçalho; preserva os quatro meios, troco, Pix, monitor, Fiados, scanner, reposição e dados locais.
             Spec Kit, Ponytail full, replica-test e auditoria premium aplicados. Mesma chave de teste; instale sobre o teste existente sem desinstalar.

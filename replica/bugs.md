@@ -171,3 +171,11 @@ Nenhum bug novo do aplicativo reproduzido nesta revisão; limitações iniciais 
 foram corrigidas e os cenários correspondentes passaram. Conferência física segue pendente.
 
 Teste 50: workflow 37970695624 concluído com sucesso; todas as suítes de navegador e Android passaram, APK assinado publicado.
+
+## FIA-RED-01 — vencimento e escolha redundantes na entrada
+
+- Severidade: S3, corrigido no escopo de simplificação aprovado.
+- Reprodução: APK50, abrir compra fiada de cliente com dia cadastrado; formulário pedia data e recebimento abria escolha um/dois meios antes da cobrança. Prints do proprietário e código reproduzem a redundância.
+- Correção: Marcar na Conta total/parcial; data cadastral só no resumo e override opcional; entrada direto aos meios, divisão opcional reutilizando PaymentSheet.
+- Evidência: e2e/fiados.spec.cjs verifica ausência da etapa inicial obrigatória, data preservada, registro único, dinheiro/Pix/cartões e valores/limite inválidos.
+- Testes locais de fluxo/axe passaram; recarga offline e Android aguardam CI canônico. Conferência física pendente.
