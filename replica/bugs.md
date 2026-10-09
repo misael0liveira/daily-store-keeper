@@ -178,4 +178,4 @@ Teste 50: workflow 37970695624 concluído com sucesso; todas as suítes de naveg
 - Reprodução: APK50, abrir compra fiada de cliente com dia cadastrado; formulário pedia data e recebimento abria escolha um/dois meios antes da cobrança. Prints do proprietário e código reproduzem a redundância.
 - Correção: Marcar na Conta total/parcial; data cadastral só no resumo e override opcional; entrada direto aos meios, divisão opcional reutilizando PaymentSheet.
 - Evidência: e2e/fiados.spec.cjs verifica ausência da etapa inicial obrigatória, data preservada, registro único, dinheiro/Pix/cartões e valores/limite inválidos.
-- Testes locais de fluxo/axe passaram e CI confirmou 61 casos Fiados, incluindo recarga offline. Android aguarda novo run após sincronizar a espera do teste legado de foco. Conferência física pendente.
+- Testes locais de fluxo/axe passaram e CI confirmou 61 casos Fiados, incluindo recarga offline. Run52 confirmou 61 casos Fiados, 42 de reposição e todas as demais suítes; Android/assinatura concluídos e APK52 publicado. Conferência física pendente.

@@ -8,3 +8,5 @@ Constituição III: escolher um/dois antes de cobrança é regra do Pagamento no
 Sem alteração nativa/schema/dependência. Mesma chave APK. Conferência física distinta da automação.
 
 Correção da verificação legada: e2e/replenishment.spec.cjs deve esperar a restituição assíncrona real do foco ao Selecionar cliente (2s), mantendo a assertion. Falha reproduzida no CI após todos os 61 casos Fiados passarem.
+
+Workflow inclui e2e/** no filtro de push, para que correções dos cenários de navegador executem a verificação e geração do APK.
