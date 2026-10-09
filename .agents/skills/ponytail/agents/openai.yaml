@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ponytail"
+  short_description: "Mudanças completas com menos código e complexidade"
+  default_prompt: "Use $ponytail para resolver esta tarefa com a menor mudança completa, preservando as regras e os testes do projeto."

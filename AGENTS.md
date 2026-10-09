@@ -75,3 +75,12 @@ Ler `SPEC-KIT.md` e `.specify/memory/constitution.md` antes de planejar a mudan�
 As skills Codex estão em `.agents/skills/speckit-*`. Registrar especificação, plano e tarefas
 do escopo solicitado; verificar os fluxos afetados com a skill `replica-test` e os testes
 existentes antes de entregar. Manter as regras deste arquivo e os contratos do projeto.
+
+## Ponytail — implementação simples e completa
+
+Por solicitação do proprietário em 09/10/2026, ler e aplicar a skill
+`.agents/skills/ponytail/SKILL.md` nas próximas tarefas de código deste APK,
+usando o modo **full** como padrão, salvo instrução posterior do proprietário.
+Reutilizar o código e as dependências existentes e evitar complexidade sem uso.
+Ponytail complementa Spec Kit e replica-test: preservar os requisitos aprovados,
+dados, operação offline, scanner, pagamentos e verificações exigidas pelo projeto.
