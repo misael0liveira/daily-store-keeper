@@ -17,6 +17,10 @@ import { ProductPhotoEditor } from "@/components/ProductPhotoEditor";
 import { ProductPrice } from "@/components/ProductPrice";
 import { ProductManagementFields } from "@/components/ProductManagementFields";
 import { PromotionManager } from "@/components/PromotionManager";
+import { ReplenishmentSettings } from "@/components/ReplenishmentSettings";
+import { ReplenishmentExport } from "@/components/ReplenishmentExport";
+import { useReplenishment } from "@/hooks/useReplenishment";
+import { purchaseLabel, type Replenishment } from "@/lib/stockReplenishment";
 import { usePricingTime } from "@/hooks/usePricingTime";
 import { saveProductPhoto, deleteProductPhoto } from "@/lib/productPhotos";
 import { Button } from "@/components/ui/button";
@@ -40,7 +44,7 @@ import {
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { beep, unlockAudio, vibrate } from "@/lib/feedback";
-import { isLowStock, useStore, type Product } from "@/store/useStore";
+import { useStore, type Product } from "@/store/useStore";
 
 export const Route = createFileRoute("/estoque")({
   head: () => ({
@@ -63,9 +67,11 @@ export const Route = createFileRoute("/estoque")({
 });
 
 function EstoquePage() {
-  const { products, upsertProduct, deleteProduct } = useStore();
+  const { products, settings, upsertProduct, deleteProduct } = useStore();
   const [editorOpen, setEditorOpen] = useState(false);
   const [lowOnly, setLowOnly] = useState(false);
+  const replenishment = useReplenishment();
+  const [exportRows, setExportRows] = useState<Replenishment[]>();
   const [promotionsOpen, setPromotionsOpen] = useState(false);
   const [photo, setPhoto] = useState<Blob | null | undefined>();
   const [photoBusy, setPhotoBusy] = useState(false);
@@ -94,10 +100,10 @@ function EstoquePage() {
     return all.filter(
       (p) =>
         p.active !== false &&
-        (!lowOnly || isLowStock(p)) &&
+        (!lowOnly || replenishment.get(p.barcode)?.low) &&
         (!q || p.name.toLowerCase().includes(q) || p.barcode.toLowerCase().includes(q)),
     );
-  }, [products, search, lowOnly]);
+  }, [products, search, lowOnly, replenishment]);
 
   const handleScan = useCallback(
     (code: string) => {
@@ -305,6 +311,33 @@ function EstoquePage() {
           Promoção
         </button>
       </div>
+      {lowOnly && !promotionsOpen && (
+        <section className="space-y-3" aria-label="Reposição para o atacado">
+          <p className="text-sm text-muted-foreground">
+            Vendas dos últimos 30 dias · Ciclo {settings.wholesaleCycleDays ?? 7} dias · Segurança{" "}
+            {settings.stockSafetyDays ?? 2} dias.
+          </p>
+          <ReplenishmentSettings />
+          <Button
+            variant="outline"
+            className="w-full h-12"
+            disabled={!list.length}
+            onClick={() =>
+              setExportRows(
+                list.flatMap((p) => {
+                  const r = replenishment.get(p.barcode);
+                  return r ? [r] : [];
+                }),
+              )
+            }
+          >
+            Exportar lista
+          </Button>
+        </section>
+      )}
+      {exportRows && (
+        <ReplenishmentExport rows={exportRows} onClose={() => setExportRows(undefined)} />
+      )}
       {promotionsOpen ? (
         <PromotionManager />
       ) : list.length === 0 ? (
@@ -335,7 +368,7 @@ function EstoquePage() {
                   <strong>{p.name}</strong>
                   <span className="pos-stock-detail">
                     <ProductPrice product={p} now={now} /> ·{" "}
-                    <span className={isLowStock(p) ? "pos-low-stock" : ""}>
+                    <span className={replenishment.get(p.barcode)?.low ? "pos-low-stock" : ""}>
                       {p.components?.length
                         ? "Combo"
                         : p.stockControlled === false
@@ -343,6 +376,16 @@ function EstoquePage() {
                           : `${p.stock} ${p.unit ?? "un"}`}
                     </span>
                   </span>
+                  {lowOnly && replenishment.has(p.barcode) && (
+                    <span className="block mt-1 text-sm font-semibold text-primary">
+                      Sugestão de compra: {purchaseLabel(replenishment.get(p.barcode)!)}
+                      {replenishment.get(p.barcode)!.sold30 === 0 && (
+                        <span className="block text-xs font-normal text-muted-foreground">
+                          Sem vendas nos últimos 30 dias; confira a necessidade.
+                        </span>
+                      )}
+                    </span>
+                  )}
                   {(p.brand || p.packageSize) && (
                     <span className="mt-1 block text-xs text-muted-foreground">
                       {[p.brand, p.packageSize].filter(Boolean).join(" · ")}

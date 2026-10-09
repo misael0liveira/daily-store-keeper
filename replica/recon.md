@@ -34,3 +34,5 @@ F05 Geometria de pagamentos: logo, quatro abas, card, fechar, campos de dinheiro
 F17 Fiados: cadastro, CPF opcional, código estável, busca, limite, extrato e cartão QR.
 F18 Compra parcial: identificar cliente, produtos, entrada nos quatro meios, revisão e registro do saldo em aberto.
 F19 Receber dívida: valor, alocação, quatro meios, idempotência, recibo e caixa sem nova venda/estoque.
+
+F20 Reposição por giro: janela30dias, devoluções/combos/identidade, parâmetros globais, limite/card, busca, texto/PDF e backup/offline. Proprietário calculateReplenishment/useReplenishment e Estoque; dados locais. F21 Fechar cliente: geometria circular44px, centralização, foco, Escape e carrinho preservado; proprietário customer-sheet/Sheet.

@@ -120,3 +120,8 @@ PaymentSheet e os tokens --payment-* em src/styles.css são a fonte única das d
 A folha respeita 100dvh e os insets superior/inferior. Teclado e rodapé de confirmação não pertencem à rolagem do conteúdo central. Expandir a confirmação manual pode rolar apenas seu próprio rodapé; botão de confirmar fica acessível pelo toque e foco. A troca de meio conserva o enquadramento externo e o identificador Pix da sessão. Fluxos, notificações e persistência anteriores permanecem cobertos pelos testes existentes.
 
 As áreas seguras de 24px são simuladas no navegador para verificar geometria, juntamente com um valor de R$ 1.234,56. Insets reais, escala de fonte do sistema, orientação horizontal e renderização do WebView exigem conferência física; não se declara cobertura desses estados a partir das simulações.
+
+## Reposição local — 09/10/2026
+
+Fonte comercial: MANAGEMENT-POLICY.md, seção Reposição por ciclo do atacado, e specs/002-estoque-reposicao/spec.md. Estoque, Resumo e Gestão usam useReplenishment/calculateReplenishment. Estoque baixo limita aos produtos físicos ativos elegíveis; busca continua transitória. Sugestão aparece no card somente nesse filtro. Configuração global na própria tela, sem exigir chave Pix: Field/LocalForm validam dias, guardam valores e mostram erro associado ao campo; permissão manage conserva proprietário/gerente.
+Exportação é snapshot dos resultados visíveis ao abrir; mostra texto rotulado selecionável, Copiar lista e Baixar PDF. Falha de clipboard orienta cópia manual sem perder lista; PDF local usa jsPDF/autotable com paginação. Não registra pedidos nem movimentos. Sheet conserva foco, Escape e fundo inerte. customer-sheet > button recebe círculo44px e centro compartilhado; header/descrição reservam espaço.

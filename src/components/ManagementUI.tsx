@@ -24,6 +24,7 @@ export function Field({
   required = false,
   inputMode,
   placeholder,
+  invalid = false,
 }: {
   label: string;
   value: string;
@@ -32,6 +33,7 @@ export function Field({
   required?: boolean;
   inputMode?: "decimal" | "numeric";
   placeholder?: string;
+  invalid?: boolean;
 }) {
   const id = useId();
   const form = useContext(FormError);
@@ -46,7 +48,7 @@ export function Field({
         required={required}
         inputMode={inputMode}
         placeholder={placeholder}
-        aria-invalid={Boolean(form.error) && required && !value.trim()}
+        aria-invalid={invalid || (Boolean(form.error) && required && !value.trim())}
         aria-describedby={form.error ? form.id : undefined}
         className="h-12"
       />

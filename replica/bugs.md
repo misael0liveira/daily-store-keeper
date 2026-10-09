@@ -150,3 +150,15 @@ Nenhum S1 aberto nesta edição. Scanner real, atualização sobre APK46 e notif
 - Evidência: teste elementFromPoint falhou antes da correção em Confirmação do fiado deve cobrir os controles de fundo.
 - Correção: usar Sheet canônico com variante payment-sheet, título/descrição acessíveis e fechamento bloqueado durante sucesso.
 - Commit: revisão de convergência desta edição; consultar git log -1 -- src/routes/vender.tsx.
+
+## BUG-REPL-001 — Foco perdido ao fechar seleção de cliente
+
+- Severidade: S3, corrigido.
+- Reprodução: abrir Selecionar cliente no Caixa; tocar Fechar; verificar document.activeElement.
+- Esperado: retornar ao botão Selecionar cliente sem modificar carrinho/cliente.
+- Real: foco não retornava ao controle de origem quando Sheet era montado por estado sem SheetTrigger.
+- Evidência: e2e/replenishment.spec.cjs, geometry: assert do foco falhou antes da correção; screenshot replenishment-light-320-cliente.png.
+- Correção: SheetContent captura o opener no evento de abertura e restaura foco ao fechar, respeitando overrides existentes. Círculo44px e centro do X são verificados no proprietário customer-sheet.
+- Commit: edição de reposição; consultar git log -1 -- src/components/ui/sheet.tsx.
+
+O pedido visual do X foi localizado no print100683.jpg; círculo, alvo e centro são verificados por geometry. Falha inicialmente observada no teste de backup era espera do teste: a modal ocultava o heading antes de completar a operação. Corrigida espera pelo fechamento da modal, sem atribuir bug ao produto.

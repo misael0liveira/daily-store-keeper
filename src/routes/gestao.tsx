@@ -1,3 +1,5 @@
+import { useReplenishment } from "@/hooks/useReplenishment";
+import { formatStockQuantity, purchaseLabel } from "@/lib/stockReplenishment";
 import { CustomersPanel } from "@/components/CustomersPanel";
 import { decimal } from "@/lib/managementNumbers";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -41,7 +43,6 @@ import {
   canOperate,
   cashExpected,
   formatBRL,
-  isLowStock,
   money,
   operator,
   productId,
@@ -790,6 +791,7 @@ function CashPanel() {
 }
 function ReportsPanel() {
   const state = useStore();
+  const replenishment = useReplenishment();
   const [month, setMonth] = useState(new Date().toLocaleDateString("sv-SE").slice(0, 7));
   const [range, setRange] = useState("month");
   const start =
@@ -905,14 +907,18 @@ function ReportsPanel() {
           {products.filter((p) => p.cost === undefined).length} produtos sem custo informado.
         </EmptyHint>
         <RecordList empty="Nenhum produto precisa de reposição.">
-          {products.filter(isLowStock).map((p) => (
-            <div className="management-line" key={p.barcode}>
-              <strong>{p.name}</strong>
-              <p>
-                Saldo {p.stock} · Mínimo {p.minimumStock ?? 5}
-              </p>
-            </div>
-          ))}
+          {products
+            .filter((p) => replenishment.get(p.barcode)?.low)
+            .map((p) => (
+              <div className="management-line" key={p.barcode}>
+                <strong>{p.name}</strong>
+                <p>
+                  Saldo {p.stock} {p.unit ?? "un"} · Mínimo{" "}
+                  {formatStockQuantity(replenishment.get(p.barcode)!.minimum)} · Comprar{" "}
+                  {purchaseLabel(replenishment.get(p.barcode)!)}
+                </p>
+              </div>
+            ))}
         </RecordList>
         <Link to="/estoque" className="text-primary underline">
           Conferir produtos

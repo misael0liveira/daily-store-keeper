@@ -15,7 +15,6 @@ export function ProductManagementFields({
   const state = useStore();
   const merged = { ...product, ...value };
   const [costText, setCostText] = useState(merged.cost === undefined ? "" : String(merged.cost));
-  const [minimumText, setMinimumText] = useState(String(merged.minimumStock ?? 5));
   const [componentText, setComponentText] = useState<Record<string, string>>({});
   const patch = (change: Partial<Product>) => onChange({ ...value, ...change });
   const children = Object.values(state.products).filter(
@@ -45,15 +44,10 @@ export function ProductManagementFields({
             inputMode="decimal"
           />
         )}
-        <Field
-          label="Estoque mínimo para reposição"
-          value={minimumText}
-          onChange={(text) => {
-            setMinimumText(text);
-            patch({ minimumStock: decimal(text) });
-          }}
-          inputMode="decimal"
-        />
+        <p className="text-sm text-muted-foreground">
+          A reposição usa a média de vendas e os dias configurados em Estoque → Estoque baixo →
+          Configurar reposição.
+        </p>
         <Choice
           label="Unidade de venda"
           value={merged.unit ?? "un"}

@@ -102,7 +102,14 @@ const schema = z
     products: z.record(product),
     cart,
     sales: z.array(sale),
-    settings: z.object({ storeName: text, pixKey: text, merchantName: text, city: text }),
+    settings: z.object({
+      storeName: text,
+      pixKey: text,
+      merchantName: text,
+      city: text,
+      wholesaleCycleDays: number.int().min(1).max(365).default(7),
+      stockSafetyDays: number.int().min(0).max(365).default(2),
+    }),
     theme: z.enum(["light", "dark"]),
     cashOpen: z.boolean(),
     movements: z.array(

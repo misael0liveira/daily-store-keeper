@@ -90,6 +90,7 @@ jobs:
 
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright AXE_MODULE=/tmp/mercadinho-browser/node_modules/@axe-core/playwright node tests/management-browser.cjs
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright AXE_MODULE=/tmp/mercadinho-browser/node_modules/@axe-core/playwright node tests/fiados-browser.cjs
+          PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright AXE_MODULE=/tmp/mercadinho-browser/node_modules/@axe-core/playwright node tests/replenishment-browser.cjs
 
       - name: Upload navigation screenshots
         if: always()
@@ -158,22 +159,12 @@ jobs:
           prerelease: true
           make_latest: false
           body: |
-            Nova aba Fiados: cadastro com código próprio, CPF opcional, busca, cartão QR, limite e extrato.
-            Caixa: receber uma parte nos quatro meios e registrar o restante em fiado após revisar o saldo. Receber no cliente usa a mesma tela, com quitação parcial ou integral, sem criar nova venda.
-            Resumo da loja permanece acessível em Ajustes. Migração e backup preservam clientes e dívidas existentes.
-            Correção do botão Dividir: cabeçalho com espaço próprio para título, divisão e fechamento, sem sobrepor textos ou QR. Campo da parcela rolável e teclado fixo preservados; geometria e abertura da divisão verificadas nos quatro meios, nos dois temas e em telas pequenas.
-            Gestão inspirada nas referências do OpenSourcePOS, adaptada ao Mercadinho União e ao funcionamento local.
-            Em Ajustes → Gestão: fornecedores, recebimento de mercadorias por embalagem, custo médio, lotes/validade, movimentos e contagem de estoque.
-            Caixa: abertura/fundo de troco, suprimentos, retiradas, despesas, fechamento e diferença entre saldo esperado e contado.
-            Vendas: pagamento dividido com recuperação de parcelas confirmadas, atendimentos suspensos, cliente/fiado, recebimento de dívida, devolução parcial e cancelamento com histórico preservado.
-            Cadastro: categorias, estoque mínimo, produtos por kg/l, serviços e combos; arquivamento sem apagar o histórico.
-            Relatórios locais de estoque, vendas, margem sobre custos conhecidos e despesas; comprovante não fiscal e etiquetas em PDF.
-            Backup com fotos, prévia e verificação de integridade; importação/exportação CSV com validação antes de salvar.
-            Equipe local opcional com PIN protegido e permissões por perfil. Não substitui autenticação de servidor.
-            Paleta, alinhamento das abas de pagamento, scanner e confirmação verde por 2 segundos preservados e verificados.
-            Pix/cartão mantêm o monitor de notificações existente; recebimentos reais precisam ser conferidos no aparelho. Não adiciona integração bancária, fiscal ou sincronização entre aparelhos.
-            Instala separadamente como Mercadinho União — Teste. Dados locais próprios; não substitui a versão oficial.
-            APK com empacotamento release e chave de teste preservada.
+            Estoque baixo dinâmico: média líquida de vendas dos últimos30dias, ciclo de atacado e margem de segurança configuráveis (padrão7/2), cálculo integralmente local.
+            Cards mostram sugestão de compra; exportação dos resultados visíveis em texto para WhatsApp e PDF local para impressão. Migração e backup preservam dados e parâmetros; Resumo/Gestão usam a mesma regra.
+            Botão de fechar em Selecionar cliente circular44px, ícone centralizado e retorno do foco ao controle de origem.
+            Spec Kit, Ponytail full e replica-test aplicados. Scanner, pagamentos, Fiados, paleta e assinatura de teste preservados.
+            Instale sobre o APK teste existente sem desinstalar. Instala separadamente da versão oficial como Mercadinho União — Teste.
+            Câmera, notificações bancárias, clipboard/impressão e instalação reais exigem conferência no aparelho. Não adiciona servidor, processamento bancário ou integração fiscal.
           files: |
             Mercadinho-Uniao-Teste.apk
             Mercadinho-Uniao-Teste.sha256

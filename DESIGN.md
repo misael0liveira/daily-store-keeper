@@ -47,7 +47,7 @@ Primitivos: Button, Input, Sheet e AlertDialog existentes. Estado: useStore. Fee
 Início: logotipo oficial e um único status; resumo diário com Nova venda; até três produtos de reposição; duas últimas vendas.
 Caixa: título simples, câmera persistente, busca, lista com subtotal e quantidade, pagamento fixo acima da navegação.
 Scanner: quatro cantos brancos independentes enquadram o código e uma linha verde atravessa a leitura; sem retângulo completo, ícone sobre a câmera, linha vermelha ou molduras sobrepostas. O botão “Digitar código” foi removido por solicitação do usuário em 06/10/2026. No Caixa, o campo de busca mantém entrada por nome/código. Em falha de câmera, a entrada numérica permanece visível; no estoque, o código pode ser preenchido no editor.
-Estoque: lista primeiro, busca por nome/código, filtro de saldo <=5; cadastro/edição em Sheet.
+Estoque: lista primeiro, busca por nome/código, filtro dinâmico por venda média e margem de segurança; cadastro/edição em Sheet.
 Histórico: cabeçalho e cartões com a mesma densidade das demais rotas; filtros suaves, configurações somente em Ajustes e um único estado vazio por período.
 Não colocar números ilustrativos, fotos de câmera ou botões sem função na produção.
 
@@ -107,3 +107,7 @@ PaymentSheet continua o proprietário único dos quatro meios. A geometria compa
 Os três campos monetários do dinheiro compartilham largura de 55% e alinhamento à direita; os rótulos ocupam a outra coluna. Teclado fixo com quatro linhas e botão PAGO permanece na base do card; somente o resumo pode rolar em alturas insuficientes. O QR mantém proporção quadrada e reserva espaço para fechar. Cartão contém a ilustração sem deformá-la e alinha valor/status à margem interna do card.
 
 Pix e cartão usam rolagem no conteúdo central; confirmação manual fica em um rodapé separado dentro do mesmo card, com expansão rolável e foco acessível. Nada nesta revisão altera paleta, notificações, cálculo de troco ou confirmação verde de dois segundos. Verificação de geometria em e2e/payment-dimensions.spec.cjs e tests/payment-dimensions-browser.cjs; capturas e medidas são comparadas entre os quatro meios, nos dois temas.
+
+## Reposição e folhas de cliente — 09/10/2026
+
+Estoque baixo usa a média líquida dos últimos30dias com ciclo do atacado e segurança globais, conforme MANAGEMENT-POLICY.md. Preserva busca, filtros, fotos/preços e editor. Sugestão de compra usa texto azul semântico no card somente no filtro baixo; ausência de vendas é explicada. Configurar reposição usa details e LocalForm; exportar abre Sheet com texto readonly e ações de copiar/PDF local. Não adicionar FAB sobre o dock. customer-sheet é o proprietário das folhas de cliente/exportação: fechar44×44px, circular, borda semântica e ícone centralizado; título e descrição reservam espaço à direita.

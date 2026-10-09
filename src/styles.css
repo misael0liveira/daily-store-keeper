@@ -2352,12 +2352,22 @@ a:focus-visible {
   padding-right: 56px;
   overflow-wrap: anywhere;
 }
+.customer-sheet > p {
+  padding-right: 44px;
+}
 .customer-panel button,
 .customer-sheet button {
   min-height: 44px;
 }
 .customer-sheet > button {
-  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
   top: 8px;
   right: 8px;
 }

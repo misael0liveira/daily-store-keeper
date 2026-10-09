@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { formatBRL, isLowStock, saleNet, saleMethodLabel, useStore } from "@/store/useStore";
+import { formatBRL, saleNet, saleMethodLabel, useStore } from "@/store/useStore";
+import { useReplenishment } from "@/hooks/useReplenishment";
 
 export const Route = createFileRoute("/resumo")({ component: Dashboard });
 
@@ -9,7 +10,8 @@ function Dashboard() {
   start.setHours(0, 0, 0, 0);
   const today = sales.filter((s) => s.timestamp >= start.getTime() && s.status !== "cancelled");
   const productList = Object.values(products).filter((p) => p.active !== false);
-  const lowStock = productList.filter(isLowStock);
+  const replenishment = useReplenishment();
+  const lowStock = productList.filter((p) => replenishment.get(p.barcode)?.low);
   const recent = [...sales].sort((a, b) => b.timestamp - a.timestamp).slice(0, 2);
   return (
     <div className="pos-page pos-home">
@@ -47,7 +49,9 @@ function Dashboard() {
             {lowStock.slice(0, 3).map((p) => (
               <li key={p.barcode}>
                 <span>{p.name}</span>
-                <span className="pos-low-stock">{p.stock} un.</span>
+                <span className="pos-low-stock">
+                  {p.stock} {p.unit ?? "un"}
+                </span>
               </li>
             ))}
           </ul>

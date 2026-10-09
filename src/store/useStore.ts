@@ -385,11 +385,6 @@ const id = () =>
 export const money = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
 const quantity = (n: number) => Math.round(n * 1000) / 1000;
 export const productId = (p: Product) => p.id ?? `product-${p.barcode}`;
-export const isLowStock = (p: Product) =>
-  p.active !== false &&
-  p.stockControlled !== false &&
-  !p.components?.length &&
-  p.stock <= (p.minimumStock ?? 5);
 export const saleNet = (s: Sale) =>
   s.status === "cancelled" ? 0 : money(s.total - (s.refundedAmount ?? 0));
 export const salePayments = (s: Sale): Payment[] =>
@@ -499,7 +494,14 @@ async function pinVerifier(pin: string, salt: string) {
   );
   return Array.from(new Uint8Array(bits), (n) => n.toString(16).padStart(2, "0")).join("");
 }
-export type Settings = { storeName: string; pixKey: string; merchantName: string; city: string };
+export type Settings = {
+  storeName: string;
+  pixKey: string;
+  merchantName: string;
+  city: string;
+  wholesaleCycleDays?: number | undefined;
+  stockSafetyDays?: number | undefined;
+};
 type Theme = "light" | "dark";
 export type StoreState = ManagementData & {
   products: Record<string, Product>;
@@ -590,6 +592,8 @@ const defaultSettings: Settings = {
   pixKey: "",
   merchantName: "",
   city: "",
+  wholesaleCycleDays: 7,
+  stockSafetyDays: 2,
 };
 export const useStore = create<StoreState>()(
   persist(
@@ -802,6 +806,9 @@ export const useStore = create<StoreState>()(
           void _staff;
           commit({
             ...portable,
+            ...(portable.settings
+              ? { settings: { ...defaultSettings, ...portable.settings } }
+              : {}),
             ...(portable.customers ? { customers: normalizeCustomers(portable.customers) } : {}),
             staff: get().staff,
           });
@@ -1690,6 +1697,13 @@ export const useStore = create<StoreState>()(
           }),
         setSettings: (settings) => {
           authorize("manage");
+          for (const [value, minimum, name] of [
+            [settings.wholesaleCycleDays, 1, "Ciclo do atacado"],
+            [settings.stockSafetyDays, 0, "Margem de segurança"],
+          ] as const) {
+            if (value !== undefined && (!Number.isInteger(value) || value < minimum || value > 365))
+              throw new Error(`${name}: informe dias inteiros entre ${minimum} e 365.`);
+          }
           commit({ settings: { ...get().settings, ...settings } });
         },
         setTheme: (theme) => commit({ theme }),
@@ -1701,7 +1715,7 @@ export const useStore = create<StoreState>()(
     },
     {
       name: "pdv-mercado",
-      version: 8,
+      version: 9,
       migrate: (persisted) => {
         const state = (persisted ?? {}) as Partial<StoreState>;
         const previousSettings = state.settings ?? defaultSettings;
