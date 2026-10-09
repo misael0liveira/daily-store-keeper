@@ -26,8 +26,8 @@
 ## Phase 6: Verification and delivery
 
 - [x] T009 Verificar fluxos/offline/a11y/tema/geometria/exportação/backup em e2e/replenishment.spec.cjs e tests/replenishment-browser.cjs, usando replica-test.
-- [ ] T010 Atualizar DESIGN.md, UX-CONTRACT.md, MANAGEMENT-POLICY.md e replica/test-plan.md/bugs.md; executar lint/tsc/tests/build/auditoria e regressões.
-- [ ] T011 Reconciliar specs/002-estoque-reposicao com evidências; versionar e publicar APK teste assinado pela .github/workflows/build-layout-test.yml.
+- [x] T010 Atualizar DESIGN.md, UX-CONTRACT.md, MANAGEMENT-POLICY.md e replica/test-plan.md/bugs.md; executar lint/tsc/tests/build/auditoria e regressões.
+- [x] T011 Reconciliar specs/002-estoque-reposicao com evidências; versionar e publicar APK teste assinado pela .github/workflows/build-layout-test.yml.
 
 ## Dependencies & execution order
 
