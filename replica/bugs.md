@@ -184,4 +184,4 @@ Teste 50: workflow 37970695624 concluído com sucesso; todas as suítes de naveg
 - Reprodução: APK52, cliente/carrinho → Marcar na Conta → Marcar valor total. Primeira folha tem X e Voltar ao carrinho; resumo seguinte tem X, Voltar à escolha e Voltar ao carrinho.
 - Esperado: escolha e resumo juntos, seleção sem registro e um fechamento visível.
 - Correção: estado total/parcial sem etapa nula; RadioGroup/Sheet compartilhados, resumo direto, Confirmar fiado explícito e X. Entrada preservada no saldo restante.
-- Evidência: prints 101507/101509 e código reproduzem duplicação; e2e/fiados.spec.cjs cobre seleção, fechamento/foco, rascunho, entrada e confirmação única. Conferência física do novo APK pendente.
+- Evidência: prints 101507/101509 e código reproduzem duplicação; e2e/fiados.spec.cjs cobre seleção, fechamento/foco, rascunho, entrada e confirmação única. Correção18a31d6: CI53 confirmou69 casos Fiados e todas as regressões, Android/assinatura aprovados; APK53 publicado. Conferência física do novo APK pendente.
