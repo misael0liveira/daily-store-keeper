@@ -179,3 +179,9 @@ Teste 50: workflow 37970695624 concluído com sucesso; todas as suítes de naveg
 - Correção: Marcar na Conta total/parcial; data cadastral só no resumo e override opcional; entrada direto aos meios, divisão opcional reutilizando PaymentSheet.
 - Evidência: e2e/fiados.spec.cjs verifica ausência da etapa inicial obrigatória, data preservada, registro único, dinheiro/Pix/cartões e valores/limite inválidos.
 - Testes locais de fluxo/axe passaram e CI confirmou 61 casos Fiados, incluindo recarga offline. Run52 confirmou 61 casos Fiados, 42 de reposição e todas as demais suítes; Android/assinatura concluídos e APK52 publicado. Conferência física pendente.
+
+## UX-F23 — etapas e retornos redundantes no fiado (S3)
+- Reprodução: APK52, cliente/carrinho → Marcar na Conta → Marcar valor total. Primeira folha tem X e Voltar ao carrinho; resumo seguinte tem X, Voltar à escolha e Voltar ao carrinho.
+- Esperado: escolha e resumo juntos, seleção sem registro e um fechamento visível.
+- Correção: estado total/parcial sem etapa nula; RadioGroup/Sheet compartilhados, resumo direto, Confirmar fiado explícito e X. Entrada preservada no saldo restante.
+- Evidência: prints 101507/101509 e código reproduzem duplicação; e2e/fiados.spec.cjs cobre seleção, fechamento/foco, rascunho, entrada e confirmação única. Conferência física do novo APK pendente.

@@ -123,3 +123,6 @@ Cancelar a escolha não registra venda ou pagamento; foco retorna ao acionador. 
 
 ## Fiado sem redundâncias — 09/10/2026
 Marcar na Conta oferece total ou entrada parcial na folha existente. Vencimento calculado pelo dia cadastrado aparece como texto; Alterar vencimento desta compra é opcional e não altera o cadastro. Cadastros sem dia conservam a regra atual de 30 dias. Saldo previsto após confirmar deixa explícito que a dívida ainda não foi registrada. A entrada inicia diretamente nos quatro meios; Usar dois meios na entrada é uma ação secundária opcional que reutiliza o editor existente. Pagamento normal e recebimento de dívida conservam seus fluxos.
+
+## Fiado em um único modal — 10/10/2026
+Fonte: aprovação do proprietário e specs/005-fiado-modal-unico/spec.md. Caixa/Sheet existente une escolha e resumo, com RadioGroup/Label canônicos e total selecionado. Alternar não grava; Confirmar fiado registra. Receber uma parte agora revela Field e Receber entrada abre o PaymentSheet vigente. Parcelas recebidas aparecem; opção total passa a Marcar saldo restante. Pago zero fica oculto. X/Escape fecha e retorna foco ao acionador, preservando parcelas; sem Voltar à escolha/Voltar ao carrinho. Data sugerida e override discreto permanecem. Radio circular mantém dimensão própria; label fornece alvo44px. Sem alteração de tokens, schema ou pagamento normal.

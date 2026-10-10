@@ -1,0 +1,2 @@
+# Validation
+Usar dependências existentes; `npx tsc --noEmit`, ESLint nos arquivos afetados, `node --test tests/*.test.mjs`, `npm run build`. Servir dist/client com tests/serve-preview.py (4173); PLAYWRIGHT_MODULE/AXE_MODULE apontam às instalações de teste; executar tests/fiados-browser.cjs e tests/payment-choice-browser.cjs. Esperado: seleção sem gravação, total imediato, parcial válido, limite, data, fechamento/foco, retomada offline e registro único. CI existente verifica todas as regressões, Gradle e assinatura; conferência física separada.

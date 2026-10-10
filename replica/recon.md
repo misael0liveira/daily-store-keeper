@@ -40,3 +40,5 @@ F20 Reposição por giro: janela30dias, devoluções/combos/identidade, parâmet
 F21: Caixa → Pagamento → um/dois meios → receber → saldo/confirmar; proprietário PaymentSheet.
 
 F22 — Fiado sem redundâncias: cadastro é fonte do vencimento; entrada cobra diretamente e resumo confirma a venda.
+
+F23 — Fiado em um único modal: seleção total/parcial e resumo compartilhados; X/Escape, saldo restante e confirmação explícita. Vender/Sheet/RadioGroup/PaymentSheet; sem mudança no domínio.

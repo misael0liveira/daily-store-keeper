@@ -2325,7 +2325,7 @@ a:focus-visible {
   padding-right: 44px;
 }
 .customer-panel button,
-.customer-sheet button {
+.customer-sheet button:not([role="radio"]) {
   min-height: 44px;
 }
 .customer-sheet > button {

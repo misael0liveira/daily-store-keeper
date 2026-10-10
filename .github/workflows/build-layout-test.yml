@@ -161,7 +161,8 @@ jobs:
           prerelease: true
           make_latest: false
           body: |
-            Caixa: Marcar na Conta oferece valor total ou entrada parcial. Vencimento vem do cadastro e aparece só no resumo; alteração por compra é opcional.
+            Caixa: Marcar na Conta reúne escolha e resumo em um único modal. Total selecionado, entrada no mesmo formulário e Confirmar fiado explícito.
+            Remove retornos duplicados; X fecha e preserva parcelas. Após entrada, mostra recebido e saldo restante. Vencimento cadastral automático, alteração opcional discreta.
             Entrada segue diretamente aos quatro meios, com divisão da entrada como opção secundária. Saldo previsto e confirmação final preservam venda, estoque e dívida.
             Pagamento normal conserva a escolha entre Um meio de pagamento e Dois meios de pagamento.
             Dois meios pede a primeira parte, calcula o restante e segue para outro meio após confirmar. Recebimentos persistem ao fechar/reabrir ou recarregar.

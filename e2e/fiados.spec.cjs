@@ -88,12 +88,12 @@ async function purchase(page, method) {
   await page.getByRole("button", { name: /Abrir cliente Joana Silva/ }).click();
   await page.getByRole("button", { name: "Nova compra", exact: true }).click();
   await page.getByRole("button", { name: "Marcar na Conta", exact: true }).click();
-  await page.getByRole("button", { name: "Receber uma parte", exact: true }).click();
+  await page.getByRole("radio", { name: "Receber uma parte agora", exact: true }).check();
   await page.getByLabel("Valor a receber agora (R$)").fill("50");
   assert.equal(await page.getByLabel("Vencimento do fiado").count(), 0);
   await page.getByRole("button", { name: "Receber entrada", exact: true }).click();
   await pay(page, method, "Entrada da compra · Joana Silva");
-  await page.getByRole("button", { name: "Registrar venda com fiado", exact: true }).waitFor();
+  await page.getByRole("button", { name: "Confirmar fiado", exact: true }).waitFor();
   let state = await page.evaluate(() => JSON.parse(localStorage.getItem("pdv-mercado")).state);
   assert.equal(state.sales.length, 1);
   assert.equal(
@@ -101,8 +101,22 @@ async function purchase(page, method) {
     50,
   );
   assert.equal(state.products["123"].stock, 10);
+  const summary = page.getByRole("dialog", { name: "Marcar na Conta — Joana Silva", exact: true });
+  await summary.getByRole("radio", { name: "Marcar saldo restante", exact: true }).waitFor();
+  await summary
+    .getByText("Total da compra R$ 100,00 · recebido R$ 50,00", { exact: true })
+    .waitFor();
+  await summary.getByText("Valor a marcar R$ 50,00", { exact: true }).waitFor();
+  await summary.getByRole("button", { name: "Fechar", exact: true }).click();
+  await page.getByRole("button", { name: "Marcar na Conta", exact: true }).click();
+  assert.deepEqual(
+    (await page.evaluate(() => JSON.parse(localStorage.getItem("pdv-mercado")).state))
+      .pendingPayments,
+    state.pendingPayments,
+    "Fechar/reabrir preserva a entrada já recebida",
+  );
   await scan(page, `Resumo da entrada ${method}`);
-  await page.getByRole("button", { name: "Registrar venda com fiado", exact: true }).click();
+  await page.getByRole("button", { name: "Confirmar fiado", exact: true }).click();
   await page.getByRole("status", { name: "Venda registrada", exact: true }).waitFor();
   assert(
     await page
@@ -246,7 +260,7 @@ async function freshQuote(page) {
   await page.getByRole("button", { name: "Fechar pagamento", exact: true }).click();
   await page.getByRole("button", { name: "Aumentar Compra teste", exact: true }).click();
   await page.getByRole("button", { name: "Marcar na Conta", exact: true }).click();
-  await page.getByRole("button", { name: "Receber uma parte", exact: true }).click();
+  await page.getByRole("radio", { name: "Receber uma parte agora", exact: true }).check();
   await page.getByLabel("Valor a receber agora (R$)").fill("100");
   await page.getByRole("button", { name: "Receber entrada", exact: true }).click();
   assert.equal(
@@ -255,9 +269,9 @@ async function freshQuote(page) {
   );
   await page.getByRole("button", { name: "PAGO", exact: true }).click();
   await page
-    .getByRole("button", { name: "Registrar venda com fiado", exact: true })
+    .getByRole("button", { name: "Confirmar fiado", exact: true })
     .waitFor({ timeout: 8000 });
-  await page.getByRole("button", { name: "Registrar venda com fiado", exact: true }).click();
+  await page.getByRole("button", { name: "Confirmar fiado", exact: true }).click();
   await page.getByRole("status", { name: "Venda registrada", exact: true }).waitFor();
   assert(
     await page
@@ -281,7 +295,35 @@ async function creditOptions(page) {
   const trigger = page.getByRole("button", { name: "Marcar na Conta", exact: true });
   const sheet = page.getByRole("dialog", { name: "Marcar na Conta — Joana Silva", exact: true });
   await trigger.click();
-  await sheet.getByRole("button", { name: "Marcar valor total", exact: true }).click();
+  const totalChoice = sheet.getByRole("radio", { name: "Marcar valor total", exact: true });
+  const partialChoice = sheet.getByRole("radio", { name: "Receber uma parte agora", exact: true });
+  const confirm = sheet.getByRole("button", { name: "Confirmar fiado", exact: true });
+  assert.equal(await totalChoice.getAttribute("aria-checked"), "true");
+  await confirm.waitFor();
+  assert.equal(await sheet.getByRole("button", { name: /Voltar/ }).count(), 0);
+  assert.equal(await sheet.getByText(/pago R\$/).count(), 0);
+  await sheet.getByText("Valor a marcar R$ 100,00", { exact: true }).waitFor();
+  const untouched = await read();
+  await totalChoice.focus();
+  await page.keyboard.down("ArrowDown");
+  await page.waitForFunction(
+    () => document.getElementById("credit-partial")?.getAttribute("aria-checked") === "true",
+  );
+  await page.keyboard.up("ArrowDown");
+  assert.equal(await partialChoice.getAttribute("aria-checked"), "true");
+  await sheet.getByLabel("Valor a receber agora (R$)").fill("50");
+  await sheet.getByText("Valor a marcar R$ 50,00", { exact: true }).waitFor();
+  await totalChoice.check();
+  await sheet.getByText("Valor a marcar R$ 100,00", { exact: true }).waitFor();
+  assert.deepEqual(await read(), untouched, "Alternar escolhas não grava nem cobra");
+  for (const choice of [totalChoice, partialChoice]) {
+    const box = await choice.boundingBox();
+    assert(Math.abs(box.width - box.height) <= 1, "Radio mantém círculo sem altura de botão");
+  }
+  await page.keyboard.press("Escape");
+  await page.waitForFunction(() => document.activeElement?.textContent === "Marcar na Conta");
+  assert.deepEqual(await read(), untouched);
+  await trigger.click();
   assert.equal(await sheet.getByLabel("Vencimento do fiado").count(), 0);
   const expected = await page.evaluate(() => {
     const n = new Date();
@@ -300,11 +342,12 @@ async function creditOptions(page) {
     fullPage: true,
   });
   const original = await read();
-  await sheet.getByRole("button", { name: "Voltar ao carrinho", exact: true }).click();
+  await sheet.getByRole("button", { name: "Fechar", exact: true }).click();
+  await page.waitForFunction(() => document.activeElement?.textContent === "Marcar na Conta");
   assert.deepEqual((await read()).receivables, original.receivables);
   assert.equal((await read()).sales.length, original.sales.length);
   await trigger.click();
-  await sheet.getByRole("button", { name: "Receber uma parte", exact: true }).click();
+  await sheet.getByRole("radio", { name: "Receber uma parte agora", exact: true }).check();
   const input = sheet.getByLabel("Valor a receber agora (R$)");
   const receive = sheet.getByRole("button", { name: "Receber entrada", exact: true });
   for (const invalid of ["", "0", "-1", "100", "101", "1,001", "abc"]) {
@@ -321,7 +364,7 @@ async function creditOptions(page) {
   });
   await page.reload({ waitUntil: "networkidle" });
   await trigger.click();
-  await sheet.getByRole("button", { name: "Receber uma parte", exact: true }).click();
+  await sheet.getByRole("radio", { name: "Receber uma parte agora", exact: true }).check();
   await input.fill("1");
   await receive.click();
   await sheet
@@ -352,10 +395,13 @@ async function creditOptions(page) {
   });
   await page.reload({ waitUntil: "networkidle" });
   await trigger.click();
-  await sheet.getByRole("button", { name: "Marcar valor total", exact: true }).click();
+  await sheet.getByRole("radio", { name: "Marcar valor total", exact: true }).check();
   await sheet.getByRole("button", { name: "Alterar vencimento desta compra", exact: true }).click();
   await sheet.getByLabel("Vencimento do fiado").fill("2099-12-01");
-  await sheet.getByRole("button", { name: "Registrar venda com fiado", exact: true }).click();
+  await sheet.getByRole("button", { name: "Confirmar fiado", exact: true }).evaluate((button) => {
+    button.click();
+    button.click();
+  });
   await page.getByRole("status", { name: "Venda registrada", exact: true }).waitFor();
   const saved = await read();
   assert.equal(saved.customers[0].dueDay, 28);
@@ -366,7 +412,7 @@ async function creditOptions(page) {
     saved.receivables.reduce((n, d) => n + d.balance, 0),
     180,
   );
-  return 12;
+  return 20;
 }
 module.exports = {
   creditOptions,

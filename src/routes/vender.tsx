@@ -6,7 +6,7 @@ import { customerBalance, suggestedDueDate, validLocalDate } from "@/store/useSt
 import { decimal } from "@/lib/managementNumbers";
 import { createFileRoute } from "@tanstack/react-router";
 import { Barcode, Minus, Plus, Search, X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { PaymentSheet, type Confirmation } from "@/components/PaymentSheet";
@@ -17,6 +17,8 @@ import { ProductPrice } from "@/components/ProductPrice";
 import { usePricingTime } from "@/hooks/usePricingTime";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { beep, unlockAudio, vibrate } from "@/lib/feedback";
 import { createPixTxid } from "@/lib/pix";
 import {
@@ -69,16 +71,9 @@ function CaixaPage() {
   const [entryTarget, setEntryTarget] = useState(0);
   const [creditDone, setCreditDone] = useState<{ paid: number; remaining: number } | null>(null);
   const [creditError, setCreditError] = useState("");
-  const [entryChoice, setEntryChoice] = useState<"total" | "partial" | null>(null);
+  const [entryChoice, setEntryChoice] = useState<"total" | "partial">("total");
   const [changeDueOpen, setChangeDueOpen] = useState(false);
-  const creditContent = useRef<HTMLDivElement>(null);
   const customer = state.customers.find((c) => c.id === state.currentCustomerId);
-
-  useEffect(() => {
-    creditContent.current
-      ?.querySelector<HTMLElement>(entryChoice === "partial" ? "input" : "button")
-      ?.focus();
-  }, [entryChoice]);
 
   const addProduct = (code: string) => {
     const product = products[code];
@@ -147,6 +142,12 @@ function CaixaPage() {
   const paymentTotal = creditMode
     ? money(entryTarget - received)
     : money(saleItemsTotal(paymentQuote) - received);
+
+  const plannedEntry = entryChoice === "partial" ? decimal(entryRaw) : 0;
+  const creditRemaining = money(
+    total - received - (Number.isFinite(plannedEntry) ? plannedEntry : 0),
+  );
+  const previousBalance = customer ? customerBalance(state, customer.id) : 0;
 
   const confirmPayment = (payload: Confirmation): boolean | "partial" | "collected" => {
     if (paymentTotal > 0)
@@ -515,7 +516,7 @@ function CaixaPage() {
               return;
             }
             setEntryRaw("0");
-            setEntryChoice(received > 0 ? "total" : null);
+            setEntryChoice("total");
             setChangeDueOpen(false);
             setDueAt(suggestedDueDate(customer.dueDay));
             setCreditError("");
@@ -561,199 +562,157 @@ function CaixaPage() {
         <SheetContent side="bottom" className="customer-sheet">
           <SheetTitle>Marcar na Conta — {customer?.name}</SheetTitle>
           <SheetDescription>
-            {entryChoice === null
-              ? "Vai marcar o valor total ou receber uma parte agora?"
-              : "Confira o saldo previsto e o vencimento antes de registrar a venda."}
+            Escolha como marcar a compra e confira o saldo antes de confirmar.
           </SheetDescription>
-          <div className="space-y-4" ref={creditContent}>
+          <div className="space-y-4">
             <p>
-              Total da compra <strong>{formatBRL(total)}</strong> · pago{" "}
-              <strong>{formatBRL(received)}</strong>
+              Total da compra <strong>{formatBRL(total)}</strong>
+              {received > 0 && (
+                <>
+                  {" "}
+                  · recebido <strong>{formatBRL(received)}</strong>
+                </>
+              )}
             </p>
-            {entryChoice === null ? (
-              <>
-                <Button className="w-full" onClick={() => setEntryChoice("total")}>
-                  Marcar valor total
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    setEntryRaw("");
-                    setEntryChoice("partial");
-                  }}
-                >
-                  Receber uma parte
-                </Button>
-              </>
-            ) : (
-              <>
-                {entryChoice === "partial" && (
-                  <Field
-                    label="Valor a receber agora (R$)"
-                    value={entryRaw}
-                    onChange={setEntryRaw}
-                    inputMode="decimal"
-                  />
-                )}
-                {entryChoice === "total" && (
-                  <>
-                    <p>
-                      Vencimento desta compra{" "}
-                      <strong>{dueAt.split("-").reverse().join("/")}</strong>
-                    </p>
-                    <Button
-                      variant="ghost"
-                      className="w-full"
-                      aria-expanded={changeDueOpen}
-                      onClick={() => setChangeDueOpen((v) => !v)}
-                    >
-                      {changeDueOpen
-                        ? "Fechar edição do vencimento"
-                        : "Alterar vencimento desta compra"}
-                    </Button>
-                    {changeDueOpen && (
-                      <Field
-                        label="Vencimento do fiado"
-                        value={dueAt}
-                        onChange={setDueAt}
-                        type="date"
-                        required
-                      />
-                    )}
-                  </>
-                )}
-                <p>
-                  Saldo desta compra{" "}
-                  <strong>
-                    {formatBRL(
-                      money(
-                        total -
-                          received -
-                          (Number.isFinite(decimal(entryRaw)) ? decimal(entryRaw) : 0),
-                      ),
-                    )}
-                  </strong>
-                </p>
-                <p>
-                  Saldo anterior{" "}
-                  <strong>{formatBRL(customer ? customerBalance(state, customer.id) : 0)}</strong>
-                </p>
-                <p>
-                  Saldo previsto após confirmar{" "}
-                  <strong>
-                    {formatBRL(
-                      money(
-                        (customer ? customerBalance(state, customer.id) : 0) +
-                          total -
-                          received -
-                          (Number.isFinite(decimal(entryRaw)) ? decimal(entryRaw) : 0),
-                      ),
-                    )}
-                  </strong>
-                </p>
-                {creditError && (
-                  <p role="alert" className="management-error">
-                    {creditError}
-                  </p>
-                )}
-                <Button
-                  className="w-full"
-                  onClick={() => {
-                    try {
-                      const entry = entryRaw.trim() ? decimal(entryRaw) : 0;
-                      const remaining = money(total - received - entry);
-                      if (
-                        !customer ||
-                        customer.active === false ||
-                        customer.creditEnabled === false
-                      )
-                        throw new Error("Selecione um cliente com fiado habilitado.");
-                      if (!Number.isFinite(entry) || entry < 0 || remaining < 0)
-                        throw new Error("Confira o valor da entrada.");
-                      if (
-                        entryChoice === "partial" &&
-                        (entry <= 0 ||
-                          remaining <= 0 ||
-                          !/^\d+(?:[,.]\d{1,2})?$/.test(entryRaw.trim()))
-                      )
-                        throw new Error(
-                          "Informe uma entrada maior que zero e menor que o saldo da compra, com até dois decimais.",
-                        );
-                      if (remaining > 0 && !validLocalDate(dueAt))
-                        throw new Error("Informe um vencimento válido.");
-                      if (
-                        customer.creditLimit !== undefined &&
-                        money(customerBalance(state, customer.id) + remaining) >
-                          customer.creditLimit
-                      )
-                        throw new Error("O novo saldo ultrapassa o limite de fiado.");
-                      const quote =
-                        state.pendingPayments.length && state.pendingQuote
-                          ? state.pendingQuote
-                          : quoteCart(products, cart);
-                      if (entry > 0) {
-                        const txid =
-                          state.pendingPayments.length && state.pendingPixTxid
-                            ? state.pendingPixTxid
-                            : createPixTxid();
-                        state.preparePayment(quote, txid);
-                        setPaymentQuote(quote);
-                        setPixTxid(txid);
-                        setEntryTarget(money(received + entry));
-                        setCreditMode(true);
-                        setCreditOpen(false);
-                        setPayOpen(true);
-                        return;
-                      }
-                      const sale = state.checkout({
-                        method: state.pendingPayments[0]?.method ?? "dinheiro",
-                        quote,
-                        payments: state.pendingPayments,
-                        customerId: customer.id,
-                        creditDueAt: dueAt,
-                      });
-                      if (!sale) throw new Error("Carrinho mudou. Confira os itens.");
-                      setCreditOpen(false);
-                      setCreditDone({ paid: received, remaining });
-                      void downloadCustomerReceipt(
-                        useStore.getState(),
-                        customer,
-                        undefined,
-                        sale,
-                      ).catch(() =>
-                        toast.info(
-                          "Venda salva. O comprovante pode ser gerado pelo extrato do cliente.",
-                        ),
-                      );
-                    } catch (e) {
-                      setCreditError(
-                        e instanceof Error ? e.message : "Não foi possível registrar.",
-                      );
-                    }
-                  }}
-                >
-                  {entryChoice === "partial"
-                    ? "Receber entrada"
-                    : money(total - received) > 0
-                      ? "Registrar venda com fiado"
-                      : "Registrar venda paga"}
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    setEntryRaw(received > 0 ? "" : "0");
-                    setEntryChoice(received > 0 ? "partial" : null);
-                    setCreditError("");
-                  }}
-                >
-                  {received > 0 ? "Receber mais uma parte" : "Voltar à escolha"}
-                </Button>
-              </>
+            <RadioGroup
+              aria-label="Como marcar na conta"
+              value={entryChoice}
+              onValueChange={(value) => {
+                setEntryChoice(value as "total" | "partial");
+                setCreditError("");
+              }}
+            >
+              <Label
+                htmlFor="credit-total"
+                className="flex min-h-11 items-center gap-3 cursor-pointer"
+              >
+                <RadioGroupItem id="credit-total" value="total" />
+                {received > 0 ? "Marcar saldo restante" : "Marcar valor total"}
+              </Label>
+              <Label
+                htmlFor="credit-partial"
+                className="flex min-h-11 items-center gap-3 cursor-pointer"
+              >
+                <RadioGroupItem id="credit-partial" value="partial" disabled={received >= total} />
+                Receber uma parte agora
+              </Label>
+            </RadioGroup>
+            {entryChoice === "partial" && (
+              <Field
+                label="Valor a receber agora (R$)"
+                value={entryRaw}
+                onChange={setEntryRaw}
+                inputMode="decimal"
+              />
             )}
-            <Button variant="outline" className="w-full" onClick={() => setCreditOpen(false)}>
-              Voltar ao carrinho
+            <p>
+              Vencimento desta compra <strong>{dueAt.split("-").reverse().join("/")}</strong>
+            </p>
+            <Button
+              variant="ghost"
+              className="h-auto min-h-11 px-0 text-sm"
+              aria-expanded={changeDueOpen}
+              onClick={() => setChangeDueOpen((v) => !v)}
+            >
+              {changeDueOpen ? "Fechar edição do vencimento" : "Alterar vencimento desta compra"}
+            </Button>
+            {changeDueOpen && (
+              <Field
+                label="Vencimento do fiado"
+                value={dueAt}
+                onChange={setDueAt}
+                type="date"
+                required
+              />
+            )}
+            <p>
+              Valor a marcar <strong>{formatBRL(creditRemaining)}</strong>
+            </p>
+            <p>
+              Saldo anterior <strong>{formatBRL(previousBalance)}</strong>
+            </p>
+            <p>
+              Novo saldo após confirmar{" "}
+              <strong>{formatBRL(money(previousBalance + creditRemaining))}</strong>
+            </p>
+            {creditError && (
+              <p role="alert" className="management-error">
+                {creditError}
+              </p>
+            )}
+            <Button
+              className="w-full"
+              onClick={() => {
+                try {
+                  const entry =
+                    entryChoice === "partial" && entryRaw.trim() ? decimal(entryRaw) : 0;
+                  const remaining = money(total - received - entry);
+                  if (!customer || customer.active === false || customer.creditEnabled === false)
+                    throw new Error("Selecione um cliente com fiado habilitado.");
+                  if (!Number.isFinite(entry) || entry < 0 || remaining < 0)
+                    throw new Error("Confira o valor da entrada.");
+                  if (
+                    entryChoice === "partial" &&
+                    (entry <= 0 || remaining <= 0 || !/^\d+(?:[,.]\d{1,2})?$/.test(entryRaw.trim()))
+                  )
+                    throw new Error(
+                      "Informe uma entrada maior que zero e menor que o saldo da compra, com até dois decimais.",
+                    );
+                  if (remaining > 0 && !validLocalDate(dueAt))
+                    throw new Error("Informe um vencimento válido.");
+                  if (
+                    customer.creditLimit !== undefined &&
+                    money(customerBalance(state, customer.id) + remaining) > customer.creditLimit
+                  )
+                    throw new Error("O novo saldo ultrapassa o limite de fiado.");
+                  const quote =
+                    state.pendingPayments.length && state.pendingQuote
+                      ? state.pendingQuote
+                      : quoteCart(products, cart);
+                  if (entry > 0) {
+                    const txid =
+                      state.pendingPayments.length && state.pendingPixTxid
+                        ? state.pendingPixTxid
+                        : createPixTxid();
+                    state.preparePayment(quote, txid);
+                    setPaymentQuote(quote);
+                    setPixTxid(txid);
+                    setEntryTarget(money(received + entry));
+                    setCreditMode(true);
+                    setCreditOpen(false);
+                    setPayOpen(true);
+                    return;
+                  }
+                  const sale = state.checkout({
+                    method: state.pendingPayments[0]?.method ?? "dinheiro",
+                    quote,
+                    payments: state.pendingPayments,
+                    customerId: customer.id,
+                    creditDueAt: dueAt,
+                  });
+                  if (!sale) throw new Error("Carrinho mudou. Confira os itens.");
+                  setCreditOpen(false);
+                  setCreditDone({ paid: received, remaining });
+                  void downloadCustomerReceipt(
+                    useStore.getState(),
+                    customer,
+                    undefined,
+                    sale,
+                  ).catch(() =>
+                    toast.info(
+                      "Venda salva. O comprovante pode ser gerado pelo extrato do cliente.",
+                    ),
+                  );
+                } catch (e) {
+                  setCreditError(e instanceof Error ? e.message : "Não foi possível registrar.");
+                }
+              }}
+            >
+              {entryChoice === "partial"
+                ? "Receber entrada"
+                : money(total - received) > 0
+                  ? "Confirmar fiado"
+                  : "Registrar venda paga"}
             </Button>
           </div>
         </SheetContent>

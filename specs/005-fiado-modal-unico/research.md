@@ -1,0 +1,2 @@
+# Research
+Decisão: estender Sheet existente, com RadioGroup/Label canônicos, dois modos e resumo sempre visível. Motivo: separa seleção de confirmação sem acrescentar tela. Alternativa rejeitada: registrar diretamente ao escolher total, pois oculta a revisão de saldo; manter duas folhas duplica navegação. Código existente já calcula saldo/limite/data e preserva parcelas. Nenhuma tecnologia nova ou questão de negócio aberta.

@@ -104,3 +104,6 @@ F21-E3: fechar/refresh depois da primeira parte, saldo e meio anterior, offline.
 F21-N1: notificações atrasadas e erro de armazenamento pelas regressões existentes.
 
 F22: Marcar na Conta total/parcial, vencimento cadastral automático/override, ausência de escolha redundante na entrada, cancelamento, limites, parcelas e revisão antes de gravar. Testes em e2e/fiados.spec.cjs e runner existente.
+
+## F23 — Fiado em um único modal
+F23-H1: abrir exibe total selecionado/resumo/Confirmar fiado sem tela intermediária. F23-E1: alternar parcial50→total ignora rascunho, nenhum registro. F23-E2: X/Escape sem retornos duplicados, foco/carrinho/parcelas preservados. F23-H2: entrada nos quatro meios e divisão existente; volta para saldo restante e confirma uma venda. F23-N1: vazio/zero/excesso/decimais/limite inválidos bloqueiam cobrança. F23-E3: vencimento automático/override sem mudar cadastro, duplo clique registra uma vez. Teclado/axe/console/5xx e temas320–430px; recarga offline e pagamentos anteriores pelas suítes existentes. Física: câmera, teclado Android, recebimentos reais e instalação sobre APK52.

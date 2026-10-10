@@ -1,0 +1,2 @@
+# UI contract
+Caixa → Marcar na Conta → um Sheet: total/receber parte agora + resumo + Confirmar fiado ou Receber entrada. Após parcelas, opção total vira Marcar saldo restante. X/Escape retorna ao carrinho e preserva recebimentos. Não há Voltar à escolha/Voltar ao carrinho dentro do Sheet. RadioGroup/Label canônicos, pt-BR e tokens existentes; data nativa conforme UX-CONTRACT.md. Alterar vencimento é discreto e opcional. Receber entrada abre PaymentSheet vigente e retorna ao mesmo resumo. Pagamento normal não muda.
