@@ -24,8 +24,8 @@
 ## Final
 
 - [x] T010 Verificar build, auditoria premium, screenshots e documentar replica/.
-- [ ] T011 Publicar código e acompanhar workflow build-layout-test.yml até APK assinado.
-- [ ] T012 Reconciliar tarefas e evidências em specs/006-figma-ux-ui/verification.md.
+- [x] T011 Publicar código e acompanhar workflow build-layout-test.yml até APK assinado.
+- [x] T012 Reconciliar tarefas e evidências em specs/006-figma-ux-ui/verification.md.
 
 ## Dependencies
 

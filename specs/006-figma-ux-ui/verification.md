@@ -33,9 +33,18 @@ PageHeader e navegação plana compartilhados; câmeras e busca originais; clien
 
 Ver replica/bugs-figma.md. Seis defeitos reproduzidos,corrigidos e verificados. Nenhum S1/S2 aberto.
 
-## Android
+## Android and publication
 
-Pendente: workflow canônico,Gradle unit/assembleRelease,apksigner e cache da chave. O APK não é entregue antes de sucesso.
+- Code commit: a2fe30099fe0c57a83391c35620652557add9c18, tree bb78c50535b248dd648b28742ce3d099b3d96e3a identical to the tested local tree.
+- Workflow APK54: https://github.com/misael0liveira/daily-store-keeper/actions/runs/38305806619 — success. Job114999446126.
+- Canonical CI repeated navigation,Figma21,unit49,Pix,payments,scanner,promotions,palette14,dimensions48,management48,fiados69,replenishment42 andchoice39 successfully.
+- Gradle testDebugUnitTest/assembleRelease: BUILD SUCCESSFUL in2m2s.
+- apksigner verify and APK inspection: success.
+- Signing cache: Cache hit for mercadinho-vision-test-signing-v1; restored successfully. Same test signing cache asAPK53, no replacement key.
+- Separate preview applicationId and version54 preserved by the existing workflow.
+- Download: https://github.com/misael0liveira/daily-store-keeper/releases/download/layout-test-54/Mercadinho-Uniao-Teste.apk
+- SHA256: 406bda8c531242b5487fab7facd0f85a1b739b43169cf8ac546799682a7899be.
+- Size30321683bytes. Source tree is unchanged after release; the closing commit only records evidence.
 
 ## Physical verification
 

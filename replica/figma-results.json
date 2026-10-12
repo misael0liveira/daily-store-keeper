@@ -10,6 +10,11 @@
   "status": "passed",
   "openS1": 0,
   "openS2": 0,
-  "android": "pending",
-  "physicalDevice": "not-run"
+  "android": "passed",
+  "physicalDevice": "not-run",
+  "workflowRun": 38305806619,
+  "apkVersion": 54,
+  "sourceCommit": "a2fe30099fe0c57a83391c35620652557add9c18",
+  "sha256": "406bda8c531242b5487fab7facd0f85a1b739b43169cf8ac546799682a7899be",
+  "signingCache": "hit mercadinho-vision-test-signing-v1"
 }
