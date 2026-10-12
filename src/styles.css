@@ -3,6 +3,35 @@
 @import "tw-animate-css";
 @import "./theme/palette.css";
 
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/roboto-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/roboto-500.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/roboto-700.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Roboto Condensed";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/roboto-condensed-700.woff2") format("woff2");
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -135,30 +164,6 @@
 .app-startup span {
   color: var(--image-foreground);
   font-size: 13px;
-}
-.app-watermark {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  pointer-events: none;
-  user-select: none;
-}
-.app-watermark img {
-  width: min(78vw, 380px);
-  height: auto;
-  opacity: 0.035;
-  filter: grayscale(0.15);
-}
-.dark .app-watermark img {
-  opacity: 0.055;
-}
-.m3-app-content,
-.app-watermark + main {
-  position: relative;
-  z-index: 1;
 }
 .stage {
   min-height: 100vh;
@@ -847,7 +852,9 @@
 
 /* Approved September 2026 mobile layout. Runtime tokens are canonical. */
 .pos-page {
-  padding: 0 16px 26px;
+  min-width: 0;
+  width: 100%;
+  padding: 0 24px 24px;
 }
 .pos-header {
   padding: calc(22px + env(safe-area-inset-top)) 0 16px;
@@ -900,7 +907,7 @@
 .pos-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 20px;
   padding: 16px;
   margin-bottom: 12px;
 }
@@ -1017,17 +1024,16 @@
   font-size: 14px;
 }
 .pos-filters button[aria-pressed="true"] {
-  background: var(--primary-soft);
+  background: var(--primary);
+  color: var(--primary-foreground);
   color: var(--primary);
 }
 .pos-stock-list {
-  margin: 0 -16px;
-  padding: 0 16px;
-  background: var(--card);
-  border-block: 1px solid var(--border);
+  display: grid;
+  gap: 8px;
 }
 .pos-stock-list li + li {
-  border-top: 1px solid var(--border);
+  border: 0;
 }
 .pos-stock-list button {
   width: 100%;
@@ -1035,8 +1041,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 15px 0;
+  padding: 16px;
   text-align: left;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
 }
 .pos-stock-list strong {
   font-weight: 500;
@@ -1064,9 +1073,10 @@
   margin-top: 16px;
 }
 .pdv-sell-page > .pos-header {
-  padding-inline: 16px;
+  padding-inline: 24px;
 }
 .pdv-sell-content {
+  padding-inline: 24px;
   padding-bottom: 205px;
 }
 .pdv-scanner-card {
@@ -1148,20 +1158,22 @@
   min-height: 150px;
 }
 .pos-cart-list {
-  margin: 0 -16px;
-  padding: 0 16px;
-  background: var(--card);
-  border-block: 1px solid var(--border);
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
 }
 .pos-cart-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 8px 0;
+  padding: 12px;
+  border-radius: 20px;
+  background: var(--card);
+  min-width: 0;
 }
 .pos-cart-row + .pos-cart-row {
-  border-top: 1px solid var(--border);
+  border-top: 0;
 }
 .pos-cart-row > div:first-child {
   min-width: 0;
@@ -1337,10 +1349,12 @@ button.promotion-product:disabled {
   margin-top: 3px;
 }
 .pos-quantity button {
-  width: 40px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
+  flex: none;
   display: grid;
   place-items: center;
+  border-radius: 12px;
 }
 .pos-quantity span {
   min-width: 22px;
@@ -1357,7 +1371,7 @@ button.promotion-product:disabled {
   width: min(100%, 512px);
   background: var(--background);
   border-top: 1px solid var(--border);
-  padding: 10px 16px 12px;
+  padding: 12px 24px 16px;
 }
 .pdv-checkout-bar > div > span:first-child {
   color: var(--primary);
@@ -1367,150 +1381,67 @@ button.promotion-product:disabled {
 .m3-app-content {
   padding-bottom: calc(var(--pos-nav-reserved) + env(safe-area-inset-bottom));
 }
-/* CODEXURE geometry with the APK theme palette; tokens stay in this stylesheet. */
+/* Figma aprovado: todos os destinos têm rótulos permanentes. */
 :root {
-  --pos-nav-reserved: clamp(112px, 27vw, 144px);
-  --dock-surface: var(--card);
-  --dock-border: var(--border);
-  --dock-muted: color-mix(in srgb, var(--muted-foreground) 82%, var(--primary));
-  --dock-active: var(--primary);
-  --dock-active-ink: var(--primary-foreground);
-  --dock-highlight: color-mix(in srgb, var(--primary) 88%, var(--on-brand));
-  --dock-mid: var(--primary);
-  --dock-low: color-mix(in srgb, var(--primary) 88%, var(--scrim));
-  --dock-edge: color-mix(in srgb, var(--primary) 82%, var(--on-brand));
-  --dock-glow-near: color-mix(in srgb, var(--primary) 18%, transparent);
-  --dock-glow-far: color-mix(in srgb, var(--primary) 22%, transparent);
+  --pos-nav-reserved: 80px;
 }
 .pos-nav {
-  --dock-center: 15%;
   position: fixed;
-  bottom: calc(16px + env(safe-area-inset-bottom));
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: min(calc(100% - 32px), 480px);
-  aspect-ratio: 550 / 140;
-  isolation: isolate;
+  width: min(100%, 512px);
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  padding: 8px 12px calc(12px + env(safe-area-inset-bottom));
   z-index: 40;
 }
-.pos-nav-outline {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  pointer-events: none;
-}
-.pos-nav-outline path {
-  fill: var(--dock-surface);
-  stroke: var(--dock-border);
-  stroke-width: 1.2;
-}
-.pos-nav-bubble {
-  position: absolute;
-  width: 14.54545%;
-  aspect-ratio: 1;
-  left: var(--dock-center);
-  top: 3.57143%;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  border: 1px solid var(--dock-edge);
-  background: radial-gradient(
-    circle at 33% 18%,
-    var(--dock-highlight),
-    var(--dock-mid) 36%,
-    var(--dock-low) 85%
-  );
-  box-shadow:
-    inset 0 2px 6px color-mix(in srgb, var(--on-brand) 27%, transparent),
-    inset 0 -4px 5px color-mix(in srgb, var(--scrim) 20%, transparent),
-    0 0 12px 5px var(--dock-glow-near),
-    0 0 28px 9px var(--dock-glow-far);
-  pointer-events: none;
-}
 .pos-nav-links {
-  position: absolute;
-  inset: 0;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  padding-inline: 6.25%;
 }
 .pos-nav-item {
-  position: relative;
+  min-height: 56px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 0;
-  min-height: 44px;
-  color: var(--dock-muted);
-  text-decoration: none;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
+  justify-content: center;
+  gap: 4px;
+  color: var(--muted-foreground);
   border-radius: 12px;
 }
 .pos-nav-icon {
-  position: absolute;
-  top: 48.57143%;
-  height: 37.14286%;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    top 420ms cubic-bezier(0.2, 0.8, 0.25, 1),
-    color 250ms ease;
-}
-.pos-nav-icon svg {
-  width: clamp(18px, 5vw, 26px);
-  height: clamp(18px, 5vw, 26px);
-  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 30px;
+  border-radius: 12px;
+  transition: background 160ms ease;
 }
 .pos-nav-label {
-  position: absolute;
-  top: 80%;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: clamp(11px, 2.7vw, 15px);
-  font-weight: 600;
-  line-height: 1;
-  opacity: 0;
-  color: var(--dock-active);
-  transition: opacity 180ms ease;
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 16px;
   white-space: nowrap;
 }
+.pos-nav-item.is-active {
+  color: var(--primary);
+}
 .pos-nav-item.is-active .pos-nav-icon {
-  top: 13.57143%;
-  color: var(--dock-active-ink);
+  background: var(--primary-soft);
 }
-.pos-nav-item.is-active .pos-nav-label {
-  opacity: 1;
-}
-.pos-nav-item:hover:not(.is-active) .pos-nav-icon {
-  color: var(--dock-active);
-}
-.pos-nav-item:active .pos-nav-icon {
-  opacity: 0.75;
+.pos-nav-item:hover {
+  color: var(--primary);
 }
 .pos-nav-item:focus-visible {
-  outline-color: var(--ring);
+  outline: 3px solid var(--ring);
+  outline-offset: -2px;
 }
 @media (forced-colors: active) {
-  .pos-nav-outline path {
-    fill: Canvas;
-    stroke: CanvasText;
-  }
-  .pos-nav-bubble {
-    background: Highlight;
-    border-color: Highlight;
-    box-shadow: none;
-  }
-  .pos-nav-item {
-    color: LinkText;
-  }
-  .pos-nav-item.is-active .pos-nav-icon {
-    color: HighlightText;
-  }
-  .pos-nav-label {
-    color: LinkText;
+  .pos-nav-item.is-active {
+    border: 2px solid Highlight;
   }
 }
 
@@ -1519,6 +1450,8 @@ button.promotion-product:disabled {
   padding-bottom: 24px;
 }
 .pos-periods {
+  min-width: 0;
+  max-width: 100%;
   display: flex;
   gap: 8px;
   margin-bottom: 12px;
@@ -1727,11 +1660,10 @@ a:focus-visible {
 .payment-sheet {
   --payment-safe-top: env(safe-area-inset-top, 0px);
   --payment-safe-bottom: env(safe-area-inset-bottom, 0px);
-  --payment-gutter: 12px;
+  --payment-gutter: 24px;
   --payment-gap: 12px;
-  --payment-logo-height: clamp(96px, 16dvh, 144px);
-  --payment-tab-height: 60px;
-  --payment-content-gutter: 16px;
+  --payment-tab-height: 68px;
+  --payment-content-gutter: 20px;
   --payment-value-width: 55%;
   inset: 0;
   display: flex;
@@ -1740,33 +1672,27 @@ a:focus-visible {
   width: min(100%, 512px);
   height: 100dvh;
   margin: 0 auto;
-  padding: calc(var(--payment-gutter) + var(--payment-safe-top)) var(--payment-gutter)
-    calc(var(--payment-gutter) + var(--payment-safe-bottom));
+  padding: calc(16px + var(--payment-safe-top)) var(--payment-gutter)
+    calc(16px + var(--payment-safe-bottom));
   border: 0;
   background: var(--background);
+  color: var(--foreground);
   box-shadow: none;
   animation: none !important;
-  color: var(--primary);
   overflow: hidden;
 }
-.payment-brand {
-  flex: 0 0 var(--payment-logo-height);
-  height: var(--payment-logo-height);
-  min-height: 0;
-  display: grid;
-  place-items: center;
-  border-radius: 24px;
-  background: var(--image-surface);
-  overflow: hidden;
+.payment-screen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex: none;
+  min-height: 72px;
 }
-.payment-brand img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  padding: 8px 16px;
-  object-fit: contain;
-  object-position: center;
+.payment-screen-header h2 {
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 750;
 }
 .payment-methods {
   display: grid;
@@ -1930,40 +1856,26 @@ a:focus-visible {
   gap: 10px;
   font-size: 0.875rem;
 }
-.payment-panel-header {
-  --payment-header-height: 64px;
-  flex: 0 0 var(--payment-header-height);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 8px 8px var(--payment-content-gutter);
-}
 .payment-panel-heading {
   min-width: 0;
   flex: 1;
 }
-.payment-panel-header h2 {
-  font-size: clamp(20px, 5.5vw, 26px);
-  font-weight: 700;
-  line-height: 1.2;
-}
-.payment-panel-header .payment-subtitle {
-  margin: 2px 0 0;
-}
+
 @media (max-width: 350px) {
   .management-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 .payment-close {
-  flex: none;
-  width: 44px;
-  height: 44px;
   display: grid;
   place-items: center;
-  z-index: 1;
-  color: var(--destructive);
+  width: 44px;
+  height: 44px;
+  flex: none;
+  color: var(--primary);
+  background: var(--card);
   border-radius: 50%;
+  border: 1px solid var(--border);
 }
 .payment-close svg {
   width: 30px;
@@ -2078,54 +1990,32 @@ a:focus-visible {
 }
 .payment-debito .payment-panel,
 .payment-credito .payment-panel {
-  background: linear-gradient(
-    160deg,
-    var(--brand-blue-darker) 0%,
-    var(--brand-blue) 52%,
-    var(--brand-blue-deep) 100%
-  );
-  color: var(--on-brand);
-}
-.payment-debito .payment-wait-body,
-.payment-credito .payment-wait-body {
-  padding-top: 16px;
+  background: var(--primary-soft);
+  color: var(--primary-deep);
 }
 .payment-wait-body h2 {
-  width: 100%;
   font-size: 26px;
-  line-height: 1.2;
+  line-height: 1.25;
   font-weight: 700;
-  padding: 0 40px;
 }
 .payment-card-amount {
-  width: 100%;
-  border-radius: 12px;
-  background: var(--card);
-  color: var(--card-foreground);
-  font-size: 24px;
-  line-height: 1.25;
+  font-size: 36px;
+  line-height: 1.2;
+  font-weight: 750;
   font-variant-numeric: tabular-nums;
-  padding: 8px;
 }
 .payment-card-method {
-  font-size: 14px;
-  line-height: 1.3;
-  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--foreground);
 }
-.payment-terminal {
-  display: block;
-  width: min(100%, 280px);
-  height: clamp(96px, 22dvh, 220px);
-  object-fit: contain;
-  margin: auto 0;
-}
-.payment-debito .payment-waiting,
-.payment-credito .payment-waiting {
-  color: var(--primary);
-  background: var(--primary-soft);
+.payment-card-icon {
+  width: 56px;
+  height: 56px;
+  flex: none;
 }
 .payment-dinheiro .payment-panel {
-  background: linear-gradient(var(--cash-surface) 0%, var(--cash-key) 55%, var(--cash-base) 70%);
+  background: var(--cash-surface);
   color: var(--on-brand);
 }
 .payment-cash-body {
@@ -2145,11 +2035,11 @@ a:focus-visible {
   align-items: center;
   gap: 8px;
   border-radius: 12px;
-  background: var(--card);
-  padding: 8px;
-  min-height: 56px;
-  margin-bottom: 8px;
-  color: var(--card-foreground);
+  background: var(--cash-key);
+  padding: 12px;
+  min-height: 64px;
+  margin-bottom: 12px;
+  color: var(--on-brand);
   font-size: 14px;
   line-height: 1.3;
 }
@@ -2164,29 +2054,30 @@ a:focus-visible {
   display: block;
   border: 0;
   border-radius: 8px;
-  background: var(--muted);
+  background: transparent;
   width: 100%;
   min-width: 0;
   height: 40px;
-  padding: 8px 6px;
-  font-size: clamp(16px, 4.2vw, 20px);
+  padding: 6px 0;
+  font-size: clamp(18px, 5vw, 26px);
   line-height: 1.25;
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
+  font-weight: 700;
   text-align: right;
   color: inherit;
 }
 .payment-insufficient {
   color: var(--destructive);
+  background: var(--destructive-soft);
 }
 .payment-keypad {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-template-rows: repeat(4, minmax(44px, 1fr));
-  gap: 6px;
-  flex: 0 0 clamp(200px, 30dvh, 264px);
-  padding: 8px;
-  background: var(--cash-base);
+  gap: 8px;
+  flex: 0 0 clamp(216px, 32dvh, 288px);
+  padding: 12px var(--payment-content-gutter) 20px;
+  background: var(--cash-surface);
 }
 .payment-keypad button {
   min-width: 0;
@@ -2202,9 +2093,11 @@ a:focus-visible {
 }
 .payment-keypad .payment-paid {
   grid-column: span 3;
-  background: linear-gradient(var(--success-solid-deep), var(--success-solid));
-  font-size: 28px;
-  font-weight: 800;
+  background: var(--success-solid);
+  font-size: 16px;
+  line-height: 1.2;
+  padding: 8px;
+  font-weight: 700;
 }
 @media (max-height: 700px) {
   .payment-sheet {
@@ -2221,10 +2114,7 @@ a:focus-visible {
     padding-top: 4px;
     padding-bottom: 4px;
   }
-  .payment-panel-header .payment-subtitle {
-    font-size: 14px;
-    line-height: 18px;
-  }
+
   .payment-cash-row {
     min-height: 40px;
     padding: 4px 8px;
@@ -2280,12 +2170,6 @@ a:focus-visible {
   }
 }
 
-/* Strong close affordance over the fixed dark payment illustrations. */
-.payment-dinheiro .payment-close,
-.payment-debito .payment-close,
-.payment-credito .payment-close {
-  color: var(--destructive-on-dark);
-}
 .payment-success {
   background: var(--success-solid);
   color: var(--on-brand);
@@ -2312,12 +2196,17 @@ a:focus-visible {
 
 /* Fiados usa os mesmos cartões, tokens e coluna móvel. */
 .customer-sheet {
-  max-height: 90dvh;
+  width: min(100%, 512px);
+  margin-inline: auto;
+  max-height: 94dvh;
   overflow-y: auto;
-  padding: 24px 16px;
+  border-radius: 24px 24px 0 0;
+  padding: 24px;
   padding-bottom: max(24px, env(safe-area-inset-bottom));
 }
 .customer-sheet > h2 {
+  font-size: 26px;
+  line-height: 1.25;
   padding-right: 56px;
   overflow-wrap: anywhere;
 }
@@ -2359,8 +2248,12 @@ a:focus-visible {
 }
 .customer-totals {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+  border-radius: 24px;
+  padding: 20px;
 }
 .customer-totals span {
   display: block;
@@ -2369,7 +2262,8 @@ a:focus-visible {
 .customer-totals strong {
   display: block;
   margin-top: 6px;
-  font-size: clamp(18px, 5vw, 24px);
+  font-size: clamp(26px, 8vw, 36px);
+  font-variant-numeric: tabular-nums;
 }
 .customer-card {
   display: flex;
@@ -2390,4 +2284,308 @@ a:focus-visible {
 .payment-methods button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+/* Composição compartilhada da proposta aprovada. */
+.pos-header-heading {
+  min-width: 0;
+}
+.pos-header-heading > p {
+  margin-top: 6px;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.pos-brand-signature {
+  display: block;
+  color: var(--brand-label);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+.pdv-customer-card {
+  padding: 12px 16px;
+}
+.pdv-customer-select {
+  width: 100%;
+  height: auto;
+  min-height: 44px;
+  justify-content: flex-start;
+  padding: 0;
+  text-align: left;
+  white-space: normal;
+}
+.pdv-customer-select > svg {
+  margin-left: auto;
+}
+.pdv-customer-avatar {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.pdv-customer-name {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 4px;
+}
+.pdv-customer-name strong {
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+.pdv-customer-name small {
+  color: var(--primary);
+}
+.pdv-customer-card > p {
+  font-size: 12px;
+  margin-top: 8px;
+}
+.pdv-scanner-toggle {
+  width: 100%;
+  height: auto;
+  min-height: 60px;
+  padding: 12px 16px;
+  text-align: left;
+  justify-content: flex-start;
+  background: var(--scanner-surface);
+  color: var(--on-brand);
+  border-radius: 16px;
+  white-space: normal;
+}
+.pdv-scanner-toggle:hover {
+  background: var(--cash-base);
+  color: var(--on-brand);
+}
+.pdv-scanner-toggle span {
+  display: grid;
+  gap: 4px;
+  flex: 1;
+}
+.pdv-scanner-toggle small {
+  font-size: 12px;
+  font-weight: 400;
+}
+.pdv-items-heading {
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.pdv-received-card {
+  background: var(--success-soft);
+  color: var(--success);
+}
+.pdv-received-card h2 {
+  color: var(--success);
+}
+.pos-purchase-suggestion {
+  display: block;
+  margin-top: 12px;
+  border-radius: 12px;
+  padding: 10px;
+  color: var(--primary);
+  background: var(--primary-soft);
+  font-size: 14px;
+  font-weight: 600;
+}
+.customer-totals .management-error {
+  color: inherit;
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+.customer-balance {
+  padding: 20px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-radius: 20px;
+}
+.customer-balance strong {
+  display: block;
+  font-size: 36px;
+  margin-top: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.payment-choice-layout,
+.fiado-layout {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+}
+.payment-choice-option {
+  min-height: 72px;
+  white-space: normal;
+}
+.fiado-total strong {
+  font-size: 26px;
+  color: var(--primary);
+}
+.fiado-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  cursor: pointer;
+}
+.fiado-option:has([data-state="checked"]) {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+.fiado-summary {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+.fiado-summary p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.fiado-summary span {
+  color: var(--muted-foreground);
+  font-size: 14px;
+}
+.fiado-new-balance {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.fiado-new-balance strong {
+  color: var(--primary);
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+}
+.payment-cash-row:first-child {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0;
+  background: transparent;
+}
+.payment-cash-row:first-child strong {
+  text-align: left;
+  height: auto;
+  font-size: 36px;
+}
+.payment-cash-row:last-child:not(.payment-insufficient) {
+  background: var(--success-soft);
+  color: var(--success);
+}
+.payment-fallback {
+  background: transparent;
+}
+@media (max-width: 360px) {
+  .pos-page,
+  .pdv-sell-content {
+    padding-inline: 16px;
+  }
+  .pdv-sell-page > .pos-header,
+  .pdv-checkout-bar {
+    padding-inline: 16px;
+  }
+  .payment-sheet {
+    --payment-gutter: 16px;
+  }
+  .customer-sheet {
+    padding-inline: 16px;
+  }
+  .pos-cart-row {
+    gap: 8px;
+  }
+  .pos-cart-amount {
+    flex: none;
+  }
+  .pos-cart-product {
+    font-size: 14px;
+  }
+  .fiado-new-balance strong {
+    font-size: 24px;
+  }
+}
+@media (max-height: 700px) {
+  .payment-screen-header {
+    min-height: 56px;
+  }
+  .payment-screen-header .pos-brand-signature {
+    display: none;
+  }
+  .payment-screen-header h2 {
+    font-size: 24px;
+  }
+  .payment-screen-header .payment-subtitle {
+    margin: 4px 0 0;
+  }
+  .payment-cash-row:first-child strong {
+    font-size: 28px;
+  }
+}
+
+.payment-card-amount,
+.customer-balance strong,
+.customer-totals strong,
+.fiado-new-balance strong,
+.pdv-checkout-bar > div > span:last-child,
+.payment-cash-row:first-child strong {
+  font-family: "Roboto Condensed", var(--font-sans);
+  font-weight: 700;
+}
+
+.pos-replenishment-status {
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--warning-soft);
+  color: var(--warning);
+  font-size: 14px;
+  font-weight: 600;
+}
+.pos-export-list {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+.customer-create-action {
+  display: flex;
+  margin-left: auto;
+  color: var(--primary);
+}
+.pos-history-summary {
+  background: var(--primary-soft);
+  border-color: transparent;
+  border-radius: 24px;
+}
+
+.pdv-customer-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pdv-customer-select {
+  flex: 1;
+  min-width: 0;
+}
+.pdv-customer-select small {
+  color: var(--muted-foreground);
+  font-size: 12px;
+  font-weight: 400;
+}
+.pdv-customer-remove {
+  flex: none;
+}
+.pdv-checkout-bar > div > span:last-child {
+  font-size: 36px;
+  line-height: 1.2;
 }

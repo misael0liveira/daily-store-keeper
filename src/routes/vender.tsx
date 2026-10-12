@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/PageHeader";
 import { CustomerPicker } from "@/components/CustomerPicker";
 import { PaymentSuccess } from "@/components/PaymentSuccess";
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
@@ -5,7 +6,17 @@ import { downloadCustomerReceipt } from "@/lib/customerDocuments";
 import { customerBalance, suggestedDueDate, validLocalDate } from "@/store/useStore";
 import { decimal } from "@/lib/managementNumbers";
 import { createFileRoute } from "@tanstack/react-router";
-import { Barcode, Minus, Plus, Search, X } from "lucide-react";
+import {
+  Barcode,
+  Minus,
+  Plus,
+  Search,
+  X,
+  ScanBarcode,
+  ChevronDown,
+  ChevronRight,
+  UserRound,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
@@ -62,6 +73,7 @@ function CaixaPage() {
   const now = usePricingTime();
   const [paymentQuote, setPaymentQuote] = useState<SaleItem[]>([]);
   const [optionsOpen, setOptionsOpen] = useState(false);
+  const [scannerExpanded, setScannerExpanded] = useState(false);
   const [draftName, setDraftName] = useState("");
   const [dueAt, setDueAt] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -196,16 +208,19 @@ function CaixaPage() {
 
   return (
     <div className="pdv-sell-page">
-      <header className="pos-header">
-        <h1>Caixa</h1>
-        <Button
-          variant="ghost"
-          onClick={() => setOptionsOpen((v) => !v)}
-          aria-expanded={optionsOpen}
-        >
-          Atendimento
-        </Button>
-      </header>
+      <PageHeader
+        title="Caixa"
+        subtitle={received > 0 ? `${formatBRL(received)} já recebidos` : "Atendimento atual"}
+        actions={
+          <Button
+            variant="ghost"
+            onClick={() => setOptionsOpen((v) => !v)}
+            aria-expanded={optionsOpen}
+          >
+            Atendimento
+          </Button>
+        }
+      />
       <div className="pdv-sell-content space-y-3 px-4">
         {!state.cashOpen && (
           <div className="pos-card management-warning">
@@ -215,34 +230,51 @@ function CaixaPage() {
             </Link>
           </div>
         )}
-        <section className="pos-card space-y-2">
-          <div className="flex flex-wrap justify-between items-center gap-2">
-            <span className="min-w-0 break-words">
-              {customer ? `${customer.name} · ${customer.code ?? ""}` : "Venda sem cliente"}
+        <section className="pos-card pdv-customer-card">
+          <Button
+            variant="ghost"
+            className="pdv-customer-select"
+            disabled={received > 0}
+            onClick={() => setPickerOpen(true)}
+            aria-label="Selecionar cliente"
+          >
+            <span className="pdv-customer-avatar" aria-hidden="true">
+              <UserRound size={22} />
             </span>
-            <Button variant="outline" disabled={received > 0} onClick={() => setPickerOpen(true)}>
-              Selecionar cliente
+            <span className="pdv-customer-name">
+              <strong>{customer?.name ?? "Venda sem cliente"}</strong>
+              <small>
+                {customer
+                  ? `Conta anterior ${formatBRL(customerBalance(state, customer.id))}`
+                  : "Selecionar cliente"}
+              </small>
+            </span>
+            <ChevronRight size={22} aria-hidden="true" />
+          </Button>
+          {customer && received === 0 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="pdv-customer-remove"
+              aria-label="Retirar cliente da venda"
+              title="Retirar cliente da venda"
+              onClick={() => state.selectCustomer()}
+            >
+              <X size={18} aria-hidden="true" />
             </Button>
-          </div>
-          {customer && (
-            <>
-              <p className="text-sm text-muted-foreground">
-                Saldo anterior {formatBRL(customerBalance(state, customer.id))}
-                {customer.creditLimit !== undefined
-                  ? ` · disponível ${formatBRL(Math.max(0, customer.creditLimit - customerBalance(state, customer.id)))}`
-                  : ""}
-              </p>
-              {received === 0 && (
-                <Button variant="ghost" onClick={() => state.selectCustomer()}>
-                  Retirar cliente da venda
-                </Button>
-              )}
-            </>
           )}
         </section>
         {optionsOpen && (
           <section className="pos-card space-y-4">
             <h2 className="font-semibold">Atendimento atual</h2>
+            {customer && (
+              <p className="text-sm text-muted-foreground">
+                {customer.code}
+                {customer.creditLimit !== undefined
+                  ? ` · Limite disponível ${formatBRL(Math.max(0, customer.creditLimit - customerBalance(state, customer.id)))}`
+                  : ""}
+              </p>
+            )}
             <Choice
               label="Cliente desta venda"
               disabled={received > 0}
@@ -277,7 +309,7 @@ function CaixaPage() {
           </section>
         )}
         {received > 0 && (
-          <section className="pos-card space-y-3">
+          <section className="pos-card pdv-received-card space-y-3">
             <h2 className="font-semibold">Pagamentos já recebidos: {formatBRL(received)}</h2>
             <p>Restante: {formatBRL(Math.max(0, total - received))}</p>
             {received >= total && (
@@ -307,15 +339,6 @@ function CaixaPage() {
             />
           </section>
         )}
-        {!pickerOpen && !creditOpen && !creditDone && (
-          <BarcodeScanner
-            onScan={(code) => {
-              unlockAudio();
-              if (!payOpen && !pickerOpen && !creditOpen) handleScan(code);
-            }}
-          />
-        )}
-
         <form
           noValidate
           className="pdv-product-search relative"
@@ -375,11 +398,38 @@ function CaixaPage() {
           </div>
         )}
 
+        <Button
+          variant="secondary"
+          className="pdv-scanner-toggle"
+          aria-expanded={scannerExpanded}
+          aria-controls="product-scanner"
+          onClick={() => setScannerExpanded((v) => !v)}
+        >
+          <ScanBarcode size={24} aria-hidden="true" />
+          <span>
+            <strong>{scannerExpanded ? "Fechar câmera" : "Abrir leitor de código"}</strong>
+            <small>
+              {scannerExpanded ? "Leitura de produtos" : "Use a câmera para enquadrar o código"}
+            </small>
+          </span>
+          <ChevronDown size={20} aria-hidden="true" />
+        </Button>
+        {scannerExpanded && !pickerOpen && !creditOpen && !creditDone && (
+          <div id="product-scanner">
+            <BarcodeScanner
+              onScan={(code) => {
+                unlockAudio();
+                if (!payOpen && !pickerOpen && !creditOpen) handleScan(code);
+              }}
+            />
+          </div>
+        )}
+
         {cart.length === 0 ? (
           <div className="pdv-empty-cart flex flex-col items-center gap-3 py-8 text-center">
             <Barcode className="size-12 text-muted-foreground" />
             <p className="font-display text-2xl tracking-wide text-muted-foreground">
-              Carrinho vazio
+              Comece pelos produtos
             </p>
             <p className="max-w-56 text-sm text-muted-foreground">
               Escaneie um produto ou digite o código/nome no campo acima.
@@ -387,7 +437,7 @@ function CaixaPage() {
           </div>
         ) : (
           <section aria-label="Produtos da venda">
-            <h2 className="mb-2 text-sm font-semibold">
+            <h2 className="pdv-items-heading">
               {cart.length} {cart.length === 1 ? "produto" : "produtos"}
             </h2>
             <ul className="pos-cart-list">
@@ -564,8 +614,8 @@ function CaixaPage() {
           <SheetDescription>
             Escolha como marcar a compra e confira o saldo antes de confirmar.
           </SheetDescription>
-          <div className="space-y-4">
-            <p>
+          <div className="fiado-layout">
+            <p className="fiado-total">
               Total da compra <strong>{formatBRL(total)}</strong>
               {received > 0 && (
                 <>
@@ -582,17 +632,11 @@ function CaixaPage() {
                 setCreditError("");
               }}
             >
-              <Label
-                htmlFor="credit-total"
-                className="flex min-h-11 items-center gap-3 cursor-pointer"
-              >
+              <Label htmlFor="credit-total" className="fiado-option">
                 <RadioGroupItem id="credit-total" value="total" />
                 {received > 0 ? "Marcar saldo restante" : "Marcar valor total"}
               </Label>
-              <Label
-                htmlFor="credit-partial"
-                className="flex min-h-11 items-center gap-3 cursor-pointer"
-              >
+              <Label htmlFor="credit-partial" className="fiado-option">
                 <RadioGroupItem id="credit-partial" value="partial" disabled={received >= total} />
                 Receber uma parte agora
               </Label>
@@ -625,16 +669,18 @@ function CaixaPage() {
                 required
               />
             )}
-            <p>
-              Valor a marcar <strong>{formatBRL(creditRemaining)}</strong>
-            </p>
-            <p>
-              Saldo anterior <strong>{formatBRL(previousBalance)}</strong>
-            </p>
-            <p>
-              Novo saldo após confirmar{" "}
-              <strong>{formatBRL(money(previousBalance + creditRemaining))}</strong>
-            </p>
+            <section className="fiado-summary" aria-label="Resumo da conta">
+              <p>
+                <span>Valor a marcar</span> <strong>{formatBRL(creditRemaining)}</strong>
+              </p>
+              <p>
+                <span>Saldo anterior</span> <strong>{formatBRL(previousBalance)}</strong>
+              </p>
+              <p className="fiado-new-balance">
+                <span>Novo saldo após confirmar</span>{" "}
+                <strong>{formatBRL(money(previousBalance + creditRemaining))}</strong>
+              </p>
+            </section>
             {creditError && (
               <p role="alert" className="management-error">
                 {creditError}

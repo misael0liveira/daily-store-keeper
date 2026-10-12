@@ -149,7 +149,11 @@ const { mkdirSync } = require("node:fs");
         await page.waitForFunction(() => window.testPayment === null);
       };
       await sheet.getByRole("button", { name: "3", exact: true }).click();
-      assert.ok(await sheet.getByRole("button", { name: "PAGO", exact: true }).isDisabled());
+      assert.ok(
+        await sheet
+          .getByRole("button", { name: "Confirmar recebimento", exact: true })
+          .isDisabled(),
+      );
       await sheet.getByRole("button", { name: "Limpar valor" }).click();
       await sheet.getByRole("button", { name: "5", exact: true }).click();
       assert.match(await sheet.locator(".payment-cash-row").last().textContent(), /0,76/);
@@ -162,7 +166,7 @@ const { mkdirSync } = require("node:fs");
       await assertBounds();
       await page.screenshot({ path: `navigation-screenshots/pagamento-dinheiro-${width}.png` });
       await context.setOffline(true);
-      await sheet.getByRole("button", { name: "PAGO", exact: true }).click();
+      await sheet.getByRole("button", { name: "Confirmar recebimento", exact: true }).click();
       await waitSuccess(1);
       assert.equal((await persisted()).sales[0].paidAmount, 5);
       assert.equal((await persisted()).sales[0].change, 0.76);
@@ -198,7 +202,12 @@ const { mkdirSync } = require("node:fs");
         await nextSale();
         const method = index % 2 === 0 ? "Débito" : "Crédito";
         await sheet.getByRole("button", { name: method, exact: true }).click();
-        await sheet.getByRole("img", { name: "Maquininha com cartão" }).waitFor();
+        await sheet
+          .getByRole("heading", {
+            name: method === "Débito" ? "Receber no débito" : "Receber no crédito",
+            exact: true,
+          })
+          .waitFor();
         await assertBounds();
         if (index === 0)
           await page.screenshot({ path: `navigation-screenshots/pagamento-cartao-${width}.png` });

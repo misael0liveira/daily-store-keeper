@@ -210,7 +210,7 @@ async function checkWidth(page) {
         await page.getByRole("button", { name: "Um meio de pagamento", exact: true }).click();
       await page
         .getByRole("dialog", { name: "Pagamento", exact: true })
-        .getByRole("button", { name: "PAGO", exact: true })
+        .getByRole("button", { name: "Confirmar recebimento", exact: true })
         .click();
       await page
         .getByRole("dialog", { name: "Pagamento", exact: true })
@@ -225,7 +225,7 @@ async function checkWidth(page) {
         await page.getByRole("button", { name: "Um meio de pagamento", exact: true }).click();
       await page
         .getByRole("dialog", { name: "Pagamento", exact: true })
-        .getByRole("button", { name: "PAGO", exact: true })
+        .getByRole("button", { name: "Confirmar recebimento", exact: true })
         .click();
       await page
         .getByRole("dialog", { name: "Pagamento", exact: true })

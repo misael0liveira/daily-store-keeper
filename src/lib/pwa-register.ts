@@ -53,6 +53,38 @@ const OFFLINE_PAGES = [
   "/gestao",
 ];
 
+async function warmAssetsCache() {
+  if (!("caches" in window) || navigator.onLine === false) return;
+  try {
+    await document.fonts.ready;
+    const cache = await caches.open("assets-v1");
+    const urls = new Set([
+      ...Array.from(
+        document.querySelectorAll<HTMLLinkElement>(
+          'link[rel="stylesheet"], link[rel="modulepreload"]',
+        ),
+        (link) => link.href,
+      ),
+      ...performance.getEntriesByType("resource").map((entry) => entry.name),
+    ]);
+    await Promise.allSettled(
+      Array.from(urls, async (value) => {
+        const url = new URL(value, location.href);
+        if (
+          url.origin !== location.origin ||
+          !/\.(?:js|css|woff2?|png|svg|ico|webp)(?:$)/i.test(url.pathname) ||
+          (await cache.match(url.href))
+        )
+          return;
+        const response = await fetch(url.href, { credentials: "same-origin" });
+        if (response.ok) await cache.put(url.href, response);
+      }),
+    );
+  } catch {
+    // Initial assets may load before the worker controls the page; warming is best effort.
+  }
+}
+
 async function warmPagesCache() {
   if (!("caches" in window)) return;
   if (navigator.onLine === false) return;
@@ -89,6 +121,7 @@ export function registerPWA() {
       .then((registration) => {
         void registration.update();
         void warmPagesCache();
+        void warmAssetsCache();
         window.addEventListener("online", () => void warmPagesCache());
       })
       .catch(() => {

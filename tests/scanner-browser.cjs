@@ -41,6 +41,7 @@ const { mkdirSync } = require("node:fs");
       const page = await context.newPage();
       await page.goto("http://127.0.0.1:4173/", { waitUntil: "networkidle" });
       await page.getByRole("link", { name: "Caixa", exact: true }).click();
+      await page.getByRole("button", { name: /Abrir leitor de código/ }).click();
       const scanner = page.locator(".pdv-scanner-card");
       if (denied) {
         await scanner.getByText(/Permissão da câmera negada/).waitFor();

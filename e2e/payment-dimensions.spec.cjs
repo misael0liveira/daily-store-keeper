@@ -27,13 +27,13 @@ module.exports = async function dimensions(page, { label, baseline = false, safe
         right: rect.right,
         bottom: rect.bottom,
       });
-      const brand = el.querySelector(".payment-brand");
+      const brand = el.querySelector(".payment-screen-header");
       const methods = el.querySelector(".payment-methods");
       const panel = el.querySelector(".payment-panel");
       const buttons = [...methods.querySelectorAll("button")];
       return {
         brand: box(brand.getBoundingClientRect()),
-        logo: box(brand.querySelector("img").getBoundingClientRect()),
+        logo: box(brand.querySelector(".payment-panel-heading").getBoundingClientRect()),
         methods: box(methods.getBoundingClientRect()),
         panel: box(panel.getBoundingClientRect()),
         tabs: buttons.map((button) => {
@@ -51,12 +51,8 @@ module.exports = async function dimensions(page, { label, baseline = false, safe
           };
         }),
         close: box(el.querySelector(".payment-close").getBoundingClientRect()),
-        title: el.querySelector(".payment-cash-body h2, .payment-panel-header h2")
-          ? box(
-              el
-                .querySelector(".payment-cash-body h2, .payment-panel-header h2")
-                .getBoundingClientRect(),
-            )
+        title: el.querySelector(".payment-screen-header h2")
+          ? box(el.querySelector(".payment-screen-header h2").getBoundingClientRect())
           : null,
         rows: [...el.querySelectorAll(".payment-cash-row")].map((row) => ({
           rect: box(row.getBoundingClientRect()),
@@ -120,7 +116,7 @@ module.exports = async function dimensions(page, { label, baseline = false, safe
       );
     }
     if (geometry.keypad) {
-      const fields = geometry.rows.map((row) => row.field);
+      const fields = geometry.rows.slice(1).map((row) => row.field);
       for (const field of fields) {
         assert.ok(
           Math.abs(field.x - fields[0].x) <= 1 && Math.abs(field.width - fields[0].width) <= 1,
@@ -131,7 +127,9 @@ module.exports = async function dimensions(page, { label, baseline = false, safe
         geometry.rows.at(-1).rect.bottom <= geometry.keypad.y + 1,
         `${label}: cash summary behind keypad`,
       );
-      const paid = await sheet.getByRole("button", { name: "PAGO", exact: true }).boundingBox();
+      const paid = await sheet
+        .getByRole("button", { name: "Confirmar recebimento", exact: true })
+        .boundingBox();
       assert.ok(paid.y >= 0 && paid.y + paid.height <= geometry.height, `${label}: PAGO obscured`);
     } else {
       const manual = sheet.getByRole("button", { name: "Confirmar manualmente", exact: true });

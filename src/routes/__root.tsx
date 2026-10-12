@@ -125,14 +125,6 @@ function ThemeApplier() {
   return null;
 }
 
-function BrandWatermark() {
-  return (
-    <div className="app-watermark" aria-hidden="true">
-      <img src="/brand/mercadinho-uniao-logo.png" alt="" />
-    </div>
-  );
-}
-
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -151,7 +143,6 @@ function RootComponent() {
       <QueryClientProvider client={queryClient}>
         <ThemeApplier />
         <NativeThemeBars />
-        <BrandWatermark />
         <main className="mx-auto max-w-lg">
           <Outlet />
         </main>
@@ -164,7 +155,6 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeApplier />
-      <BrandWatermark />
       <AppStartup>
         <main className="m3-app-content mx-auto max-w-lg">
           <Outlet />

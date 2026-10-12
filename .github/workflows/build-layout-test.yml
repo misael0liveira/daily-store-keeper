@@ -82,6 +82,7 @@ jobs:
           /tmp/mercadinho-browser/node_modules/.bin/playwright install --with-deps chromium --only-shell
           python3 tests/serve-preview.py > /tmp/mercadinho-preview.log 2>&1 &
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright node tests/navigation-browser.cjs
+          PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright AXE_MODULE=/tmp/mercadinho-browser/node_modules/@axe-core/playwright node tests/figma-layout-browser.cjs
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright node tests/pix-browser.cjs
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright node tests/payments-browser.cjs
           PLAYWRIGHT_MODULE=/tmp/mercadinho-browser/node_modules/playwright node tests/scanner-browser.cjs
@@ -161,14 +162,13 @@ jobs:
           prerelease: true
           make_latest: false
           body: |
-            Caixa: Marcar na Conta reúne escolha e resumo em um único modal. Total selecionado, entrada no mesmo formulário e Confirmar fiado explícito.
-            Remove retornos duplicados; X fecha e preserva parcelas. Após entrada, mostra recebido e saldo restante. Vencimento cadastral automático, alteração opcional discreta.
-            Entrada segue diretamente aos quatro meios, com divisão da entrada como opção secundária. Saldo previsto e confirmação final preservam venda, estoque e dívida.
-            Pagamento normal conserva a escolha entre Um meio de pagamento e Dois meios de pagamento.
-            Dois meios pede a primeira parte, calcula o restante e segue para outro meio após confirmar. Recebimentos persistem ao fechar/reabrir ou recarregar.
-            Remove Dividir do cabeçalho; preserva os quatro meios, troco, Pix, monitor, Fiados, scanner, reposição e dados locais.
-            Spec Kit, Ponytail full, replica-test e auditoria premium aplicados. Mesma chave de teste; instale sobre o teste existente sem desinstalar.
-            Instala separadamente da versão oficial. Câmera, notificações bancárias e atualização física exigem conferência no aparelho.
+            UX/UI aprovada no Figma aplicada aos componentes reais: navegação com cinco rótulos permanentes, cabeçalhos, cartões, valores destacados e fontes locais.
+            Caixa com leitor compacto de abertura explícita, busca e fotos reais; ações de quantidade de44px e cobrança acima da navegação.
+            Pagamentos com cabeçalho estável, quatro meios, dinheiro/teclado escuro, troco e Pix real. Confirmar recebimento substitui o texto PAGO.
+            Fiado total/entrada em um modal, vencimento cadastral, resumo e confirmação explícita; parcelas persistem ao fechar/recarregar.
+            Estoque, reposição, clientes/extrato, histórico e ajustes mantêm regras e dados locais. Nenhuma migração ou dado demonstrativo inserido.
+            Spec Kit, Ponytail, design premium e replica-test. Build Android e assinatura verificados; mesma chave de teste em cache.
+            Instala separadamente da versão oficial. Testar no aparelho câmera, teclado, notificações e atualização sobre o teste anterior sem desinstalar.
           files: |
             Mercadinho-Uniao-Teste.apk
             Mercadinho-Uniao-Teste.sha256

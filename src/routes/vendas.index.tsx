@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/PageHeader";
 import { createFileRoute } from "@tanstack/react-router";
 import { ChevronDown, ChevronUp, FileDown, Receipt } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -94,9 +95,7 @@ function VendasPage() {
 
   return (
     <div className="pos-page pos-history">
-      <header className="pos-header">
-        <h1>Histórico</h1>
-      </header>
+      <PageHeader title="Histórico" subtitle="Vendas e recebimentos" />
 
       <div className="pos-periods" aria-label="Período do histórico">
         {periods.map((p) => (

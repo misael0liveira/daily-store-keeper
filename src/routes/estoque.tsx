@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/PageHeader";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   ChevronRight,
@@ -238,34 +239,37 @@ function EstoquePage() {
 
   return (
     <div className="pos-page pos-stock">
-      <header className="pos-header">
-        <h1>Estoque</h1>
-        <Button
-          variant="ghost"
-          className="text-primary px-0"
-          onClick={() => {
-            setEditingId(undefined);
-            setExtra({});
-            setBarcode("");
-            setName("");
-            setBrand("");
-            setPackageSize("");
-            setPrice("");
-            setStock("");
-            setPhoto(undefined);
-            setPhotoBusy(false);
-            setPhotoCapture(false);
+      <PageHeader
+        title="Estoque"
+        subtitle="Produtos e reposição"
+        actions={
+          <Button
+            variant="ghost"
+            className="text-primary px-0"
+            onClick={() => {
+              setEditingId(undefined);
+              setExtra({});
+              setBarcode("");
+              setName("");
+              setBrand("");
+              setPackageSize("");
+              setPrice("");
+              setStock("");
+              setPhoto(undefined);
+              setPhotoBusy(false);
+              setPhotoCapture(false);
 
-            lastScanRef.current = null;
-            unlockAudio();
-            setScannerOpen(true);
-            setEditorOpen(true);
-          }}
-        >
-          <Plus size={18} />
-          Cadastrar
-        </Button>
-      </header>
+              lastScanRef.current = null;
+              unlockAudio();
+              setScannerOpen(true);
+              setEditorOpen(true);
+            }}
+          >
+            <Plus size={18} />
+            Cadastrar
+          </Button>
+        }
+      />
       {!promotionsOpen && (
         <div className="relative">
           <Search className="absolute left-3 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" />
@@ -313,6 +317,9 @@ function EstoquePage() {
       </div>
       {lowOnly && !promotionsOpen && (
         <section className="space-y-3" aria-label="Reposição para o atacado">
+          <p className="pos-replenishment-status">
+            {list.length} {list.length === 1 ? "produto precisa" : "produtos precisam"} de reposição
+          </p>
           <p className="text-sm text-muted-foreground">
             Vendas dos últimos 30 dias · Ciclo {settings.wholesaleCycleDays ?? 7} dias · Segurança{" "}
             {settings.stockSafetyDays ?? 2} dias.
@@ -320,7 +327,7 @@ function EstoquePage() {
           <ReplenishmentSettings />
           <Button
             variant="outline"
-            className="w-full h-12"
+            className="pos-export-list w-full h-12"
             disabled={!list.length}
             onClick={() =>
               setExportRows(
@@ -377,7 +384,7 @@ function EstoquePage() {
                     </span>
                   </span>
                   {lowOnly && replenishment.has(p.barcode) && (
-                    <span className="block mt-1 text-sm font-semibold text-primary">
+                    <span className="pos-purchase-suggestion">
                       Sugestão de compra: {purchaseLabel(replenishment.get(p.barcode)!)}
                       {replenishment.get(p.barcode)!.sold30 === 0 && (
                         <span className="block text-xs font-normal text-muted-foreground">

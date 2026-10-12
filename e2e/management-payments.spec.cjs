@@ -6,7 +6,7 @@ module.exports = async (page) => {
   await page.getByRole("button", { name: "Dois meios de pagamento", exact: true }).click();
   await page.getByLabel("Valor no primeiro meio (R$)", { exact: true }).fill("1,24");
   await page.getByRole("button", { name: "Receber primeira parte", exact: true }).click();
-  await page.getByRole("button", { name: "PAGO", exact: true }).click();
+  await page.getByRole("button", { name: "Confirmar recebimento", exact: true }).click();
   await page.waitForFunction(
     () => JSON.parse(localStorage.getItem("pdv-mercado")).state.pendingPayments.length === 1,
   );

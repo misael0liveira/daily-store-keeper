@@ -77,7 +77,7 @@ async function pay(page, method, label) {
         fullPage: true,
       });
     if (current === "Dinheiro")
-      await sheet.getByRole("button", { name: "PAGO", exact: true }).click();
+      await sheet.getByRole("button", { name: "Confirmar recebimento", exact: true }).click();
     else {
       await sheet.getByRole("button", { name: "Confirmar manualmente", exact: true }).click();
       await sheet.getByRole("button", { name: "Confirmar pagamento", exact: true }).click();
@@ -267,7 +267,7 @@ async function freshQuote(page) {
     await page.getByRole("button", { name: "Um meio de pagamento", exact: true }).count(),
     0,
   );
-  await page.getByRole("button", { name: "PAGO", exact: true }).click();
+  await page.getByRole("button", { name: "Confirmar recebimento", exact: true }).click();
   await page
     .getByRole("button", { name: "Confirmar fiado", exact: true })
     .waitFor({ timeout: 8000 });
@@ -378,14 +378,14 @@ async function creditOptions(page) {
     name: "Entrada da compra · Joana Silva",
     exact: true,
   });
-  await payment.getByRole("button", { name: "PAGO", exact: true }).waitFor();
+  await payment.getByRole("button", { name: "Confirmar recebimento", exact: true }).waitFor();
   assert.equal(
     await payment.getByRole("button", { name: "Um meio de pagamento", exact: true }).count(),
     0,
   );
   await payment.getByRole("button", { name: "Usar dois meios na entrada", exact: true }).click();
   await payment.getByRole("button", { name: "Voltar", exact: true }).click();
-  await payment.getByRole("button", { name: "PAGO", exact: true }).waitFor();
+  await payment.getByRole("button", { name: "Confirmar recebimento", exact: true }).waitFor();
   await payment.getByRole("button", { name: "Fechar pagamento", exact: true }).click();
   // Restore the credit limit, preserving all local records; preview cancellation charged nothing.
   await page.evaluate(() => {

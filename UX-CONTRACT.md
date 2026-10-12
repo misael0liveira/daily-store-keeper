@@ -140,3 +140,10 @@ Marcar na Conta oferece total ou entrada parcial na folha existente. Vencimento 
 
 ## Fiado em um único modal — 10/10/2026
 Fonte: aprovação do proprietário e specs/005-fiado-modal-unico/spec.md. Caixa/Sheet existente une escolha e resumo, com RadioGroup/Label canônicos e total selecionado. Alternar não grava; Confirmar fiado registra. Receber uma parte agora revela Field e Receber entrada abre o PaymentSheet vigente. Parcelas recebidas aparecem; opção total passa a Marcar saldo restante. Pago zero fica oculto. X/Escape fecha e retorna foco ao acionador, preservando parcelas; sem Voltar à escolha/Voltar ao carrinho. Data sugerida e override discreto permanecem. Radio circular mantém dimensão própria; label fornece alvo44px. Sem alteração de tokens, schema ou pagamento normal.
+
+## Aprovação Figma — 12/10/2026
+Fonte: specs/006-figma-ux-ui/spec.md e aprovação explícita do proprietário. Esta seção substitui somente a geometria antiga da Navegação CODEXURE e a apresentação anterior de cobrança; domínio, persistência e fontes de negócio continuam os mesmos.
+Navegação plana, labels sempre visíveis, cinco links reais e aria-current. Sem animação de bolha/curva. Cabeçalhos e estilos usam proprietários compartilhados; tema e safe areas continuam canônicos. Fontes distribuídas localmente.
+Caixa: abrir leitor é uma expansão explícita com aria-expanded; BarcodeScanner original desmonta ao fechar ou selecionar cliente e a busca permanece. Nenhuma nova câmera, permissão ou migração. Quantidades mantêm ações, unidades e validação. Fotografias reais continuam disponíveis.
+PaymentSheet mantém matemática, referências Pix, notificações, dois meios, entrada direta e foco. Confirmar recebimento é o novo texto do antigo PAGO; não cria uma confirmação automática. Painel/abas/fechar são estáveis entre meios. Conteúdo central rola em aparelhos curtos; teclado e confirmações têm áreas próprias. Fiado mantém registro somente na confirmação e parcelas ao fechar/recarregar.
+Teste físico de leitura/lanterna, teclado Android, notificações reais e instalação sobre o APK anterior continuam separados da evidência de navegador/build.

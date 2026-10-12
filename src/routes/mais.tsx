@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/PageHeader";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowRight, Download, RefreshCw, Settings } from "lucide-react";
 import { useState } from "react";
@@ -80,9 +81,7 @@ function MorePage() {
 
   return (
     <div className="pos-page pos-settings">
-      <header className="pos-header">
-        <h1>Ajustes</h1>
-      </header>
+      <PageHeader title="Ajustes" subtitle="Mercadinho União" />
       <div className="pos-card pos-settings-link">
         <Link className="pos-settings-action" to="/resumo">
           <span className="min-w-0 flex-1 text-left">

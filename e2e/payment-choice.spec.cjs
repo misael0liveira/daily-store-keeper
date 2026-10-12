@@ -21,7 +21,7 @@ module.exports = async function choice(page, context, label) {
   await scan(page, label + " escolha");
   await page.screenshot({ path: `navigation-screenshots/payment-choice-${label}.png` });
   await sheet.getByRole("button", { name: "Voltar", exact: true }).click();
-  await sheet.getByRole("button", { name: "Cancelar", exact: true }).click();
+  await sheet.getByRole("button", { name: "Fechar", exact: true }).click();
   await sheet.waitFor({ state: "hidden" });
   assert(await trigger.evaluate((el) => el === document.activeElement));
   const read = () => page.evaluate(() => JSON.parse(localStorage.getItem("pdv-mercado")).state);
@@ -31,7 +31,7 @@ module.exports = async function choice(page, context, label) {
   await field.fill("5");
   await next.click();
   assert.equal(await sheet.getByRole("button", { name: "Dividir", exact: true }).count(), 0);
-  await sheet.getByRole("button", { name: "PAGO", exact: true }).click();
+  await sheet.getByRole("button", { name: "Confirmar recebimento", exact: true }).click();
   await sheet.getByRole("button", { name: "Dinheiro", exact: true }).waitFor({ state: "visible" });
   assert(await sheet.getByRole("button", { name: "Dinheiro", exact: true }).isDisabled());
   await page.waitForFunction(

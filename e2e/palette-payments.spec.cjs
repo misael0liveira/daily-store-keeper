@@ -20,15 +20,17 @@ module.exports = async function payments(page, _context, label) {
   }
   await sheet.getByRole("button", { name: "Dinheiro", exact: true }).click();
   await assertReadable(
-    sheet.getByRole("button", { name: "PAGO", exact: true }),
-    "PAGO gradient",
-    true,
+    sheet.getByRole("button", { name: "Confirmar recebimento", exact: true }),
+    "Confirmar recebimento",
+    false,
   );
   await sheet.getByRole("button", { name: "3", exact: true }).click();
-  assert.ok(await sheet.getByRole("button", { name: "PAGO", exact: true }).isDisabled());
+  assert.ok(
+    await sheet.getByRole("button", { name: "Confirmar recebimento", exact: true }).isDisabled(),
+  );
   await scan(page, `${label} valor insuficiente`);
   await sheet.getByRole("button", { name: "Limpar valor" }).click();
-  await sheet.getByRole("button", { name: "PAGO", exact: true }).click();
+  await sheet.getByRole("button", { name: "Confirmar recebimento", exact: true }).click();
   const success = page.getByRole("status", { name: "Pagamento recebido", exact: true });
   await success.waitFor();
   await assertReadable(success, "Payment success");

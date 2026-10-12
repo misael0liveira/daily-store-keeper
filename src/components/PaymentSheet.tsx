@@ -248,7 +248,7 @@ export function PaymentSheet({
       <SheetContent
         side="bottom"
         className={choosing ? "customer-sheet" : `payment-sheet payment-${method}`}
-        showCloseButton={false}
+        showCloseButton={choosing}
         onEscapeKeyDown={(e) => {
           if (locked.current) e.preventDefault();
         }}
@@ -261,7 +261,7 @@ export function PaymentSheet({
           Escolha a forma de pagamento e confirme o recebimento de {formatBRL(total)}.
         </SheetDescription>
         {choosing ? (
-          <div className="space-y-4 mt-4">
+          <div className="payment-choice-layout">
             <p>
               Valor a receber <strong>{formatBRL(total)}</strong>
             </p>
@@ -270,7 +270,7 @@ export function PaymentSheet({
                 <p>Como o cliente vai pagar?</p>
                 <Button
                   ref={choiceAction}
-                  className="w-full"
+                  className="w-full payment-choice-option"
                   onClick={() => {
                     setSplitRaw("");
                     setChoosing(false);
@@ -279,7 +279,7 @@ export function PaymentSheet({
                   Um meio de pagamento
                 </Button>
                 <Button
-                  className="w-full"
+                  className="w-full payment-choice-option"
                   variant="outline"
                   disabled={total < 0.02}
                   onClick={() => setSplitOpen(true)}
@@ -289,9 +289,6 @@ export function PaymentSheet({
                 <p className="text-sm text-muted-foreground">
                   Um meio recebe o total. Dois meios recebe uma parte em cada forma de pagamento.
                 </p>
-                <Button className="w-full" variant="ghost" onClick={close}>
-                  Cancelar
-                </Button>
               </>
             ) : (
               <>
@@ -353,8 +350,29 @@ export function PaymentSheet({
           />
         ) : (
           <>
-            <div className="payment-brand">
-              <img src="/brand/mercadinho-uniao-logo.png" alt="Mercadinho União" />
+            <div className="payment-screen-header">
+              <div className="payment-panel-heading" title={contextTitle}>
+                <span className="pos-brand-signature" aria-hidden="true">
+                  UNIÃO
+                </span>
+                <h2>{contextTitle ? "Recebimento" : "Pagamento"}</h2>
+                <p className="payment-subtitle">
+                  {firstMethod || previousMethod
+                    ? "Saldo restante"
+                    : splitPayment
+                      ? "Primeira parte"
+                      : contextTitle || PAYMENT_LABELS[method]}{" "}
+                  · {formatBRL(amount)}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="payment-close"
+                aria-label="Fechar pagamento"
+                onClick={close}
+              >
+                <X aria-hidden="true" />
+              </button>
             </div>
             <div className="payment-methods" role="group" aria-label="Forma de pagamento">
               {methods.map(({ key, icon: Icon }) => (
@@ -395,45 +413,11 @@ export function PaymentSheet({
                 </Button>
               )}
             <section className="payment-panel">
-              <div className="payment-panel-header">
-                <div className="payment-panel-heading" title={contextTitle}>
-                  {method === "dinheiro" && (
-                    <>
-                      <h2>{contextTitle ? "Recebimento" : "Pagamento"}</h2>
-                      <p className="payment-subtitle">
-                        {firstMethod || previousMethod
-                          ? "Segundo meio · Dinheiro"
-                          : splitPayment
-                            ? "Primeiro meio · Dinheiro"
-                            : contextTitle || "Dinheiro"}
-                      </p>
-                    </>
-                  )}
-                  {method !== "dinheiro" &&
-                    (contextTitle || splitPayment || firstMethod || previousMethod) && (
-                      <p className="payment-subtitle">
-                        {firstMethod || previousMethod
-                          ? "Segundo meio de pagamento"
-                          : splitPayment
-                            ? "Primeiro meio de pagamento"
-                            : contextTitle}
-                      </p>
-                    )}
-                </div>
-                <button
-                  type="button"
-                  className="payment-close"
-                  aria-label="Fechar pagamento"
-                  onClick={close}
-                >
-                  <X aria-hidden="true" />
-                </button>
-              </div>
               {method === "dinheiro" ? (
                 <>
                   <div className="payment-cash-body">
                     <div className="payment-cash-row">
-                      <span>Total a pagar</span>
+                      <span>Total a receber</span>
                       <strong>{formatBRL(amount)}</strong>
                     </div>
                     <label className="payment-cash-row">
@@ -501,7 +485,7 @@ export function PaymentSheet({
                       onClick={confirm}
                       disabled={insufficient || invalidSplit}
                     >
-                      PAGO
+                      Confirmar recebimento
                     </button>
                     <button type="button" onClick={() => edit(",")} aria-label="Vírgula">
                       ,
@@ -547,14 +531,12 @@ export function PaymentSheet({
                       )
                     ) : (
                       <>
-                        <h2>Receber</h2>
+                        <CreditCard className="payment-card-icon" aria-hidden="true" />
+                        <h2>Receber no {method === "debito" ? "débito" : "crédito"}</h2>
                         <strong className="payment-card-amount">{formatBRL(amount)}</strong>
-                        <p className="payment-card-method">{PAYMENT_LABELS[method]}</p>
-                        <img
-                          className="payment-terminal"
-                          src="/brand/payment-terminal.png"
-                          alt="Maquininha com cartão"
-                        />
+                        <p className="payment-card-method">
+                          Confira a aprovação na maquininha antes de confirmar.
+                        </p>
                         <div className="payment-waiting" role="status">
                           Aguardando Pagamento
                         </div>

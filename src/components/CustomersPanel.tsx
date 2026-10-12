@@ -101,7 +101,7 @@ export function CustomersPanel() {
                 ? "Fiado desabilitado"
                 : "Fiado habilitado"}
           </p>
-          <p>
+          <p className="customer-balance">
             Saldo em aberto <strong>{formatBRL(balance)}</strong>
           </p>
           <p className="text-sm text-muted-foreground">
@@ -276,7 +276,8 @@ export function CustomersPanel() {
         </div>
       </section>
       <Button
-        className="w-full"
+        variant="ghost"
+        className="customer-create-action"
         disabled={!canOperate(state, "sell")}
         onClick={() => setCreating(true)}
       >

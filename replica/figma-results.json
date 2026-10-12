@@ -1,0 +1,15 @@
+{
+  "unit": 49,
+  "paymentDimensions": 48,
+  "paymentChoice": 39,
+  "fiados": 69,
+  "replenishment": 42,
+  "management": 48,
+  "figmaLayout": 21,
+  "paletteCombinations": 14,
+  "status": "passed",
+  "openS1": 0,
+  "openS2": 0,
+  "android": "pending",
+  "physicalDevice": "not-run"
+}

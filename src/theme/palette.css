@@ -6,6 +6,7 @@
   --brand-blue-deep: #00477f;
   --brand-blue-darker: #00365f;
   --brand-red: #e3062d;
+  --brand-label: var(--brand-red);
   --on-brand: #ffffff;
   --background: #f5f8fb;
   --foreground: #141b25;
@@ -56,6 +57,7 @@
   --product-price-green: var(--success);
 }
 :root.dark {
+  --brand-label: var(--destructive-on-dark);
   color-scheme: dark;
   --background: #111b26;
   --foreground: #f3f6fa;

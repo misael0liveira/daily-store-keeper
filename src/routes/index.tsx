@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/PageHeader";
 import { createFileRoute } from "@tanstack/react-router";
 import { CustomersPanel } from "@/components/CustomersPanel";
 export const Route = createFileRoute("/")({
@@ -7,9 +8,7 @@ export const Route = createFileRoute("/")({
 function FiadosPage() {
   return (
     <div className="pos-page">
-      <header className="pos-header">
-        <h1>Fiados</h1>
-      </header>
+      <PageHeader title="Fiados" subtitle="Contas dos clientes" />
       <CustomersPanel />
     </div>
   );
